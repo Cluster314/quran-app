@@ -1,0 +1,16 @@
+{
+  "name": "Cluster Quran",
+  "short_name": "ClusterQuran",
+  "description": "An interactive clustered Quran reading and study application available offline.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#28a745",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
