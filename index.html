@@ -44,23 +44,30 @@
     /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
-      line-height: 2.5;
-      letter-spacing: 0px;
+      line-height: 2.6;
+      word-spacing: 2px;
     }
 
-    /* Standard Ayah Symbol Wrapper */
-    .ayah-marker {
+    /* SVG Ayah Emblem Container */
+    .ayah-container {
       display: inline-flex;
-      items-center: center;
+      align-items: center;
       justify-content: center;
-      margin-right: 0.35rem;
-      margin-left: 0.35rem;
-      font-family: 'Noto Naskh Arabic', 'Scheherazade New', serif;
-      color: #0284c7;
-      font-weight: 700;
-      font-size: 0.85em;
+      position: relative;
+      width: 2rem;
+      height: 2rem;
+      margin: 0 0.4rem;
       vertical-align: middle;
       direction: ltr;
+    }
+
+    .ayah-number {
+      position: absolute;
+      font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0284c7;
+      line-height: 1;
     }
   </style>
 </head>
@@ -70,13 +77,11 @@
   <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     
     <div class="flex items-center justify-between w-full">
-      <!-- Logo & Title -->
       <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-sky-600 dark:text-sky-400 font-bold text-xl tracking-wide hover:opacity-80 transition">
         <span>📖</span>
         <span>Quran Indo-Pak Hifz</span>
       </a>
 
-      <!-- Quick Navigation Mode Tabs -->
       <div class="flex items-center space-x-2 text-xs">
         <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold transition">Surah</button>
         <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">Custom Range</button>
@@ -84,16 +89,12 @@
         <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">15-Line Page</button>
       </div>
 
-      <!-- Dark Mode Toggle -->
       <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
         <span id="themeIcon">🌙</span>
       </button>
     </div>
 
-    <!-- DYNAMIC CONTROLS PANEL -->
     <div class="w-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
-      
-      <!-- MODE 1: SINGLE SURAH SELECTOR -->
       <div id="controlsSurah" class="flex items-center space-x-2">
         <span class="text-xs text-gray-500 dark:text-gray-400">Surah:</span>
         <select id="surahSelect" onchange="if(this.value) navigate('/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -101,7 +102,6 @@
         </select>
       </div>
 
-      <!-- MODE 2: CROSS-SURAH AYAH RANGE SELECTOR -->
       <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-2">
         <div class="flex items-center space-x-1.5">
           <span class="text-xs text-gray-500 dark:text-gray-400">From:</span>
@@ -128,7 +128,6 @@
         </button>
       </div>
 
-      <!-- MODE 3: JUZ SELECTOR -->
       <div id="controlsJuz" class="hidden items-center space-x-2">
         <span class="text-xs text-gray-500 dark:text-gray-400">Juz (Para):</span>
         <select id="juzSelect" onchange="if(this.value) navigate('/juz/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
@@ -136,20 +135,16 @@
         </select>
       </div>
 
-      <!-- MODE 4: PAGE SELECTOR -->
       <div id="controlsPage" class="hidden items-center space-x-2">
         <span class="text-xs text-gray-500 dark:text-gray-400">15-Line Page:</span>
         <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
           <option value="">Select Page (1-604)...</option>
         </select>
       </div>
-
     </div>
   </header>
 
-  <!-- MAIN VIEW CONTAINER -->
   <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
-    <!-- Dynamic Content -->
   </main>
 
   <script>
@@ -173,14 +168,27 @@
       return num.toString().split('').map(d => arabicDigits[d]).join('');
     }
 
-    // Strips out non-renderable Quranic stop marks, orphan boxes (□), non-breaking spaces, and inline fullstops
+    // Comprehensive regex: strips unmapped Quranic marks, pause symbols, orphan boxes, and control characters
     function sanitizeArabicText(str) {
       if (!str) return "";
       return str
-        .replace(/[\u0610-\u061A\u06D6-\u06ED\u06D4\u06DD\u200B-\u200D\uFEFF]/g, '')
+        .replace(/[\u0610-\u061A\u06D6-\u06ED\u06D4\u06DD\u200B-\u200D\uFEFF\uFD3E\uFD3F]/g, '')
         .replace(/\u00A0/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+    }
+
+    // Returns a standalone vector Ayah End Emblem to prevent box character fallbacks
+    function getAyahMarkerSvg(ayahNum) {
+      return `
+        <span class="ayah-container">
+          <svg viewBox="0 0 36 36" class="w-full h-full text-sky-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
+            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 12-5.37 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
+          </svg>
+          <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
+        </span>
+      `;
     }
 
     function navigate(path) {
@@ -595,11 +603,8 @@
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
             const rawArabic = v.text_indopak || v.text_uthmani;
             
-            // Thoroughly clean unrenderable Unicode chars
             const cleanedArabic = sanitizeArabicText(rawArabic);
-
-            // Universal Ayah Marker Emblem
-            const ayahMarker = `<span class="ayah-marker">﴿${toArabicNumeral(ayahNum)}﴾</span>`;
+            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
             
             let translatedText = "";
             if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
@@ -622,7 +627,7 @@
                 </div>
 
                 <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 px-2 pt-2" dir="rtl">
-                  ${cleanedArabic} ${ayahMarker}
+                  ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
 
                 ${translatedText ? `
