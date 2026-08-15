@@ -156,30 +156,31 @@
     </div>
   </header>
 
-  <!-- 65 MUSALLA SALAH TIMES MODAL -->
-  <div id="salahModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
-      <button onclick="toggleSalahModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-lg">✕</button>
+  <!-- 65 MUSALLA WEBSITE EMBED MODAL -->
+  <div id="salahModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 md:p-6">
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col relative shadow-2xl overflow-hidden">
       
-      <div class="text-center space-y-1">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
-          <span>🕌</span> 65 Musalla Salah Times
-        </h2>
-        <p class="text-xs text-sky-600 dark:text-sky-400">Daily Iqamah & Jumu'ah Schedule</p>
+      <div class="p-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span>🕌</span>
+          <span class="font-bold text-sm text-gray-800 dark:text-white">65 Musalla Live Website</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="https://65musalla.com" target="_blank" rel="noopener" class="text-xs text-sky-500 hover:underline">Open in New Tab ↗</a>
+          <button onclick="toggleSalahModal(false)" class="text-gray-400 hover:text-gray-200 text-lg px-2">✕</button>
+        </div>
       </div>
 
-      <div class="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Fajr</span> <span class="font-bold text-sky-500">5:45 AM</span></div>
-        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Dhuhr</span> <span class="font-bold text-sky-500">1:30 PM</span></div>
-        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Asr</span> <span class="font-bold text-sky-500">5:00 PM</span></div>
-        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Maghrib</span> <span class="font-bold text-sky-500">At Sunset</span></div>
-        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Isha</span> <span class="font-bold text-sky-500">8:30 PM</span></div>
+      <div class="flex-1 w-full h-full bg-white">
+        <iframe 
+          id="musallaIframe"
+          src="" 
+          class="w-full h-full border-0"
+          title="65 Musalla Website"
+          loading="lazy">
+        </iframe>
       </div>
 
-      <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-center space-y-1">
-        <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Jumu'ah Prayers</div>
-        <div class="text-xs text-gray-700 dark:text-gray-300">1st Khutbah: <strong>1:15 PM</strong> | 2nd Khutbah: <strong>2:15 PM</strong></div>
-      </div>
     </div>
   </div>
 
@@ -225,7 +226,17 @@
     }
 
     function toggleSalahModal(show) {
-      document.getElementById("salahModal").classList.toggle("hidden", !show);
+      const modal = document.getElementById("salahModal");
+      const iframe = document.getElementById("musallaIframe");
+
+      if (show) {
+        if (!iframe.src || iframe.src === "about:blank") {
+          iframe.src = "https://65musalla.com";
+        }
+        modal.classList.remove("hidden");
+      } else {
+        modal.classList.add("hidden");
+      }
     }
 
     function toArabicNumeral(num) {
