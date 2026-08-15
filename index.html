@@ -90,10 +90,10 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <!-- Display Mode Switcher -->
-        <button onclick="toggleDisplayMode()" id="displayModeBtn" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs font-semibold rounded-lg text-gray-700 dark:text-gray-300 transition flex items-center gap-1">
-          <span id="displayModeIcon">📜</span>
-          <span id="displayModeText">Reading Mode</span>
+        <!-- Display Mode Switcher (Cycles: Verse-by-Verse -> Reading Arabic -> Reading Translation) -->
+        <button onclick="cycleDisplayMode()" id="displayModeBtn" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs font-semibold rounded-lg text-gray-700 dark:text-gray-300 transition flex items-center gap-1.5">
+          <span id="displayModeIcon">🔢</span>
+          <span id="displayModeText">Verse-by-Verse</span>
         </button>
 
         <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
@@ -161,7 +161,9 @@
     
     let chaptersData = [];
     const translationCache = {};
-    let displayMode = "verse"; // 'verse' or 'reading'
+    
+    // Modes: 'verse' -> 'reading-arabic' -> 'reading-translation'
+    let displayMode = "verse";
 
     const INDOPAK_JUZ_BOUNDARIES = {
       1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
@@ -212,17 +214,22 @@
       `;
     }
 
-    function toggleDisplayMode() {
-      displayMode = displayMode === "verse" ? "reading" : "verse";
+    function cycleDisplayMode() {
       const btnText = document.getElementById("displayModeText");
       const btnIcon = document.getElementById("displayModeIcon");
 
-      if (displayMode === "reading") {
-        btnText.innerText = "Verse Mode";
-        btnIcon.innerText = "🔢";
-      } else {
-        btnText.innerText = "Reading Mode";
+      if (displayMode === "verse") {
+        displayMode = "reading-arabic";
+        btnText.innerText = "Reading (Arabic)";
         btnIcon.innerText = "📜";
+      } else if (displayMode === "reading-arabic") {
+        displayMode = "reading-translation";
+        btnText.innerText = "Reading (Translation)";
+        btnIcon.innerText = "🌐";
+      } else {
+        displayMode = "verse";
+        btnText.innerText = "Verse-by-Verse";
+        btnIcon.innerText = "🔢";
       }
 
       router();
@@ -634,12 +641,15 @@
     }
 
     function renderContent(verses, translations) {
-      if (displayMode === "reading") {
-        return renderReadingMode(verses, translations);
+      if (displayMode === "reading-arabic") {
+        return renderReadingArabicMode(verses);
+      } else if (displayMode === "reading-translation") {
+        return renderReadingTranslationMode(verses, translations);
       }
       return renderVerseByVerse(verses, translations);
     }
 
+    /* MODE 1: VERSE BY VERSE */
     function renderVerseByVerse(verses, translations) {
       let currentPage = null;
 
@@ -695,44 +705,43 @@
       `;
     }
 
-    function renderReadingMode(verses, translations) {
+    /* MODE 2: READING MODE (ARABIC ONLY) */
+    function renderReadingArabicMode(verses) {
       let currentPage = null;
       let html = '<div class="w-full space-y-6">';
-
       let arabicParagraph = "";
-      let translationList = [];
 
       verses.forEach((v, index) => {
-        const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
+        const [, ayahNum] = v.verse_key.split(":").map(Number);
         const rawArabic = v.text_indopak || v.text_uthmani;
         const cleanedArabic = sanitizeArabicText(rawArabic);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
 
-        let translatedText = "";
-        if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
-          translatedText = translations[surahNum][ayahNum] || "";
-        } else {
-          translatedText = translations[ayahNum] || "";
-        }
-
-        // If new page encountered, output previous block and render page separator
         if (v.page_number && v.page_number !== currentPage) {
           if (arabicParagraph) {
-            html += renderReadingBlock(arabicParagraph, translationList);
+            html += `
+              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
+                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
+                  ${arabicParagraph}
+                </div>
+              </div>
+            `;
             arabicParagraph = "";
-            translationList = [];
           }
           currentPage = v.page_number;
           html += getPageSeparatorHtml(currentPage);
         }
 
         arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
-        if (translatedText) {
-          translationList.push(`<strong>[${ayahNum}]</strong> ${translatedText}`);
-        }
 
         if (index === verses.length - 1 && arabicParagraph) {
-          html += renderReadingBlock(arabicParagraph, translationList);
+          html += `
+            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
+              <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
+                ${arabicParagraph}
+              </div>
+            </div>
+          `;
         }
       });
 
@@ -740,23 +749,54 @@
       return html;
     }
 
-    function renderReadingBlock(arabicText, translationList) {
-      return `
-        <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-sm dark:shadow-none">
-          <!-- Continuous Arabic Block -->
-          <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
-            ${arabicText}
-          </div>
+    /* MODE 3: READING MODE (TRANSLATION ONLY) */
+    function renderReadingTranslationMode(verses, translations) {
+      let currentPage = null;
+      let html = '<div class="w-full space-y-6">';
+      let translationList = [];
 
-          <!-- Continuous Translation Block -->
-          ${translationList.length > 0 ? `
-            <div class="text-left border-t border-gray-100 dark:border-gray-700/60 pt-6 space-y-2 text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">
-              <h4 class="text-xs uppercase tracking-wider font-bold text-sky-600 dark:text-sky-400 mb-3">Translation</h4>
-              ${translationList.map(t => `<p>${t}</p>`).join("")}
+      verses.forEach((v, index) => {
+        const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
+        
+        let translatedText = "";
+        if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
+          translatedText = translations[surahNum][ayahNum] || "";
+        } else {
+          translatedText = translations[ayahNum] || "";
+        }
+
+        if (v.page_number && v.page_number !== currentPage) {
+          if (translationList.length > 0) {
+            html += `
+              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-3 shadow-sm dark:shadow-none">
+                <div class="text-left text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed space-y-2">
+                  ${translationList.map(t => `<p>${t}</p>`).join("")}
+                </div>
+              </div>
+            `;
+            translationList = [];
+          }
+          currentPage = v.page_number;
+          html += getPageSeparatorHtml(currentPage);
+        }
+
+        if (translatedText) {
+          translationList.push(`<strong class="text-sky-600 dark:text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
+        }
+
+        if (index === verses.length - 1 && translationList.length > 0) {
+          html += `
+            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
+              <div class="text-left text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed space-y-2">
+                ${translationList.map(t => `<p>${t}</p>`).join("")}
+              </div>
             </div>
-          ` : ''}
-        </div>
-      `;
+          `;
+        }
+      });
+
+      html += '</div>';
+      return html;
     }
 
     function showLoading(msg) {
