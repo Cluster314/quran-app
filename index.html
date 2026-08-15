@@ -44,7 +44,6 @@
     /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
-      line-height: 2.6;
       word-spacing: 2px;
     }
 
@@ -688,7 +687,7 @@
                   </button>
                 </div>
 
-                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 px-2 pt-2" dir="rtl">
+                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 px-2 pt-2 leading-relaxed" dir="rtl">
                   ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
 
@@ -720,8 +719,8 @@
         if (v.page_number && v.page_number !== currentPage) {
           if (arabicParagraph) {
             html += `
-              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
-                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
+              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
+                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2] tracking-wide space-y-3" dir="rtl">
                   ${arabicParagraph}
                 </div>
               </div>
@@ -736,8 +735,8 @@
 
         if (index === verses.length - 1 && arabicParagraph) {
           html += `
-            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
-              <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
+            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
+              <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2] tracking-wide space-y-3" dir="rtl">
                 ${arabicParagraph}
               </div>
             </div>
