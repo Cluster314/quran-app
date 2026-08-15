@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Noble Quran - Indo-Pak Hifz Reader</title>
-  
-  <link rel="icon" type="image/x-icon" href="/quran-app/favicon.ico">
-  <link rel="manifest" href="/site.webmanifest">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,12 +33,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
-    /* Indo-Pak Typography Styling & Ligature Fixes */
     .indopak-text {
       font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
       font-variant-ligatures: common-ligatures discretionary-ligatures contextual;
@@ -51,7 +46,6 @@
       unicode-bidi: isolate;
     }
 
-    /* SVG Ayah Emblem Container */
     .ayah-container {
       display: inline-flex;
       align-items: center;
@@ -80,7 +74,7 @@
   <!-- TOP HEADER & NAVIGATION TOOLBAR -->
   <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     
-    <div class="flex items-center justify-between w-full">
+    <div class="flex items-center justify-between w-full flex-wrap gap-2">
       <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-sky-600 dark:text-sky-400 font-bold text-xl tracking-wide hover:opacity-80 transition">
         <span>📖</span>
         <span>Quran Indo-Pak Hifz</span>
@@ -94,6 +88,11 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <!-- 65 Musalla Button -->
+        <button onclick="toggleSalahModal(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          <span>🕌</span> 65 Musalla
+        </button>
+
         <!-- Display Mode Dropdown -->
         <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 transition">
           <option value="verse">🔢 Verse-by-Verse</option>
@@ -157,6 +156,33 @@
     </div>
   </header>
 
+  <!-- 65 MUSALLA SALAH TIMES MODAL -->
+  <div id="salahModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+      <button onclick="toggleSalahModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-lg">✕</button>
+      
+      <div class="text-center space-y-1">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+          <span>🕌</span> 65 Musalla Salah Times
+        </h2>
+        <p class="text-xs text-sky-600 dark:text-sky-400">Daily Iqamah & Jumu'ah Schedule</p>
+      </div>
+
+      <div class="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Fajr</span> <span class="font-bold text-sky-500">5:45 AM</span></div>
+        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Dhuhr</span> <span class="font-bold text-sky-500">1:30 PM</span></div>
+        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Asr</span> <span class="font-bold text-sky-500">5:00 PM</span></div>
+        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Maghrib</span> <span class="font-bold text-sky-500">At Sunset</span></div>
+        <div class="py-2.5 flex justify-between items-center"><span class="font-semibold text-gray-700 dark:text-gray-300">Isha</span> <span class="font-bold text-sky-500">8:30 PM</span></div>
+      </div>
+
+      <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 text-center space-y-1">
+        <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Jumu'ah Prayers</div>
+        <div class="text-xs text-gray-700 dark:text-gray-300">1st Khutbah: <strong>1:15 PM</strong> | 2nd Khutbah: <strong>2:15 PM</strong></div>
+      </div>
+    </div>
+  </div>
+
   <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
   </main>
 
@@ -166,8 +192,7 @@
     
     let chaptersData = [];
     const translationCache = {};
-    
-    let displayMode = "verse";
+    let displayMode = getDisplayModeFromUrl();
 
     const INDOPAK_JUZ_BOUNDARIES = {
       1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
@@ -177,6 +202,31 @@
       21: [29, 45, 33, 30], 22: [33, 31, 36, 21], 23: [36, 22, 39, 31], 24: [39, 32, 41, 46], 25: [41, 47, 45, 37],
       26: [46, 1, 51, 30], 27: [51, 31, 57, 29], 28: [58, 1, 66, 12], 29: [67, 1, 77, 50], 30: [78, 1, 114, 6]
     };
+
+    function getDisplayModeFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get("mode");
+      if (["verse", "reading-arabic", "reading-translation"].includes(mode)) {
+        return mode;
+      }
+      return "verse";
+    }
+
+    function updateDisplayModeUrl(newMode) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("mode", newMode);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function changeDisplayMode(newMode) {
+      displayMode = newMode;
+      updateDisplayModeUrl(newMode);
+      router();
+    }
+
+    function toggleSalahModal(show) {
+      document.getElementById("salahModal").classList.toggle("hidden", !show);
+    }
 
     function toArabicNumeral(num) {
       const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -213,11 +263,6 @@
           <div class="flex-1 border-b border-sky-500/40 dark:border-sky-500/30"></div>
         </div>
       `;
-    }
-
-    function changeDisplayMode(newMode) {
-      displayMode = newMode;
-      router();
     }
 
     function navigate(path) {
