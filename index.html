@@ -147,7 +147,10 @@
 
   <script>
     const API_BASE = "https://api.quran.com/api/v4";
+    const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
+    
     let chaptersData = [];
+    const translationCache = {};
 
     // --- EXACT SOUTH ASIAN / INDO-PAK HIFZ JUZ (PARA) BOUNDARIES ---
     const INDOPAK_JUZ_BOUNDARIES = {
@@ -332,6 +335,32 @@
       navigate(`/range?fromSurah=${fromS}&fromAyah=${fromA}&toSurah=${toS}&toAyah=${toA}`);
     }
 
+    // --- FETCH TRANSLATION FROM GITHUB REPO ---
+    async function fetchSurahTranslation(surahId) {
+      if (translationCache[surahId]) return translationCache[surahId];
+
+      try {
+        const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
+        if (!res.ok) throw new Error(`Failed to load translation: ${res.status}`);
+        const data = await res.json();
+        
+        const map = {};
+        // Index 0 is metadata, elements from index 1 are arrays of [ayahNumber, text]
+        for (let i = 1; i < data.length; i++) {
+          const item = data[i];
+          if (Array.isArray(item) && item.length >= 2) {
+            map[item[0]] = item[1];
+          }
+        }
+
+        translationCache[surahId] = map;
+        return map;
+      } catch (err) {
+        console.error(`Error loading translation for surah ${surahId}:`, err);
+        return {};
+      }
+    }
+
     // --- FETCH HELPER WITH INDO-PAK SCRIPT ---
     async function fetchChapterVerses(surahId) {
       let allVerses = [];
@@ -394,7 +423,10 @@
       showLoading(`Loading Surah ${surahMeta.name_simple}...`);
 
       try {
-        const verses = await fetchChapterVerses(surahId);
+        const [verses, translations] = await Promise.all([
+          fetchChapterVerses(surahId),
+          fetchSurahTranslation(surahId)
+        ]);
 
         let html = `
           <!-- SURAH HEADER BANNER -->
@@ -412,7 +444,7 @@
             ` : ''}
           </div>
 
-          ${renderVersesList(verses)}
+          ${renderVersesList(verses, translations)}
         `;
 
         app.innerHTML = html;
@@ -445,7 +477,10 @@
 
         for (let sId = fromSurah; sId <= toSurah; sId++) {
           const meta = chaptersData.find(c => c.id === sId);
-          let verses = await fetchChapterVerses(sId);
+          const [verses, translations] = await Promise.all([
+            fetchChapterVerses(sId),
+            fetchSurahTranslation(sId)
+          ]);
 
           let startFilter = 1;
           let endFilter = meta.verses_count;
@@ -461,6 +496,7 @@
           compiledSections.push({
             surahMeta: meta,
             verses: filtered,
+            translations: translations,
             isStartSection: sId === fromSurah,
             showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
           });
@@ -494,7 +530,7 @@
                 </div>
               ` : ''}
 
-              ${renderVersesList(section.verses)}
+              ${renderVersesList(section.verses, section.translations)}
             </div>
           `;
         });
@@ -533,6 +569,14 @@
         const data = await res.json();
         const verses = data.verses;
 
+        // Fetch translations for all unique surahs featured on this page
+        const uniqueSurahs = [...new Set(verses.map(v => parseInt(v.verse_key.split(":")[0])))];
+        const translationMaps = {};
+        
+        await Promise.all(uniqueSurahs.map(async sId => {
+          translationMaps[sId] = await fetchSurahTranslation(sId);
+        }));
+
         const prevPage = pageNumber > 1 ? pageNumber - 1 : null;
         const nextPage = pageNumber < 604 ? pageNumber + 1 : null;
 
@@ -556,7 +600,7 @@
             ` : '<div></div>'}
           </div>
 
-          ${renderVersesList(verses)}
+          ${renderVersesList(verses, translationMaps)}
         `;
 
         app.innerHTML = html;
@@ -568,12 +612,22 @@
       }
     }
 
-    // --- REUSABLE INDO-PAK VERSE LIST COMPONENT ---
-    function renderVersesList(verses) {
+    // --- REUSABLE INDO-PAK VERSE LIST COMPONENT WITH TRANSLATION ---
+    function renderVersesList(verses, translations) {
       return `
         <div class="w-full space-y-4">
           ${verses.map(v => {
+            const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
             const arabicText = v.text_indopak || v.text_uthmani;
+            
+            // Get translation depending on whether translations parameter is single surah map or multi-surah map
+            let translatedText = "";
+            if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
+              translatedText = translations[surahNum][ayahNum] || "";
+            } else {
+              translatedText = translations[ayahNum] || "";
+            }
+
             return `
               <div id="verse-${v.verse_key}" class="w-full bg-gray-800/40 hover:bg-gray-800/70 border border-gray-800/80 hover:border-gray-700 rounded-xl p-5 md:p-8 transition duration-150 flex flex-col space-y-4">
                 
@@ -582,8 +636,8 @@
                     ${v.verse_key}
                   </span>
 
-                  <button onclick="navigator.clipboard.writeText('${arabicText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-[#40bfff] transition">
-                    📋 Copy Verse
+                  <button onclick="navigator.clipboard.writeText('${arabicText.replace(/'/g, "\\'")}\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-[#40bfff] transition">
+                    📋 Copy Verse & Translation
                   </button>
                 </div>
 
@@ -591,6 +645,13 @@
                 <div class="text-right indopak-text text-3xl md:text-4xl text-gray-100 px-2 pt-2" dir="rtl">
                   ${arabicText}
                 </div>
+
+                <!-- English Translation -->
+                ${translatedText ? `
+                  <div class="text-left text-sm md:text-base text-gray-300 border-t border-gray-700/40 pt-3 mt-1 leading-relaxed">
+                    ${translatedText}
+                  </div>
+                ` : ''}
 
               </div>
             `;
