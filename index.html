@@ -18,6 +18,14 @@
       darkMode: 'class',
       theme: {
         extend: {
+          colors: {
+            theme: {
+              DEFAULT: '#40bfff',
+              hover: '#3399cc',
+              dark: '#267399',
+              light: '#66ccff'
+            }
+          },
           fontFamily: {
             indopak: ['"Scheherazade New"', '"Amiri"', 'serif'],
             sans: ['Inter', 'sans-serif']
@@ -54,17 +62,17 @@
     
     <div class="flex items-center justify-between w-full">
       <!-- Logo & Title -->
-      <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-emerald-400 font-bold text-xl tracking-wide hover:opacity-80 transition">
+      <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-[#40bfff] font-bold text-xl tracking-wide hover:opacity-80 transition">
         <span>📖</span>
         <span>Quran Indo-Pak Hifz</span>
       </a>
 
       <!-- Quick Navigation Mode Tabs -->
       <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold transition">Surah</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-emerald-500 transition">Custom Range</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-emerald-500 transition">Juz (Para)</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-emerald-500 transition">15-Line Page</button>
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-[#40bfff] bg-[#40bfff]/10 text-[#40bfff] font-semibold transition">Surah</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-[#40bfff] transition">Custom Range</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-[#40bfff] transition">Juz (Para)</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-[#40bfff] transition">15-Line Page</button>
       </div>
 
       <!-- Dark Mode Toggle -->
@@ -79,7 +87,7 @@
       <!-- MODE 1: SINGLE SURAH SELECTOR -->
       <div id="controlsSurah" class="flex items-center space-x-2">
         <span class="text-xs text-gray-400">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate('/surah/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <select id="surahSelect" onchange="if(this.value) navigate('/surah/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#40bfff]">
           <option value="">Select Surah...</option>
         </select>
       </div>
@@ -89,26 +97,26 @@
         <!-- Start Point -->
         <div class="flex items-center space-x-1.5">
           <span class="text-xs text-gray-400">From:</span>
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="bg-gray-900 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="bg-gray-900 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#40bfff]">
             <option value="">Start Surah</option>
           </select>
           <span class="text-xs text-gray-500">:</span>
-          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-[#40bfff]" />
         </div>
 
-        <span class="text-emerald-500 font-bold px-1">➔</span>
+        <span class="text-[#40bfff] font-bold px-1">➔</span>
 
         <!-- End Point -->
         <div class="flex items-center space-x-1.5">
           <span class="text-xs text-gray-400">To:</span>
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="bg-gray-900 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="bg-gray-900 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#40bfff]">
             <option value="">End Surah</option>
           </select>
           <span class="text-xs text-gray-500">:</span>
-          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-[#40bfff]" />
         </div>
 
-        <button onclick="applyCrossSurahRange()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition ml-1">
+        <button onclick="applyCrossSurahRange()" class="bg-[#40bfff] hover:bg-[#3399cc] text-gray-900 text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
           Read Range
         </button>
       </div>
@@ -116,7 +124,7 @@
       <!-- MODE 3: JUZ SELECTOR -->
       <div id="controlsJuz" class="hidden items-center space-x-2">
         <span class="text-xs text-gray-400">Juz (Para):</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('/juz/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <select id="juzSelect" onchange="if(this.value) navigate('/juz/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#40bfff]">
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
@@ -124,7 +132,7 @@
       <!-- MODE 4: PAGE SELECTOR -->
       <div id="controlsPage" class="hidden items-center space-x-2">
         <span class="text-xs text-gray-400">15-Line Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-gray-900 text-sm border border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#40bfff]">
           <option value="">Select Page (1-604)...</option>
         </select>
       </div>
@@ -142,7 +150,6 @@
     let chaptersData = [];
 
     // --- EXACT SOUTH ASIAN / INDO-PAK HIFZ JUZ (PARA) BOUNDARIES ---
-    // [StartSurah, StartAyah, EndSurah, EndAyah]
     const INDOPAK_JUZ_BOUNDARIES = {
       1:  [1, 1, 2, 141],
       2:  [2, 142, 2, 252],
@@ -249,11 +256,11 @@
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         
         if (m === mode) {
-          tab.className = "px-3 py-1.5 rounded-lg border border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-[#40bfff] bg-[#40bfff]/10 text-[#40bfff] font-semibold transition";
           ctrl.classList.remove("hidden");
           ctrl.classList.add("flex");
         } else {
-          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-emerald-500 transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-[#40bfff] transition";
           ctrl.classList.add("hidden");
           ctrl.classList.remove("flex");
         }
@@ -354,20 +361,20 @@
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
           <h1 class="text-3xl font-extrabold text-white">The Noble Quran</h1>
-          <p class="text-emerald-400 font-medium text-xs">Indo-Pakistani Script (South Asian 15-Line Hifz Standard)</p>
+          <p class="text-[#40bfff] font-medium text-xs">Indo-Pakistani Script (South Asian 15-Line Hifz Standard)</p>
           <p class="text-gray-400 text-xs">Read by Surah, Exact Indo-Pak Juz, 15-Line Page, or set a custom range across multiple Surahs.</p>
         </div>
 
         <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
           ${chaptersData.map(c => `
             <a href="#/surah/${c.id}" onclick="navigate('/surah/${c.id}'); return false;" 
-               class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 hover:border-emerald-500/50 p-3.5 rounded-xl transition duration-200 flex items-center justify-between group">
+               class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 hover:border-[#40bfff]/50 p-3.5 rounded-xl transition duration-200 flex items-center justify-between group">
               <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-gray-900/80 border border-gray-700 flex items-center justify-center text-xs font-bold text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition">
+                <div class="w-9 h-9 rounded-lg bg-gray-900/80 border border-gray-700 flex items-center justify-center text-xs font-bold text-[#40bfff] group-hover:bg-[#40bfff] group-hover:text-gray-900 transition">
                   ${c.id}
                 </div>
                 <div>
-                  <div class="font-semibold text-sm text-gray-100 group-hover:text-emerald-400 transition">${c.name_simple}</div>
+                  <div class="font-semibold text-sm text-gray-100 group-hover:text-[#40bfff] transition">${c.name_simple}</div>
                   <div class="text-[11px] text-gray-400">${c.verses_count} Verses</div>
                 </div>
               </div>
@@ -394,12 +401,12 @@
           <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
             <div class="space-y-2 relative z-10">
               <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
-              <p class="text-emerald-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+              <p class="text-[#40bfff] font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
               <div class="text-3xl font-indopak text-gray-200 pt-1">${surahMeta.name_arabic}</div>
             </div>
 
             ${surahId !== 1 && surahId !== 9 ? `
-              <div class="mt-6 font-indopak text-2xl md:text-3xl text-emerald-400 border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
+              <div class="mt-6 font-indopak text-2xl md:text-3xl text-[#40bfff] border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -461,9 +468,9 @@
 
         let html = `
           <!-- RANGE HEADER BANNER -->
-          <div class="w-full bg-gradient-to-r from-gray-800 via-gray-800/90 to-gray-800 border border-emerald-500/30 rounded-2xl p-6 mb-8 text-center">
+          <div class="w-full bg-gradient-to-r from-gray-800 via-gray-800/90 to-gray-800 border border-[#40bfff]/30 rounded-2xl p-6 mb-8 text-center">
             <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-            <p class="text-emerald-400 font-medium text-sm mt-1">
+            <p class="text-[#40bfff] font-medium text-sm mt-1">
               ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
             </p>
           </div>
@@ -478,11 +485,11 @@
                   <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
                   <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
                 </div>
-                <div class="font-indopak text-2xl text-emerald-400">${section.surahMeta.name_arabic}</div>
+                <div class="font-indopak text-2xl text-[#40bfff]">${section.surahMeta.name_arabic}</div>
               </div>
 
               ${section.showBismillah ? `
-                <div class="text-center font-indopak text-2xl text-emerald-300 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+                <div class="text-center font-indopak text-2xl text-[#40bfff] py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
                   بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
                 </div>
               ` : ''}
@@ -532,7 +539,7 @@
         let html = `
           <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-4 md:p-6 mb-8 flex items-center justify-between">
             ${prevPage ? `
-              <a href="#/page/${prevPage}" onclick="navigate('/page/${prevPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-emerald-500 text-xs md:text-sm font-semibold rounded-lg text-emerald-400 transition">
+              <a href="#/page/${prevPage}" onclick="navigate('/page/${prevPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-[#40bfff] text-xs md:text-sm font-semibold rounded-lg text-[#40bfff] transition">
                 ← Page ${prevPage}
               </a>
             ` : '<div></div>'}
@@ -543,7 +550,7 @@
             </div>
 
             ${nextPage ? `
-              <a href="#/page/${nextPage}" onclick="navigate('/page/${nextPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-emerald-500 text-xs md:text-sm font-semibold rounded-lg text-emerald-400 transition">
+              <a href="#/page/${nextPage}" onclick="navigate('/page/${nextPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-[#40bfff] text-xs md:text-sm font-semibold rounded-lg text-[#40bfff] transition">
                 Page ${nextPage} →
               </a>
             ` : '<div></div>'}
@@ -571,11 +578,11 @@
               <div id="verse-${v.verse_key}" class="w-full bg-gray-800/40 hover:bg-gray-800/70 border border-gray-800/80 hover:border-gray-700 rounded-xl p-5 md:p-8 transition duration-150 flex flex-col space-y-4">
                 
                 <div class="flex items-center justify-between border-b border-gray-700/40 pb-3">
-                  <span class="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-full">
+                  <span class="px-3 py-1 bg-[#40bfff]/10 border border-[#40bfff]/20 text-[#40bfff] text-xs font-semibold rounded-full">
                     ${v.verse_key}
                   </span>
 
-                  <button onclick="navigator.clipboard.writeText('${arabicText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-emerald-400 transition">
+                  <button onclick="navigator.clipboard.writeText('${arabicText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-[#40bfff] transition">
                     📋 Copy Verse
                   </button>
                 </div>
@@ -596,7 +603,7 @@
     function showLoading(msg) {
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-4">
-          <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-10 h-10 border-4 border-[#40bfff] border-t-transparent rounded-full animate-spin"></div>
           <p class="text-gray-400 text-sm animate-pulse">${msg}</p>
         </div>
       `;
@@ -606,7 +613,7 @@
       document.getElementById("app").innerHTML = `
         <div class="text-center py-20">
           <h1 class="text-2xl font-bold text-red-400">View Not Found</h1>
-          <a href="#/" onclick="navigate('/'); return false;" class="mt-4 inline-block text-emerald-400 hover:underline">Back to Home</a>
+          <a href="#/" onclick="navigate('/'); return false;" class="mt-4 inline-block text-[#40bfff] hover:underline">Back to Home</a>
         </div>
       `;
     }
