@@ -89,11 +89,12 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <!-- Display Mode Switcher (Cycles: Verse-by-Verse -> Reading Arabic -> Reading Translation) -->
-        <button onclick="cycleDisplayMode()" id="displayModeBtn" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs font-semibold rounded-lg text-gray-700 dark:text-gray-300 transition flex items-center gap-1.5">
-          <span id="displayModeIcon">🔢</span>
-          <span id="displayModeText">Verse-by-Verse</span>
-        </button>
+        <!-- Display Mode Dropdown -->
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 transition">
+          <option value="verse">🔢 Verse-by-Verse</option>
+          <option value="reading-arabic">📜 Reading (Arabic)</option>
+          <option value="reading-translation">🌐 Reading (Translation)</option>
+        </select>
 
         <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
           <span id="themeIcon">🌙</span>
@@ -161,7 +162,7 @@
     let chaptersData = [];
     const translationCache = {};
     
-    // Modes: 'verse' -> 'reading-arabic' -> 'reading-translation'
+    // Modes: 'verse' | 'reading-arabic' | 'reading-translation'
     let displayMode = "verse";
 
     const INDOPAK_JUZ_BOUNDARIES = {
@@ -178,10 +179,10 @@
       return num.toString().split('').map(d => arabicDigits[d]).join('');
     }
 
+    // Fixed: Keep mark characters so font ligatures like Lam-Alif render correctly
     function sanitizeArabicText(str) {
       if (!str) return "";
       return str
-        .replace(/[\u06D6-\u06ED\u0610-\u061A\u06D4\u06DD]/g, '')
         .replace(/[\u25A0-\u25FF\u2B00-\u2BFF]/g, '')
         .replace(/[\u200B-\u200D\uFEFF]/g, '')
         .replace(/\u00A0/g, ' ')
@@ -213,24 +214,8 @@
       `;
     }
 
-    function cycleDisplayMode() {
-      const btnText = document.getElementById("displayModeText");
-      const btnIcon = document.getElementById("displayModeIcon");
-
-      if (displayMode === "verse") {
-        displayMode = "reading-arabic";
-        btnText.innerText = "Reading (Arabic)";
-        btnIcon.innerText = "📜";
-      } else if (displayMode === "reading-arabic") {
-        displayMode = "reading-translation";
-        btnText.innerText = "Reading (Translation)";
-        btnIcon.innerText = "🌐";
-      } else {
-        displayMode = "verse";
-        btnText.innerText = "Verse-by-Verse";
-        btnIcon.innerText = "🔢";
-      }
-
+    function changeDisplayMode(newMode) {
+      displayMode = newMode;
       router();
     }
 
@@ -833,6 +818,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("displayModeSelect").value = displayMode;
       if (!window.location.hash) {
         window.location.hash = "#/";
       } else {
