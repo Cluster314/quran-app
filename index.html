@@ -44,18 +44,22 @@
     /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
-      line-height: 2.4;
+      line-height: 2.5;
       letter-spacing: 0px;
     }
 
-    /* Clean Ayah End Marker */
-    .ayah-end-symbol {
-      display: inline-block;
-      margin-right: 0.4rem;
-      margin-left: 0.4rem;
+    /* Standard Ayah Symbol Wrapper */
+    .ayah-marker {
+      display: inline-flex;
+      items-center: center;
+      justify-content: center;
+      margin-right: 0.35rem;
+      margin-left: 0.35rem;
       font-family: 'Noto Naskh Arabic', 'Scheherazade New', serif;
       color: #0284c7;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 0.85em;
+      vertical-align: middle;
       direction: ltr;
     }
   </style>
@@ -169,12 +173,13 @@
       return num.toString().split('').map(d => arabicDigits[d]).join('');
     }
 
-    // Strips out non-standard Quranic stop marks that cause square glyph boxes (□)
+    // Strips out non-renderable Quranic stop marks, orphan boxes (□), non-breaking spaces, and inline fullstops
     function sanitizeArabicText(str) {
       if (!str) return "";
       return str
-        .replace(/[\u06D6-\u06ED]/g, '') // Strips Waqf/Pause signs that cause empty box rendering
-        .replace(/[\u06DD\u06D4]/g, '')    // Strips end-of-ayah symbols from raw API response
+        .replace(/[\u0610-\u061A\u06D6-\u06ED\u06D4\u06DD\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
     }
 
@@ -590,11 +595,11 @@
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
             const rawArabic = v.text_indopak || v.text_uthmani;
             
-            // Clean unparseable Waqf symbols & boxes from API payload
+            // Thoroughly clean unrenderable Unicode chars
             const cleanedArabic = sanitizeArabicText(rawArabic);
 
-            // Clean Ayah End Marker ( Arabic Parentheses with Arabic numeral )
-            const ayahMarker = `<span class="ayah-end-symbol">﴿${toArabicNumeral(ayahNum)}﴾</span>`;
+            // Universal Ayah Marker Emblem
+            const ayahMarker = `<span class="ayah-marker">﴿${toArabicNumeral(ayahNum)}﴾</span>`;
             
             let translatedText = "";
             if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
