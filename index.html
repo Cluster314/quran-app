@@ -89,9 +89,17 @@
         <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">15-Line Page</button>
       </div>
 
-      <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
-        <span id="themeIcon">🌙</span>
-      </button>
+      <div class="flex items-center space-x-2">
+        <!-- Display Mode Switcher -->
+        <button onclick="toggleDisplayMode()" id="displayModeBtn" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs font-semibold rounded-lg text-gray-700 dark:text-gray-300 transition flex items-center gap-1">
+          <span id="displayModeIcon">📜</span>
+          <span id="displayModeText">Reading Mode</span>
+        </button>
+
+        <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
     </div>
 
     <div class="w-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
@@ -153,6 +161,7 @@
     
     let chaptersData = [];
     const translationCache = {};
+    let displayMode = "verse"; // 'verse' or 'reading'
 
     const INDOPAK_JUZ_BOUNDARIES = {
       1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
@@ -168,7 +177,6 @@
       return num.toString().split('').map(d => arabicDigits[d]).join('');
     }
 
-    // Comprehensive fix for all Quranic pause symbols, stop markers, and box character fallbacks
     function sanitizeArabicText(str) {
       if (!str) return "";
       return str
@@ -190,6 +198,34 @@
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
         </span>
       `;
+    }
+
+    function getPageSeparatorHtml(pageNum) {
+      return `
+        <div class="my-8 flex items-center justify-center gap-4 w-full" dir="ltr">
+          <div class="flex-1 border-b border-sky-500/40 dark:border-sky-500/30"></div>
+          <div class="px-4 py-1 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-600 dark:text-sky-400 font-bold text-xs tracking-wider uppercase">
+            Page ${pageNum}
+          </div>
+          <div class="flex-1 border-b border-sky-500/40 dark:border-sky-500/30"></div>
+        </div>
+      `;
+    }
+
+    function toggleDisplayMode() {
+      displayMode = displayMode === "verse" ? "reading" : "verse";
+      const btnText = document.getElementById("displayModeText");
+      const btnIcon = document.getElementById("displayModeIcon");
+
+      if (displayMode === "reading") {
+        btnText.innerText = "Verse Mode";
+        btnIcon.innerText = "🔢";
+      } else {
+        btnText.innerText = "Reading Mode";
+        btnIcon.innerText = "📜";
+      }
+
+      router();
     }
 
     function navigate(path) {
@@ -366,7 +402,7 @@
 
       while (page <= totalPages) {
         const res = await fetch(
-          `${API_BASE}/verses/by_chapter/${surahId}?fields=text_indopak,text_uthmani&per_page=50&page=${page}`
+          `${API_BASE}/verses/by_chapter/${surahId}?fields=text_indopak,text_uthmani,page_number&per_page=50&page=${page}`
         );
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
         const data = await res.json();
@@ -436,7 +472,7 @@
             ` : ''}
           </div>
 
-          ${renderVersesList(verses, translations)}
+          ${renderContent(verses, translations)}
         `;
 
         app.innerHTML = html;
@@ -518,7 +554,7 @@
                 </div>
               ` : ''}
 
-              ${renderVersesList(section.verses, section.translations)}
+              ${renderContent(section.verses, section.translations)}
             </div>
           `;
         });
@@ -549,7 +585,7 @@
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani&per_page=50`);
+        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani,page_number&per_page=50`);
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         
         const data = await res.json();
@@ -585,7 +621,7 @@
             ` : '<div></div>'}
           </div>
 
-          ${renderVersesList(verses, translationMaps)}
+          ${renderContent(verses, translationMaps)}
         `;
 
         app.innerHTML = html;
@@ -597,16 +633,30 @@
       }
     }
 
-    function renderVersesList(verses, translations) {
+    function renderContent(verses, translations) {
+      if (displayMode === "reading") {
+        return renderReadingMode(verses, translations);
+      }
+      return renderVerseByVerse(verses, translations);
+    }
+
+    function renderVerseByVerse(verses, translations) {
+      let currentPage = null;
+
       return `
         <div class="w-full space-y-4">
           ${verses.map(v => {
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
             const rawArabic = v.text_indopak || v.text_uthmani;
-            
             const cleanedArabic = sanitizeArabicText(rawArabic);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
             
+            let pageHeader = "";
+            if (v.page_number && v.page_number !== currentPage) {
+              currentPage = v.page_number;
+              pageHeader = getPageSeparatorHtml(currentPage);
+            }
+
             let translatedText = "";
             if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
               translatedText = translations[surahNum][ayahNum] || "";
@@ -615,6 +665,7 @@
             }
 
             return `
+              ${pageHeader}
               <div id="verse-${v.verse_key}" class="w-full bg-white dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 rounded-xl p-5 md:p-8 transition duration-150 flex flex-col space-y-4 shadow-sm dark:shadow-none">
                 
                 <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/40 pb-3">
@@ -623,7 +674,7 @@
                   </span>
 
                   <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                    📋 Copy Verse & Translation
+                    📋 Copy
                   </button>
                 </div>
 
@@ -640,6 +691,70 @@
               </div>
             `;
           }).join("")}
+        </div>
+      `;
+    }
+
+    function renderReadingMode(verses, translations) {
+      let currentPage = null;
+      let html = '<div class="w-full space-y-6">';
+
+      let arabicParagraph = "";
+      let translationList = [];
+
+      verses.forEach((v, index) => {
+        const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
+        const rawArabic = v.text_indopak || v.text_uthmani;
+        const cleanedArabic = sanitizeArabicText(rawArabic);
+        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
+
+        let translatedText = "";
+        if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
+          translatedText = translations[surahNum][ayahNum] || "";
+        } else {
+          translatedText = translations[ayahNum] || "";
+        }
+
+        // If new page encountered, output previous block and render page separator
+        if (v.page_number && v.page_number !== currentPage) {
+          if (arabicParagraph) {
+            html += renderReadingBlock(arabicParagraph, translationList);
+            arabicParagraph = "";
+            translationList = [];
+          }
+          currentPage = v.page_number;
+          html += getPageSeparatorHtml(currentPage);
+        }
+
+        arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
+        if (translatedText) {
+          translationList.push(`<strong>[${ayahNum}]</strong> ${translatedText}`);
+        }
+
+        if (index === verses.length - 1 && arabicParagraph) {
+          html += renderReadingBlock(arabicParagraph, translationList);
+        }
+      });
+
+      html += '</div>';
+      return html;
+    }
+
+    function renderReadingBlock(arabicText, translationList) {
+      return `
+        <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-sm dark:shadow-none">
+          <!-- Continuous Arabic Block -->
+          <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-loose" dir="rtl">
+            ${arabicText}
+          </div>
+
+          <!-- Continuous Translation Block -->
+          ${translationList.length > 0 ? `
+            <div class="text-left border-t border-gray-100 dark:border-gray-700/60 pt-6 space-y-2 text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">
+              <h4 class="text-xs uppercase tracking-wider font-bold text-sky-600 dark:text-sky-400 mb-3">Translation</h4>
+              ${translationList.map(t => `<p>${t}</p>`).join("")}
+            </div>
+          ` : ''}
         </div>
       `;
     }
