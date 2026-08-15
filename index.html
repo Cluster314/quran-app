@@ -217,17 +217,37 @@
 
     function changeDisplayMode(newMode) {
       displayMode = newMode;
-      router();
+      const rawHash = window.location.hash.replace('#', '') || '/';
+      const [pathPart, queryPart] = rawHash.split('?');
+      const params = new URLSearchParams(queryPart || '');
+      
+      params.set('mode', newMode);
+      window.location.hash = `#${pathPart}?${params.toString()}`;
     }
 
     function navigate(path) {
-      window.location.hash = path;
+      const [pathPart, queryPart] = path.split('?');
+      const params = new URLSearchParams(queryPart || '');
+      
+      if (displayMode && displayMode !== 'verse') {
+        params.set('mode', displayMode);
+      }
+      
+      const queryString = params.toString();
+      window.location.hash = queryString ? `${pathPart}?${queryString}` : pathPart;
     }
 
     window.addEventListener("hashchange", router);
 
     async function router() {
-      const hash = window.location.hash.replace('#', '') || '/';
+      const rawHash = window.location.hash.replace('#', '') || '/';
+      const [hash, queryPart] = rawHash.split('?');
+      const urlParams = new URLSearchParams(queryPart || '');
+      
+      if (urlParams.has('mode')) {
+        displayMode = urlParams.get('mode');
+      }
+      document.getElementById("displayModeSelect").value = displayMode;
 
       if (chaptersData.length === 0) {
         await loadChapters();
@@ -240,11 +260,10 @@
         renderHome();
       } else if (hash.startsWith("/range")) {
         setNavMode('range');
-        const params = new URLSearchParams(hash.split("?")[1] || "");
-        const fromS = parseInt(params.get("fromSurah")) || 1;
-        const fromA = parseInt(params.get("fromAyah")) || 1;
-        const toS = parseInt(params.get("toSurah")) || fromS;
-        const toA = parseInt(params.get("toAyah")) || 1;
+        const fromS = parseInt(urlParams.get("fromSurah")) || 1;
+        const fromA = parseInt(urlParams.get("fromAyah")) || 1;
+        const toS = parseInt(urlParams.get("toSurah")) || fromS;
+        const toA = parseInt(urlParams.get("toAyah")) || 1;
 
         document.getElementById("startSurahSelect").value = fromS;
         document.getElementById("startAyahInput").value = fromA;
