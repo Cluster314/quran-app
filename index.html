@@ -30,7 +30,7 @@
     }
   </script>
 
-  <!-- Google Fonts for Standard Indo-Pak Script & Glyph Compatibility -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,21 +41,22 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
-    /* Indo-Pak Script with Fallbacks for Waqf & Stop Symbols */
+    /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
       line-height: 2.4;
       letter-spacing: 0px;
     }
 
-    /* Indo-Pak Ayah End Marker Styling */
+    /* Clean Ayah End Marker */
     .ayah-end-symbol {
       display: inline-block;
-      margin-right: 0.35rem;
-      margin-left: 0.35rem;
+      margin-right: 0.4rem;
+      margin-left: 0.4rem;
       font-family: 'Noto Naskh Arabic', 'Scheherazade New', serif;
       color: #0284c7;
-      font-weight: 600;
+      font-weight: bold;
+      direction: ltr;
     }
   </style>
 </head>
@@ -168,6 +169,15 @@
       return num.toString().split('').map(d => arabicDigits[d]).join('');
     }
 
+    // Strips out non-standard Quranic stop marks that cause square glyph boxes (□)
+    function sanitizeArabicText(str) {
+      if (!str) return "";
+      return str
+        .replace(/[\u06D6-\u06ED]/g, '') // Strips Waqf/Pause signs that cause empty box rendering
+        .replace(/[\u06DD\u06D4]/g, '')    // Strips end-of-ayah symbols from raw API response
+        .trim();
+    }
+
     function navigate(path) {
       window.location.hash = path;
     }
@@ -219,7 +229,6 @@
           render404();
         }
       } else {
-        // Direct Surah URL pattern: /1, /2, /114
         const parts = hash.split("/");
         const id = parseInt(parts[1] || parts[0]);
         if (!isNaN(id) && id >= 1 && id <= 114) {
@@ -579,12 +588,13 @@
         <div class="w-full space-y-4">
           ${verses.map(v => {
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
-            let arabicText = v.text_indopak || v.text_uthmani;
+            const rawArabic = v.text_indopak || v.text_uthmani;
             
-            // Clean duplicate end symbols if present in API payload
-            arabicText = arabicText.replace(/[\u06DD\u06D4]/g, '').trim();
+            // Clean unparseable Waqf symbols & boxes from API payload
+            const cleanedArabic = sanitizeArabicText(rawArabic);
 
-            const ayahMarker = `<span class="ayah-end-symbol">۝${toArabicNumeral(ayahNum)}</span>`;
+            // Clean Ayah End Marker ( Arabic Parentheses with Arabic numeral )
+            const ayahMarker = `<span class="ayah-end-symbol">﴿${toArabicNumeral(ayahNum)}﴾</span>`;
             
             let translatedText = "";
             if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
@@ -601,13 +611,13 @@
                     ${v.verse_key}
                   </span>
 
-                  <button onclick="navigator.clipboard.writeText('${arabicText.replace(/'/g, "\\'")} ${toArabicNumeral(ayahNum)}\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition">
                     📋 Copy Verse & Translation
                   </button>
                 </div>
 
                 <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 px-2 pt-2" dir="rtl">
-                  ${arabicText} ${ayahMarker}
+                  ${cleanedArabic} ${ayahMarker}
                 </div>
 
                 ${translatedText ? `
