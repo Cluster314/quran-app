@@ -41,12 +41,12 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
-    /* Fix reading container alignment & justification */
+    /* Fix reading container alignment & justification to mirror Quran.com */
     .reading-wrapper {
       direction: rtl;
       text-align: justify;
-      text-align-last: right;
-      word-spacing: -0.02em;
+      text-align-last: justify;
+      word-spacing: 0.15em;
     }
 
     /* Indo-Pak Typography Styling & Ligature Fixes */
@@ -57,7 +57,7 @@
       text-rendering: optimizeLegibility;
       direction: rtl;
       unicode-bidi: isolate;
-      line-height: 2.8 !important; /* Prevents vertical clipping of diacritics */
+      line-height: 2.8 !important;
     }
 
     /* SVG Ayah Emblem Container */
@@ -104,7 +104,6 @@
       </div>
 
       <div class="flex items-center space-x-2">
-        <!-- Display Mode Dropdown -->
         <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 transition">
           <option value="verse">🔢 Verse-by-Verse</option>
           <option value="reading-arabic">📜 Reading (Arabic)</option>
@@ -600,28 +599,27 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    /* UPDATED: Page fetch logic with error handling fallback for Pages 1 and 2 */
+    /* Page fetch requesting exact 15-line Mushaf layout bounds */
     async function renderPage(pageNumber) {
       const app = document.getElementById("app");
       document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        let data = null;
+        let verses = [];
         
-        // Fetch page verses using Indo-Pak mushaf layout without forcing a per_page limit
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf_type=1&fields=text_indopak,text_uthmani,page_number`);
+        // Fetch page using Quran.com V4 endpoint with explicit 15-line mushaf mapping (mushaf=1)
+        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=1&fields=text_indopak,text_uthmani,page_number`);
         
         if (!res.ok) {
-          // Fallback fetch if the API endpoint throws an error on edge pages
           const fallbackRes = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani,page_number`);
           if (!fallbackRes.ok) throw new Error(`API error: ${fallbackRes.status}`);
-          data = await fallbackRes.json();
+          const fallbackData = await fallbackRes.json();
+          verses = fallbackData.verses;
         } else {
-          data = await res.json();
+          const data = await res.json();
+          verses = data.verses;
         }
-
-        const verses = data.verses;
 
         if (!verses || verses.length === 0) {
           render404();
@@ -735,7 +733,7 @@
       `;
     }
 
-    /* MODE 2: READING MODE (ARABIC ONLY) */
+    /* MODE 2: READING MODE (ARABIC ONLY WITH FIXED JUSTIFICATION) */
     function renderReadingArabicMode(verses) {
       let currentPage = null;
       let html = '<div class="w-full space-y-6">';
@@ -750,7 +748,7 @@
         if (v.page_number && v.page_number !== currentPage) {
           if (arabicParagraph) {
             html += `
-              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
+              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-4 md:p-8 shadow-sm dark:shadow-none my-4">
                 <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
                   ${arabicParagraph}
                 </div>
@@ -766,7 +764,7 @@
 
         if (index === verses.length - 1 && arabicParagraph) {
           html += `
-            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
+            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-4 md:p-8 shadow-sm dark:shadow-none my-4">
               <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
                 ${arabicParagraph}
               </div>
