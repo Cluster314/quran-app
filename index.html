@@ -600,17 +600,27 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    /* UPDATED: Fetch Page Verses explicitly matching 15-line Indo-Pak page boundaries (mushaf_type=1) */
+    /* UPDATED: Page fetch logic with error handling fallback for Pages 1 and 2 */
     async function renderPage(pageNumber) {
       const app = document.getElementById("app");
       document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf_type=1&fields=text_indopak,text_uthmani,page_number&per_page=50`);
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        let data = null;
         
-        const data = await res.json();
+        // Fetch page verses using Indo-Pak mushaf layout without forcing a per_page limit
+        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf_type=1&fields=text_indopak,text_uthmani,page_number`);
+        
+        if (!res.ok) {
+          // Fallback fetch if the API endpoint throws an error on edge pages
+          const fallbackRes = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani,page_number`);
+          if (!fallbackRes.ok) throw new Error(`API error: ${fallbackRes.status}`);
+          data = await fallbackRes.json();
+        } else {
+          data = await res.json();
+        }
+
         const verses = data.verses;
 
         if (!verses || verses.length === 0) {
