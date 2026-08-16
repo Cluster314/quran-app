@@ -170,7 +170,7 @@
   </main>
 
   <script>
-    const API_BASE = "https://api.quran.com/api/v4";
+    const API_BASE = "https://api.alquran.cloud/v1";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     
     let chaptersData = [];
@@ -206,7 +206,7 @@
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full text-sky-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
-            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 5.37 12 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
+            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 12-5.37 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
         </span>&nbsp;`;
@@ -337,9 +337,15 @@
 
     async function loadChapters() {
       try {
-        const res = await fetch(`${API_BASE}/chapters?language=en`);
+        const res = await fetch(`${API_BASE}/surah`);
         const data = await res.json();
-        chaptersData = data.chapters;
+        chaptersData = data.data.map(c => ({
+          id: c.number,
+          name_simple: c.englishName,
+          name_arabic: c.name,
+          verses_count: c.numberOfAyahs,
+          translated_name: { name: c.englishNameTranslation }
+        }));
         populateDropdowns();
       } catch (err) {
         console.error("Failed to fetch chapters:", err);
@@ -416,21 +422,15 @@
     }
 
     async function fetchChapterVerses(surahId) {
-      let allVerses = [];
-      let page = 1;
-      let totalPages = 1;
-
-      while (page <= totalPages) {
-        const res = await fetch(
-          `${API_BASE}/verses/by_chapter/${surahId}?fields=text_indopak,text_uthmani,page_number&per_page=50&page=${page}`
-        );
-        if (!res.ok) throw new Error(`API Error: ${res.status}`);
-        const data = await res.json();
-        allVerses = allVerses.concat(data.verses);
-        totalPages = data.pagination.total_pages;
-        page++;
-      }
-      return allVerses;
+      const res = await fetch(`${API_BASE}/surah/${surahId}/quran-indopak`);
+      if (!res.ok) throw new Error(`API Error: ${res.status}`);
+      const data = await res.json();
+      
+      return data.data.ayahs.map(a => ({
+        verse_key: `${surahId}:${a.numberInSurah}`,
+        text_indopak: a.text,
+        page_number: a.page
+      }));
     }
 
     function renderHome() {
@@ -440,7 +440,7 @@
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
           <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">The Noble Quran</h1>
-          <p class="text-sky-600 dark:text-sky-400 font-medium text-xs">Indo-Pakistani Script (South Asian 15-Line Hifz Standard)</p>
+          <p class="text-sky-600 dark:text-sky-400 font-medium text-xs">Indo-Pakistani Script (Powered by Al Quran Cloud)</p>
           <p class="text-gray-600 dark:text-gray-400 text-xs">Read by Surah, Exact Indo-Pak Juz, 15-Line Page, or set a custom range across multiple Surahs.</p>
         </div>
 
@@ -599,35 +599,29 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    /* Page fetch using mushaf=2 (Indo-Pak 15-line standard layout) */
     async function renderPage(pageNumber) {
       const app = document.getElementById("app");
       document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        let verses = [];
+        const res = await fetch(`${API_BASE}/page/${pageNumber}/quran-indopak`);
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        const data = await res.json();
         
-        // Use mushaf=2 for Indo-Pak 15-line Mushaf page mapping
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=2&fields=text_indopak,text_uthmani,page_number`);
-        
-        if (res.ok) {
-          const data = await res.json();
-          verses = data.verses;
-        } else {
-          // Fallback to mushaf=1 if needed
-          const fallbackRes = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=1&fields=text_indopak,text_uthmani,page_number`);
-          if (!fallbackRes.ok) throw new Error(`API error: ${fallbackRes.status}`);
-          const fallbackData = await fallbackRes.json();
-          verses = fallbackData.verses;
-        }
-
-        if (!verses || verses.length === 0) {
+        const ayahs = data.data.ayahs;
+        if (!ayahs || ayahs.length === 0) {
           render404();
           return;
         }
 
-        const uniqueSurahs = [...new Set(verses.map(v => parseInt(v.verse_key.split(":")[0])))];
+        const verses = ayahs.map(a => ({
+          verse_key: `${a.surah.number}:${a.numberInSurah}`,
+          text_indopak: a.text,
+          page_number: a.page
+        }));
+
+        const uniqueSurahs = [...new Set(ayahs.map(a => a.surah.number))];
         const translationMaps = {};
         
         await Promise.all(uniqueSurahs.map(async sId => {
@@ -647,7 +641,7 @@
 
             <div class="text-center">
               <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">Page ${pageNumber}</h1>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">15-Line Indo-Pak Hifz Print Standard</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Al Quran Cloud - Indo-Pak Standard</p>
             </div>
 
             ${nextPage ? `
@@ -686,8 +680,7 @@
         <div class="w-full space-y-4">
           ${verses.map(v => {
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
-            const rawArabic = v.text_indopak || v.text_uthmani;
-            const cleanedArabic = sanitizeArabicText(rawArabic);
+            const cleanedArabic = sanitizeArabicText(v.text_indopak);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
             
             let pageHeader = "";
@@ -742,8 +735,7 @@
 
       verses.forEach((v, index) => {
         const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const rawArabic = v.text_indopak || v.text_uthmani;
-        const cleanedArabic = sanitizeArabicText(rawArabic);
+        const cleanedArabic = sanitizeArabicText(v.text_indopak);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
 
         if (v.page_number && v.page_number !== currentPage) {
