@@ -41,7 +41,7 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
-    /* Fix reading container alignment & justification to mirror Quran.com */
+    /* Reading container alignment & justification */
     .reading-wrapper {
       direction: rtl;
       text-align: justify;
@@ -49,7 +49,7 @@
       word-spacing: 0.15em;
     }
 
-    /* Indo-Pak Typography Styling & Ligature Fixes */
+    /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
       font-variant-ligatures: common-ligatures discretionary-ligatures contextual;
@@ -206,7 +206,7 @@
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full text-sky-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
-            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 12-5.37 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
+            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 5.37 12 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
         </span>&nbsp;`;
@@ -599,7 +599,7 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    /* Page fetch requesting exact 15-line Mushaf layout bounds */
+    /* Page fetch using mushaf=2 (Indo-Pak 15-line standard layout) */
     async function renderPage(pageNumber) {
       const app = document.getElementById("app");
       document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
@@ -608,17 +608,18 @@
       try {
         let verses = [];
         
-        // Fetch page using Quran.com V4 endpoint with explicit 15-line mushaf mapping (mushaf=1)
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=1&fields=text_indopak,text_uthmani,page_number`);
+        // Use mushaf=2 for Indo-Pak 15-line Mushaf page mapping
+        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=2&fields=text_indopak,text_uthmani,page_number`);
         
-        if (!res.ok) {
-          const fallbackRes = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani,page_number`);
+        if (res.ok) {
+          const data = await res.json();
+          verses = data.verses;
+        } else {
+          // Fallback to mushaf=1 if needed
+          const fallbackRes = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf=1&fields=text_indopak,text_uthmani,page_number`);
           if (!fallbackRes.ok) throw new Error(`API error: ${fallbackRes.status}`);
           const fallbackData = await fallbackRes.json();
           verses = fallbackData.verses;
-        } else {
-          const data = await res.json();
-          verses = data.verses;
         }
 
         if (!verses || verses.length === 0) {
