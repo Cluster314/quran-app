@@ -41,6 +41,14 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
+    /* Fix reading container alignment & justification */
+    .reading-wrapper {
+      direction: rtl;
+      text-align: justify;
+      text-align-last: right;
+      word-spacing: -0.02em;
+    }
+
     /* Indo-Pak Typography Styling & Ligature Fixes */
     .indopak-text {
       font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
@@ -49,11 +57,12 @@
       text-rendering: optimizeLegibility;
       direction: rtl;
       unicode-bidi: isolate;
+      line-height: 2.8 !important; /* Prevents vertical clipping of diacritics */
     }
 
     /* SVG Ayah Emblem Container */
     .ayah-container {
-      display: inline-flex;
+      display: inline-flex !important;
       align-items: center;
       justify-content: center;
       position: relative;
@@ -63,6 +72,7 @@
       vertical-align: middle;
       direction: ltr;
       unicode-bidi: isolate;
+      white-space: nowrap;
     }
 
     .ayah-number {
@@ -590,17 +600,23 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
+    /* UPDATED: Fetch Page Verses explicitly matching 15-line Indo-Pak page boundaries (mushaf_type=1) */
     async function renderPage(pageNumber) {
       const app = document.getElementById("app");
       document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?fields=text_indopak,text_uthmani,page_number&per_page=50`);
+        const res = await fetch(`${API_BASE}/verses/by_page/${pageNumber}?mushaf_type=1&fields=text_indopak,text_uthmani,page_number&per_page=50`);
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         
         const data = await res.json();
         const verses = data.verses;
+
+        if (!verses || verses.length === 0) {
+          render404();
+          return;
+        }
 
         const uniqueSurahs = [...new Set(verses.map(v => parseInt(v.verse_key.split(":")[0])))];
         const translationMaps = {};
@@ -622,7 +638,7 @@
 
             <div class="text-center">
               <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">Page ${pageNumber}</h1>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">15-Line Hifz Mushaf Print Standard</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">15-Line Indo-Pak Hifz Print Standard</p>
             </div>
 
             ${nextPage ? `
@@ -725,7 +741,7 @@
           if (arabicParagraph) {
             html += `
               <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
-                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2] tracking-wide">
+                <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
                   ${arabicParagraph}
                 </div>
               </div>
@@ -741,7 +757,7 @@
         if (index === verses.length - 1 && arabicParagraph) {
           html += `
             <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-10 shadow-sm dark:shadow-none my-4">
-              <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2] tracking-wide">
+              <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
                 ${arabicParagraph}
               </div>
             </div>
