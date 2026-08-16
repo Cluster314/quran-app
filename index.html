@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Noble Quran - Indo-Pak Hifz Reader</title>
   
-  <!-- Inline SVG Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <!-- Favicon Fixes -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <link rel="alternate icon" href="https://quran.com/favicon.ico">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,9 +16,7 @@
       darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            theme: { DEFAULT: '#0284c7', hover: '#0369a1' }
-          },
+          colors: { theme: { DEFAULT: '#0284c7', hover: '#0369a1' } },
           fontFamily: {
             indopak: ['"Scheherazade New"', '"Amiri"', '"Noto Naskh Arabic"', 'serif'],
             sans: ['Inter', 'sans-serif']
@@ -376,11 +375,10 @@
         const data = await res.json();
         
         const map = {};
-        // Properly parse array objects [ayahNumber, translationText]
         if (Array.isArray(data)) {
           data.forEach(item => {
             if (Array.isArray(item) && item.length >= 2 && typeof item[0] === 'number') {
-              map[item[0]] = item[1];
+              map[item[0]] = String(item[1]); // Ensured full string parsing
             }
           });
         }
@@ -627,7 +625,7 @@
               pageHeader = getPageSeparatorHtml(currentPage);
             }
 
-            let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? translations[surahNum][ayahNum] : "";
+            let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? String(translations[surahNum][ayahNum]) : "";
 
             return `
               ${pageHeader}
@@ -684,7 +682,7 @@
 
       verses.forEach((v, index) => {
         const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
-        let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? translations[surahNum][ayahNum] : "";
+        let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? String(translations[surahNum][ayahNum]) : "";
 
         if (v.page_number && v.page_number !== currentPage) {
           if (translationList.length > 0) {
