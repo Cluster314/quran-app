@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Noble Quran - Indo-Pak Hifz Reader</title>
   
+  <!-- Inline SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -153,7 +156,7 @@
 
   <script>
     const API_BASE = "https://api.alquran.cloud/v1";
-    const API_EDITION = "quran-quran-portal"; // Al Quran Cloud valid Indo-Pak script key
+    const API_EDITION = "quran-quran-portal";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     
     let chaptersData = [];
@@ -373,9 +376,13 @@
         const data = await res.json();
         
         const map = {};
-        for (let i = 1; i < data.length; i++) {
-          const item = data[i];
-          if (Array.isArray(item) && item.length >= 2) map[item[0]] = item[1];
+        // Properly parse array objects [ayahNumber, translationText]
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (Array.isArray(item) && item.length >= 2 && typeof item[0] === 'number') {
+              map[item[0]] = item[1];
+            }
+          });
         }
 
         translationCache[surahId] = map;
