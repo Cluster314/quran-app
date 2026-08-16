@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Noble Quran - Indo-Pak Hifz Reader</title>
   
-  <link rel="icon" type="image/x-icon" href="/quran-app/favicon.ico">
-  <link rel="manifest" href="/site.webmanifest">
-
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -16,10 +13,7 @@
       theme: {
         extend: {
           colors: {
-            theme: {
-              DEFAULT: '#0284c7',
-              hover: '#0369a1'
-            }
+            theme: { DEFAULT: '#0284c7', hover: '#0369a1' }
           },
           fontFamily: {
             indopak: ['"Scheherazade New"', '"Amiri"', '"Noto Naskh Arabic"', 'serif'],
@@ -36,12 +30,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
 
-    /* Reading container alignment & justification */
     .reading-wrapper {
       direction: rtl;
       text-align: justify;
@@ -49,18 +41,14 @@
       word-spacing: 0.15em;
     }
 
-    /* Indo-Pak Typography Styling */
     .indopak-text {
       font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
-      font-variant-ligatures: common-ligatures discretionary-ligatures contextual;
-      font-feature-settings: "liga" 1, "mset" 1, "calt" 1;
       text-rendering: optimizeLegibility;
       direction: rtl;
       unicode-bidi: isolate;
       line-height: 2.8 !important;
     }
 
-    /* SVG Ayah Emblem Container */
     .ayah-container {
       display: inline-flex !important;
       align-items: center;
@@ -85,64 +73,59 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 dark:bg-gray-900 dark:text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
 
-  <!-- TOP HEADER & NAVIGATION TOOLBAR -->
-  <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
-    
+  <!-- NAVIGATION HEADER -->
+  <header class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-sky-600 dark:text-sky-400 font-bold text-xl tracking-wide hover:opacity-80 transition">
+      <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-sky-400 font-bold text-xl tracking-wide">
         <span>📖</span>
         <span>Quran Indo-Pak Hifz</span>
       </a>
 
       <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold transition">Surah</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">Custom Range</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">Juz (Para)</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition">15-Line Page</button>
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition">Surah</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Custom Range</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Juz (Para)</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">15-Line Page</button>
       </div>
 
       <div class="flex items-center space-x-2">
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500 transition">
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-800 text-gray-300 text-xs font-semibold border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500">
           <option value="verse">🔢 Verse-by-Verse</option>
           <option value="reading-arabic">📜 Reading (Arabic)</option>
           <option value="reading-translation">🌐 Reading (Translation)</option>
         </select>
-
-        <button onclick="toggleTheme()" class="p-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 transition" title="Toggle Light/Dark Mode">
-          <span id="themeIcon">🌙</span>
-        </button>
       </div>
     </div>
 
-    <div class="w-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
+    <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
       <div id="controlsSurah" class="flex items-center space-x-2">
-        <span class="text-xs text-gray-500 dark:text-gray-400">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate('/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <span class="text-xs text-gray-400">Surah:</span>
+        <select id="surahSelect" onchange="if(this.value) navigate('/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
           <option value="">Select Surah...</option>
         </select>
       </div>
 
       <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-2">
         <div class="flex items-center space-x-1.5">
-          <span class="text-xs text-gray-500 dark:text-gray-400">From:</span>
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500">
+          <span class="text-xs text-gray-400">From:</span>
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5">
             <option value="">Start Surah</option>
           </select>
           <span class="text-xs text-gray-400">:</span>
-          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-sky-500" />
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
         </div>
 
         <span class="text-sky-500 font-bold px-1">➔</span>
 
         <div class="flex items-center space-x-1.5">
-          <span class="text-xs text-gray-500 dark:text-gray-400">To:</span>
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500">
+          <span class="text-xs text-gray-400">To:</span>
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5">
             <option value="">End Surah</option>
           </select>
           <span class="text-xs text-gray-400">:</span>
-          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-sky-500" />
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
         </div>
 
         <button onclick="applyCrossSurahRange()" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
@@ -151,31 +134,30 @@
       </div>
 
       <div id="controlsJuz" class="hidden items-center space-x-2">
-        <span class="text-xs text-gray-500 dark:text-gray-400">Juz (Para):</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('/juz/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <span class="text-xs text-gray-400">Juz (Para):</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('/juz/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
 
       <div id="controlsPage" class="hidden items-center space-x-2">
-        <span class="text-xs text-gray-500 dark:text-gray-400">15-Line Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+        <span class="text-xs text-gray-400">15-Line Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
           <option value="">Select Page (1-604)...</option>
         </select>
       </div>
     </div>
   </header>
 
-  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
-  </main>
+  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto"></main>
 
   <script>
     const API_BASE = "https://api.alquran.cloud/v1";
+    const API_EDITION = "quran-quran-portal"; // Al Quran Cloud valid Indo-Pak script key
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     
     let chaptersData = [];
     const translationCache = {};
-    
     let displayMode = "verse";
 
     const INDOPAK_JUZ_BOUNDARIES = {
@@ -194,19 +176,13 @@
 
     function sanitizeArabicText(str) {
       if (!str) return "";
-      return str
-        .replace(/[\u25A0-\u25FF\u2B00-\u2BFF]/g, '')
-        .replace(/[\u200B-\u200D\uFEFF]/g, '')
-        .replace(/\u00A0/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      return str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
     function getAyahMarkerSvg(ayahNum) {
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full text-sky-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
-            <path d="M18 6c-6.63 0-12 5.37-12 12s5.37 12 12 12 12-5.37 12-12S24.63 6 18 6zm0 22c-5.52 0-10-4.48-10-10s4.48-10 10-10 10 4.48 10 10-4.48 10-10 10z" opacity="0.4"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
         </span>&nbsp;`;
@@ -215,11 +191,11 @@
     function getPageSeparatorHtml(pageNum) {
       return `
         <div class="my-8 flex items-center justify-center gap-4 w-full" dir="ltr">
-          <div class="flex-1 border-b border-sky-500/40 dark:border-sky-500/30"></div>
-          <div class="px-4 py-1 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-600 dark:text-sky-400 font-bold text-xs tracking-wider uppercase">
+          <div class="flex-1 border-b border-sky-500/30"></div>
+          <div class="px-4 py-1 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 font-bold text-xs">
             Page ${pageNum}
           </div>
-          <div class="flex-1 border-b border-sky-500/40 dark:border-sky-500/30"></div>
+          <div class="flex-1 border-b border-sky-500/30"></div>
         </div>
       `;
     }
@@ -229,7 +205,6 @@
       const rawHash = window.location.hash.replace('#', '') || '/';
       const [pathPart, queryPart] = rawHash.split('?');
       const params = new URLSearchParams(queryPart || '');
-      
       params.set('mode', newMode);
       window.location.hash = `#${pathPart}?${params.toString()}`;
     }
@@ -237,11 +212,7 @@
     function navigate(path) {
       const [pathPart, queryPart] = path.split('?');
       const params = new URLSearchParams(queryPart || '');
-      
-      if (displayMode && displayMode !== 'verse') {
-        params.set('mode', displayMode);
-      }
-      
+      if (displayMode && displayMode !== 'verse') params.set('mode', displayMode);
       const queryString = params.toString();
       window.location.hash = queryString ? `${pathPart}?${queryString}` : pathPart;
     }
@@ -253,14 +224,10 @@
       const [hash, queryPart] = rawHash.split('?');
       const urlParams = new URLSearchParams(queryPart || '');
       
-      if (urlParams.has('mode')) {
-        displayMode = urlParams.get('mode');
-      }
+      if (urlParams.has('mode')) displayMode = urlParams.get('mode');
       document.getElementById("displayModeSelect").value = displayMode;
 
-      if (chaptersData.length === 0) {
-        await loadChapters();
-      }
+      if (chaptersData.length === 0) await loadChapters();
 
       resetNavControls();
 
@@ -312,17 +279,15 @@
     }
 
     function setNavMode(mode) {
-      const modes = ['surah', 'range', 'juz', 'page'];
-      modes.forEach(m => {
+      ['surah', 'range', 'juz', 'page'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
-        
         if (m === mode) {
-          tab.className = "px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition";
           ctrl.classList.remove("hidden");
           ctrl.classList.add("flex");
         } else {
-          tab.className = "px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-sky-500 transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition";
           ctrl.classList.add("hidden");
           ctrl.classList.remove("flex");
         }
@@ -339,6 +304,8 @@
       try {
         const res = await fetch(`${API_BASE}/surah`);
         const data = await res.json();
+        if (data.code !== 200) throw new Error("API Error fetching chapters");
+        
         chaptersData = data.data.map(c => ({
           id: c.number,
           name_simple: c.englishName,
@@ -402,29 +369,27 @@
 
       try {
         const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
-        if (!res.ok) throw new Error(`Failed to load translation: ${res.status}`);
+        if (!res.ok) throw new Error(`Failed to load translation`);
         const data = await res.json();
         
         const map = {};
         for (let i = 1; i < data.length; i++) {
           const item = data[i];
-          if (Array.isArray(item) && item.length >= 2) {
-            map[item[0]] = item[1];
-          }
+          if (Array.isArray(item) && item.length >= 2) map[item[0]] = item[1];
         }
 
         translationCache[surahId] = map;
         return map;
       } catch (err) {
-        console.error(`Error loading translation for surah ${surahId}:`, err);
+        console.error(`Error loading translation:`, err);
         return {};
       }
     }
 
     async function fetchChapterVerses(surahId) {
-      const res = await fetch(`${API_BASE}/surah/${surahId}/quran-indopak`);
-      if (!res.ok) throw new Error(`API Error: ${res.status}`);
+      const res = await fetch(`${API_BASE}/surah/${surahId}/${API_EDITION}`);
       const data = await res.json();
+      if (data.code !== 200) throw new Error(`API Error: ${data.status}`);
       
       return data.data.ayahs.map(a => ({
         verse_key: `${surahId}:${a.numberInSurah}`,
@@ -439,25 +404,24 @@
 
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
-          <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">The Noble Quran</h1>
-          <p class="text-sky-600 dark:text-sky-400 font-medium text-xs">Indo-Pakistani Script (Powered by Al Quran Cloud)</p>
-          <p class="text-gray-600 dark:text-gray-400 text-xs">Read by Surah, Exact Indo-Pak Juz, 15-Line Page, or set a custom range across multiple Surahs.</p>
+          <h1 class="text-3xl font-extrabold text-white">The Noble Quran</h1>
+          <p class="text-sky-400 font-medium text-xs">Indo-Pakistani Script (Powered by Al Quran Cloud)</p>
         </div>
 
         <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('/${c.id}'); return false;" 
-               class="bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700/60 hover:border-sky-500/50 p-3.5 rounded-xl transition duration-200 flex items-center justify-between group shadow-sm dark:shadow-none">
+               class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 hover:border-sky-500/50 p-3.5 rounded-xl transition duration-200 flex items-center justify-between group">
               <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-xs font-bold text-sky-600 dark:text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition">
+                <div class="w-9 h-9 rounded-lg bg-gray-900/80 border border-gray-700 flex items-center justify-center text-xs font-bold text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div>
-                  <div class="font-semibold text-sm text-gray-900 dark:text-gray-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition">${c.name_simple}</div>
-                  <div class="text-[11px] text-gray-500 dark:text-gray-400">${c.verses_count} Verses</div>
+                  <div class="font-semibold text-sm text-gray-100 group-hover:text-sky-400 transition">${c.name_simple}</div>
+                  <div class="text-[11px] text-gray-400">${c.verses_count} Verses</div>
                 </div>
               </div>
-              <div class="font-indopak text-lg text-gray-700 dark:text-gray-300" dir="rtl">${c.name_arabic}</div>
+              <div class="font-indopak text-lg text-gray-300" dir="rtl">${c.name_arabic}</div>
             </a>
           `).join("")}
         </div>
@@ -478,15 +442,15 @@
         ]);
 
         let html = `
-          <div class="w-full bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden shadow-sm dark:shadow-none">
+          <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
             <div class="space-y-2 relative z-10">
-              <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">${surahMeta.name_simple}</h1>
-              <p class="text-sky-600 dark:text-sky-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
-              <div class="text-3xl font-indopak text-gray-800 dark:text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+              <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
+              <p class="text-sky-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+              <div class="text-3xl font-indopak text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
 
             ${surahId !== 1 && surahId !== 9 ? `
-              <div class="mt-6 font-indopak text-2xl md:text-3xl text-sky-600 dark:text-sky-400 border-t border-gray-200 dark:border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
+              <div class="mt-6 font-indopak text-2xl md:text-3xl text-sky-400 border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -506,12 +470,6 @@
 
     async function renderCrossSurahRange(fromSurah, fromAyah, toSurah, toAyah, customHeaderTitle = null) {
       const app = document.getElementById("app");
-      
-      if (fromSurah > toSurah || (fromSurah === toSurah && fromAyah > toAyah)) {
-        app.innerHTML = `<div class="text-center py-20 text-amber-500 font-semibold">Invalid range. Start point must be before end point.</div>`;
-        return;
-      }
-
       const startMeta = chaptersData.find(c => c.id === fromSurah);
       const endMeta = chaptersData.find(c => c.id === toSurah);
 
@@ -528,11 +486,8 @@
             fetchSurahTranslation(sId)
           ]);
 
-          let startFilter = 1;
-          let endFilter = meta.verses_count;
-
-          if (sId === fromSurah) startFilter = fromAyah;
-          if (sId === toSurah) endFilter = toAyah;
+          let startFilter = (sId === fromSurah) ? fromAyah : 1;
+          let endFilter = (sId === toSurah) ? toAyah : meta.verses_count;
 
           const filtered = verses.filter(v => {
             const num = parseInt(v.verse_key.split(":")[1]);
@@ -543,15 +498,14 @@
             surahMeta: meta,
             verses: filtered,
             translations: translations,
-            isStartSection: sId === fromSurah,
             showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
           });
         }
 
         let html = `
-          <div class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-sky-500/30 rounded-2xl p-6 mb-8 text-center shadow-sm dark:shadow-none">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-            <p class="text-sky-600 dark:text-sky-400 font-medium text-sm mt-1">
+          <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+            <p class="text-sky-400 font-medium text-sm mt-1">
               ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
             </p>
           </div>
@@ -560,16 +514,16 @@
         compiledSections.forEach(section => {
           html += `
             <div class="mb-10">
-              <div class="bg-gray-100 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
                 <div>
-                  <h2 class="text-lg font-bold text-gray-900 dark:text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">${section.surahMeta.translated_name.name}</span>
+                  <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
+                  <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
                 </div>
-                <div class="font-indopak text-2xl text-sky-600 dark:text-sky-400" dir="rtl">${section.surahMeta.name_arabic}</div>
+                <div class="font-indopak text-2xl text-sky-400" dir="rtl">${section.surahMeta.name_arabic}</div>
               </div>
 
               ${section.showBismillah ? `
-                <div class="text-center font-indopak text-2xl text-sky-600 dark:text-sky-400 py-3 mb-6 bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800" dir="rtl">
+                <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
                   بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
                 </div>
               ` : ''}
@@ -590,11 +544,7 @@
 
     async function renderJuz(juzNumber) {
       const bounds = INDOPAK_JUZ_BOUNDARIES[juzNumber];
-      if (!bounds) {
-        render404();
-        return;
-      }
-
+      if (!bounds) { render404(); return; }
       const [fromS, fromA, toS, toA] = bounds;
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
@@ -605,16 +555,12 @@
       showLoading(`Loading Page ${pageNumber}...`);
 
       try {
-        const res = await fetch(`${API_BASE}/page/${pageNumber}/quran-indopak`);
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        const res = await fetch(`${API_BASE}/page/${pageNumber}/${API_EDITION}`);
         const data = await res.json();
         
-        const ayahs = data.data.ayahs;
-        if (!ayahs || ayahs.length === 0) {
-          render404();
-          return;
-        }
+        if (data.code !== 200 || !data.data || !data.data.ayahs) throw new Error("API error fetching page");
 
+        const ayahs = data.data.ayahs;
         const verses = ayahs.map(a => ({
           verse_key: `${a.surah.number}:${a.numberInSurah}`,
           text_indopak: a.text,
@@ -632,23 +578,13 @@
         const nextPage = pageNumber < 604 ? pageNumber + 1 : null;
 
         let html = `
-          <div class="w-full bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/80 rounded-2xl p-4 md:p-6 mb-8 flex items-center justify-between shadow-sm dark:shadow-none">
-            ${prevPage ? `
-              <a href="#/page/${prevPage}" onclick="navigate('/page/${prevPage}'); return false;" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-600 dark:text-sky-400 transition">
-                ← Page ${prevPage}
-              </a>
-            ` : '<div></div>'}
-
+          <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-4 md:p-6 mb-8 flex items-center justify-between">
+            ${prevPage ? `<a href="#/page/${prevPage}" onclick="navigate('/page/${prevPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-400 transition">← Page ${prevPage}</a>` : '<div></div>'}
             <div class="text-center">
-              <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">Page ${pageNumber}</h1>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Al Quran Cloud - Indo-Pak Standard</p>
+              <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNumber}</h1>
+              <p class="text-xs text-gray-400 mt-0.5">Al Quran Cloud - Indo-Pak Standard</p>
             </div>
-
-            ${nextPage ? `
-              <a href="#/page/${nextPage}" onclick="navigate('/page/${nextPage}'); return false;" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-600 dark:text-sky-400 transition">
-                Page ${nextPage} →
-              </a>
-            ` : '<div></div>'}
+            ${nextPage ? `<a href="#/page/${nextPage}" onclick="navigate('/page/${nextPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-400 transition">Page ${nextPage} →</a>` : '<div></div>'}
           </div>
 
           ${renderContent(verses, translationMaps)}
@@ -664,18 +600,13 @@
     }
 
     function renderContent(verses, translations) {
-      if (displayMode === "reading-arabic") {
-        return renderReadingArabicMode(verses);
-      } else if (displayMode === "reading-translation") {
-        return renderReadingTranslationMode(verses, translations);
-      }
+      if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
+      if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
       return renderVerseByVerse(verses, translations);
     }
 
-    /* MODE 1: VERSE BY VERSE */
     function renderVerseByVerse(verses, translations) {
       let currentPage = null;
-
       return `
         <div class="w-full space-y-4">
           ${verses.map(v => {
@@ -689,37 +620,19 @@
               pageHeader = getPageSeparatorHtml(currentPage);
             }
 
-            let translatedText = "";
-            if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
-              translatedText = translations[surahNum][ayahNum] || "";
-            } else {
-              translatedText = translations[ayahNum] || "";
-            }
+            let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? translations[surahNum][ayahNum] : "";
 
             return `
               ${pageHeader}
-              <div id="verse-${v.verse_key}" class="w-full bg-white dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 rounded-xl p-5 md:p-8 transition duration-150 flex flex-col space-y-4 shadow-sm dark:shadow-none">
-                
-                <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/40 pb-3">
-                  <span class="px-3 py-1 bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold rounded-full">
-                    ${v.verse_key}
-                  </span>
-
-                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                    📋 Copy
-                  </button>
+              <div id="verse-${v.verse_key}" class="w-full bg-gray-800/40 hover:bg-gray-800/70 border border-gray-800/80 hover:border-gray-700 rounded-xl p-5 md:p-8 flex flex-col space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-700/40 pb-3">
+                  <span class="px-3 py-1 bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
+                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\\n\\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-sky-400 transition">📋 Copy</button>
                 </div>
-
-                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 px-2 pt-2 leading-relaxed">
+                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-100 px-2 pt-2 leading-relaxed">
                   ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
-
-                ${translatedText ? `
-                  <div class="text-left text-sm md:text-base text-gray-700 dark:text-gray-300 border-t border-gray-100 dark:border-gray-700/40 pt-3 mt-1 leading-relaxed">
-                    ${translatedText}
-                  </div>
-                ` : ''}
-
+                ${translatedText ? `<div class="text-left text-sm md:text-base text-gray-300 border-t border-gray-700/40 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
           }).join("")}
@@ -727,7 +640,6 @@
       `;
     }
 
-    /* MODE 2: READING MODE (ARABIC ONLY WITH FIXED JUSTIFICATION) */
     function renderReadingArabicMode(verses) {
       let currentPage = null;
       let html = '<div class="w-full space-y-6">';
@@ -740,13 +652,7 @@
 
         if (v.page_number && v.page_number !== currentPage) {
           if (arabicParagraph) {
-            html += `
-              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-4 md:p-8 shadow-sm dark:shadow-none my-4">
-                <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
-                  ${arabicParagraph}
-                </div>
-              </div>
-            `;
+            html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4"><div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div></div>`;
             arabicParagraph = "";
           }
           currentPage = v.page_number;
@@ -756,13 +662,7 @@
         arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
 
         if (index === verses.length - 1 && arabicParagraph) {
-          html += `
-            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-4 md:p-8 shadow-sm dark:shadow-none my-4">
-              <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-900 dark:text-gray-100 leading-[2.8] md:leading-[3.2]">
-                ${arabicParagraph}
-              </div>
-            </div>
-          `;
+          html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4"><div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div></div>`;
         }
       });
 
@@ -770,7 +670,6 @@
       return html;
     }
 
-    /* MODE 3: READING MODE (TRANSLATION ONLY) */
     function renderReadingTranslationMode(verses, translations) {
       let currentPage = null;
       let html = '<div class="w-full space-y-6">';
@@ -778,41 +677,21 @@
 
       verses.forEach((v, index) => {
         const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
-        
-        let translatedText = "";
-        if (translations[surahNum] && typeof translations[surahNum] === 'object' && !translations[ayahNum]) {
-          translatedText = translations[surahNum][ayahNum] || "";
-        } else {
-          translatedText = translations[ayahNum] || "";
-        }
+        let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? translations[surahNum][ayahNum] : "";
 
         if (v.page_number && v.page_number !== currentPage) {
           if (translationList.length > 0) {
-            html += `
-              <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-3 shadow-sm dark:shadow-none">
-                <div class="text-left text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed space-y-2">
-                  ${translationList.map(t => `<p>${t}</p>`).join("")}
-                </div>
-              </div>
-            `;
+            html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-3"><div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-2">${translationList.map(t => `<p>${t}</p>`).join("")}</div></div>`;
             translationList = [];
           }
           currentPage = v.page_number;
           html += getPageSeparatorHtml(currentPage);
         }
 
-        if (translatedText) {
-          translationList.push(`<strong class="text-sky-600 dark:text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
-        }
+        if (translatedText) translationList.push(`<strong class="text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
 
         if (index === verses.length - 1 && translationList.length > 0) {
-          html += `
-            <div class="w-full bg-white dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800/80 rounded-2xl p-6 md:p-8 shadow-sm dark:shadow-none">
-              <div class="text-left text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed space-y-2">
-                ${translationList.map(t => `<p>${t}</p>`).join("")}
-              </div>
-            </div>
-          `;
+          html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8"><div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-2">${translationList.map(t => `<p>${t}</p>`).join("")}</div></div>`;
         }
       });
 
@@ -824,7 +703,7 @@
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-4">
           <div class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-gray-500 dark:text-gray-400 text-sm animate-pulse">${msg}</p>
+          <p class="text-gray-400 text-sm animate-pulse">${msg}</p>
         </div>
       `;
     }
@@ -838,29 +717,10 @@
       `;
     }
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      const icon = document.getElementById("themeIcon");
-      if (html.classList.contains("dark")) {
-        html.classList.remove("dark");
-        document.body.classList.replace("bg-gray-900", "bg-gray-50");
-        document.body.classList.replace("text-gray-100", "text-gray-900");
-        icon.innerText = "☀️";
-      } else {
-        html.classList.add("dark");
-        document.body.classList.replace("bg-gray-50", "bg-gray-900");
-        document.body.classList.replace("text-gray-900", "text-gray-100");
-        icon.innerText = "🌙";
-      }
-    }
-
     window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("displayModeSelect").value = displayMode;
-      if (!window.location.hash) {
-        window.location.hash = "#/";
-      } else {
-        router();
-      }
+      if (!window.location.hash) window.location.hash = "#/";
+      else router();
     });
   </script>
 </body>
