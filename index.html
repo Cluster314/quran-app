@@ -87,6 +87,7 @@
 
       <div class="flex items-center space-x-2 text-xs">
         <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition">Surah</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Page</button>
         <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Custom Range</button>
         <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Juz (Para)</button>
       </div>
@@ -105,6 +106,13 @@
         <span class="text-xs text-gray-400">Surah:</span>
         <select id="surahSelect" onchange="if(this.value) navigate('/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
           <option value="">Select Surah...</option>
+        </select>
+      </div>
+
+      <div id="controlsPage" class="hidden items-center space-x-2">
+        <span class="text-xs text-gray-400">Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
+          <option value="">Select Page (1-604)...</option>
         </select>
       </div>
 
@@ -216,6 +224,15 @@
       if (hash === "/" || hash === "") {
         setNavMode('surah');
         renderHome();
+      } else if (hash.startsWith("/page/")) {
+        setNavMode('page');
+        const pageNum = parseInt(hash.split("/")[2]);
+        if (pageNum >= 1 && pageNum <= 604) {
+          document.getElementById("pageSelect").value = pageNum;
+          renderPage(pageNum);
+        } else {
+          render404();
+        }
       } else if (hash.startsWith("/range")) {
         setNavMode('range');
         const fromS = parseInt(urlParams.get("fromSurah")) || 1;
@@ -252,7 +269,7 @@
     }
 
     function setNavMode(mode) {
-      ['surah', 'range', 'juz'].forEach(m => {
+      ['surah', 'page', 'range', 'juz'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
@@ -269,6 +286,7 @@
 
     function resetNavControls() {
       document.getElementById("surahSelect").value = "";
+      document.getElementById("pageSelect").value = "";
       document.getElementById("juzSelect").value = "";
     }
 
@@ -298,6 +316,10 @@
       document.getElementById("surahSelect").innerHTML = options;
       document.getElementById("startSurahSelect").innerHTML = options;
       document.getElementById("endSurahSelect").innerHTML = options;
+
+      let pageOpts = `<option value="">Select Page...</option>`;
+      for (let i = 1; i <= 604; i++) pageOpts += `<option value="${i}">Page ${i}</option>`;
+      document.getElementById("pageSelect").innerHTML = pageOpts;
 
       let juzOpts = `<option value="">Select Juz...</option>`;
       for (let i = 1; i <= 30; i++) juzOpts += `<option value="${i}">Juz (Para) ${i}</option>`;
@@ -376,6 +398,19 @@
       }));
     }
 
+    async function fetchPageVerses(pageNum) {
+      const res = await fetch(`${API_BASE}/page/${pageNum}/${API_EDITION}`);
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(`API Error: ${data.status}`);
+
+      return data.data.ayahs.map(a => ({
+        verse_key: `${a.surah.number}:${a.numberInSurah}`,
+        surah_id: a.surah.number,
+        ayah_num: a.numberInSurah,
+        text_indopak: a.text
+      }));
+    }
+
     function renderHome() {
       const app = document.getElementById("app");
       document.title = "The Noble Quran - Indo-Pak Reader";
@@ -443,6 +478,88 @@
       } catch (err) {
         console.error(err);
         app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load verses. Please try refreshing.</div>`;
+      }
+    }
+
+    async function renderPage(pageNum) {
+      const app = document.getElementById("app");
+      document.title = `Page ${pageNum} - Indo-Pak Quran`;
+      showLoading(`Loading Page ${pageNum}...`);
+
+      try {
+        const pageVerses = await fetchPageVerses(pageNum);
+
+        // Group verses by Surah
+        const surahGroups = {};
+        const surahIds = [];
+
+        pageVerses.forEach(v => {
+          if (!surahGroups[v.surah_id]) {
+            surahGroups[v.surah_id] = [];
+            surahIds.push(v.surah_id);
+          }
+          surahGroups[v.surah_id].push(v);
+        });
+
+        // Fetch translations for all involved Surahs
+        const translationPromises = surahIds.map(sId => fetchSurahTranslation(sId));
+        const translationResults = await Promise.all(translationPromises);
+
+        const pageTranslations = {};
+        surahIds.forEach((sId, index) => {
+          pageTranslations[sId] = translationResults[index];
+        });
+
+        let html = `
+          <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+            <button ${pageNum > 1 ? `onclick="navigate('/page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+              ⬅ Previous
+            </button>
+            
+            <div>
+              <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNum}</h1>
+              <p class="text-sky-400 font-medium text-xs mt-1">Page ${pageNum} of 604</p>
+            </div>
+
+            <button ${pageNum < 604 ? `onclick="navigate('/page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum >= 604 ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+              Next ➡
+            </button>
+          </div>
+        `;
+
+        surahIds.forEach(sId => {
+          const surahMeta = chaptersData.find(c => c.id === sId);
+          const verses = surahGroups[sId];
+          const translations = pageTranslations[sId];
+          const isStartOfSurah = verses[0].ayah_num === 1;
+
+          html += `
+            <div class="mb-10">
+              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+                <div>
+                  <h2 class="text-lg font-bold text-white">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
+                  <span class="text-xs text-gray-400">${surahMeta.translated_name.name}</span>
+                </div>
+                <div class="font-indopak text-2xl text-sky-400" dir="rtl">${surahMeta.name_arabic}</div>
+              </div>
+
+              ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
+                <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+                  بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+                </div>
+              ` : ''}
+
+              ${renderContent(verses, translations)}
+            </div>
+          `;
+        });
+
+        app.innerHTML = html;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+      } catch (err) {
+        console.error(err);
+        app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load page. Please try again.</div>`;
       }
     }
 
