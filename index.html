@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Noble Quran - Indo-Pak Hifz Reader</title>
+  <title>The Noble Quran - Indo-Pak Reader</title>
   
-  <!-- Favicon Fixes -->
+  <!-- Inline SVG Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <link rel="alternate icon" href="https://quran.com/favicon.ico">
 
@@ -82,14 +82,13 @@
     <div class="flex items-center justify-between w-full">
       <a href="#/" onclick="navigate('/'); return false;" class="flex items-center space-x-2 text-sky-400 font-bold text-xl tracking-wide">
         <span>📖</span>
-        <span>Quran Indo-Pak Hifz</span>
+        <span>Quran Indo-Pak</span>
       </a>
 
       <div class="flex items-center space-x-2 text-xs">
         <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition">Surah</button>
         <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Custom Range</button>
         <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Juz (Para)</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">15-Line Page</button>
       </div>
 
       <div class="flex items-center space-x-2">
@@ -141,13 +140,6 @@
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
-
-      <div id="controlsPage" class="hidden items-center space-x-2">
-        <span class="text-xs text-gray-400">15-Line Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('/page/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
-          <option value="">Select Page (1-604)...</option>
-        </select>
-      </div>
     </div>
   </header>
 
@@ -188,18 +180,6 @@
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
         </span>&nbsp;`;
-    }
-
-    function getPageSeparatorHtml(pageNum) {
-      return `
-        <div class="my-8 flex items-center justify-center gap-4 w-full" dir="ltr">
-          <div class="flex-1 border-b border-sky-500/30"></div>
-          <div class="px-4 py-1 bg-sky-500/10 border border-sky-500/30 rounded-full text-sky-400 font-bold text-xs">
-            Page ${pageNum}
-          </div>
-          <div class="flex-1 border-b border-sky-500/30"></div>
-        </div>
-      `;
     }
 
     function changeDisplayMode(newMode) {
@@ -258,15 +238,6 @@
         } else {
           render404();
         }
-      } else if (hash.startsWith("/page/")) {
-        setNavMode('page');
-        const pageId = parseInt(hash.split("/")[2]);
-        if (pageId >= 1 && pageId <= 604) {
-          document.getElementById("pageSelect").value = pageId;
-          renderPage(pageId);
-        } else {
-          render404();
-        }
       } else {
         const parts = hash.split("/");
         const id = parseInt(parts[1] || parts[0]);
@@ -281,7 +252,7 @@
     }
 
     function setNavMode(mode) {
-      ['surah', 'range', 'juz', 'page'].forEach(m => {
+      ['surah', 'range', 'juz'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
@@ -299,7 +270,6 @@
     function resetNavControls() {
       document.getElementById("surahSelect").value = "";
       document.getElementById("juzSelect").value = "";
-      document.getElementById("pageSelect").value = "";
     }
 
     async function loadChapters() {
@@ -332,10 +302,6 @@
       let juzOpts = `<option value="">Select Juz...</option>`;
       for (let i = 1; i <= 30; i++) juzOpts += `<option value="${i}">Juz (Para) ${i}</option>`;
       document.getElementById("juzSelect").innerHTML = juzOpts;
-
-      let pageOpts = `<option value="">Select Page...</option>`;
-      for (let i = 1; i <= 604; i++) pageOpts += `<option value="${i}">Page ${i}</option>`;
-      document.getElementById("pageSelect").innerHTML = pageOpts;
     }
 
     function updateStartAyahMax() {
@@ -378,8 +344,16 @@
         if (Array.isArray(data)) {
           data.forEach(item => {
             if (Array.isArray(item) && item.length >= 2 && typeof item[0] === 'number') {
-              map[item[0]] = String(item[1]); // Ensured full string parsing
+              map[item[0]] = Array.isArray(item[1]) ? item[1].join(' ') : String(item[1]);
+            } else if (typeof item === 'object' && item !== null) {
+              const num = item.ayah || item.verse || item.id;
+              const text = item.text || item.translation;
+              if (num && text) map[num] = String(text);
             }
+          });
+        } else if (typeof data === 'object' && data !== null) {
+          Object.keys(data).forEach(key => {
+            map[key] = String(data[key]);
           });
         }
 
@@ -398,14 +372,13 @@
       
       return data.data.ayahs.map(a => ({
         verse_key: `${surahId}:${a.numberInSurah}`,
-        text_indopak: a.text,
-        page_number: a.page
+        text_indopak: a.text
       }));
     }
 
     function renderHome() {
       const app = document.getElementById("app");
-      document.title = "The Noble Quran - Indo-Pak Hifz Reader";
+      document.title = "The Noble Quran - Indo-Pak Reader";
 
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
@@ -554,56 +527,6 @@
       renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    async function renderPage(pageNumber) {
-      const app = document.getElementById("app");
-      document.title = `Page ${pageNumber} - Indo-Pak Hifz`;
-      showLoading(`Loading Page ${pageNumber}...`);
-
-      try {
-        const res = await fetch(`${API_BASE}/page/${pageNumber}/${API_EDITION}`);
-        const data = await res.json();
-        
-        if (data.code !== 200 || !data.data || !data.data.ayahs) throw new Error("API error fetching page");
-
-        const ayahs = data.data.ayahs;
-        const verses = ayahs.map(a => ({
-          verse_key: `${a.surah.number}:${a.numberInSurah}`,
-          text_indopak: a.text,
-          page_number: a.page
-        }));
-
-        const uniqueSurahs = [...new Set(ayahs.map(a => a.surah.number))];
-        const translationMaps = {};
-        
-        await Promise.all(uniqueSurahs.map(async sId => {
-          translationMaps[sId] = await fetchSurahTranslation(sId);
-        }));
-
-        const prevPage = pageNumber > 1 ? pageNumber - 1 : null;
-        const nextPage = pageNumber < 604 ? pageNumber + 1 : null;
-
-        let html = `
-          <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-4 md:p-6 mb-8 flex items-center justify-between">
-            ${prevPage ? `<a href="#/page/${prevPage}" onclick="navigate('/page/${prevPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-400 transition">← Page ${prevPage}</a>` : '<div></div>'}
-            <div class="text-center">
-              <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNumber}</h1>
-              <p class="text-xs text-gray-400 mt-0.5">Al Quran Cloud - Indo-Pak Standard</p>
-            </div>
-            ${nextPage ? `<a href="#/page/${nextPage}" onclick="navigate('/page/${nextPage}'); return false;" class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 text-xs md:text-sm font-semibold rounded-lg text-sky-400 transition">Page ${nextPage} →</a>` : '<div></div>'}
-          </div>
-
-          ${renderContent(verses, translationMaps)}
-        `;
-
-        app.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-
-      } catch (err) {
-        console.error(err);
-        app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load Page ${pageNumber}.</div>`;
-      }
-    }
-
     function renderContent(verses, translations) {
       if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
@@ -611,24 +534,16 @@
     }
 
     function renderVerseByVerse(verses, translations) {
-      let currentPage = null;
       return `
         <div class="w-full space-y-4">
           ${verses.map(v => {
             const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
             const cleanedArabic = sanitizeArabicText(v.text_indopak);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
-            
-            let pageHeader = "";
-            if (v.page_number && v.page_number !== currentPage) {
-              currentPage = v.page_number;
-              pageHeader = getPageSeparatorHtml(currentPage);
-            }
 
-            let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? String(translations[surahNum][ayahNum]) : "";
+            let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
             return `
-              ${pageHeader}
               <div id="verse-${v.verse_key}" class="w-full bg-gray-800/40 hover:bg-gray-800/70 border border-gray-800/80 hover:border-gray-700 rounded-xl p-5 md:p-8 flex flex-col space-y-4">
                 <div class="flex items-center justify-between border-b border-gray-700/40 pb-3">
                   <span class="px-3 py-1 bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
@@ -646,62 +561,40 @@
     }
 
     function renderReadingArabicMode(verses) {
-      let currentPage = null;
-      let html = '<div class="w-full space-y-6">';
       let arabicParagraph = "";
 
-      verses.forEach((v, index) => {
+      verses.forEach(v => {
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         const cleanedArabic = sanitizeArabicText(v.text_indopak);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
-
-        if (v.page_number && v.page_number !== currentPage) {
-          if (arabicParagraph) {
-            html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4"><div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div></div>`;
-            arabicParagraph = "";
-          }
-          currentPage = v.page_number;
-          html += getPageSeparatorHtml(currentPage);
-        }
-
         arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
-
-        if (index === verses.length - 1 && arabicParagraph) {
-          html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4"><div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div></div>`;
-        }
       });
 
-      html += '</div>';
-      return html;
+      return `
+        <div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4">
+          <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div>
+        </div>
+      `;
     }
 
     function renderReadingTranslationMode(verses, translations) {
-      let currentPage = null;
-      let html = '<div class="w-full space-y-6">';
       let translationList = [];
 
-      verses.forEach((v, index) => {
-        const [surahNum, ayahNum] = v.verse_key.split(":").map(Number);
-        let translatedText = (translations[surahNum] && translations[surahNum][ayahNum]) ? String(translations[surahNum][ayahNum]) : "";
-
-        if (v.page_number && v.page_number !== currentPage) {
-          if (translationList.length > 0) {
-            html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8 space-y-3"><div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-2">${translationList.map(t => `<p>${t}</p>`).join("")}</div></div>`;
-            translationList = [];
-          }
-          currentPage = v.page_number;
-          html += getPageSeparatorHtml(currentPage);
-        }
-
-        if (translatedText) translationList.push(`<strong class="text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
-
-        if (index === verses.length - 1 && translationList.length > 0) {
-          html += `<div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8"><div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-2">${translationList.map(t => `<p>${t}</p>`).join("")}</div></div>`;
+      verses.forEach(v => {
+        const [, ayahNum] = v.verse_key.split(":").map(Number);
+        let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
+        if (translatedText) {
+          translationList.push(`<strong class="text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
         }
       });
 
-      html += '</div>';
-      return html;
+      return `
+        <div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8">
+          <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
+            ${translationList.map(t => `<p>${t}</p>`).join("")}
+          </div>
+        </div>
+      `;
     }
 
     function showLoading(msg) {
