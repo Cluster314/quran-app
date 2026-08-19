@@ -15,10 +15,95 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { background-color: #111827; color: #f3f4f6; }
+    /* Theme CSS Variables */
+    :root[data-theme="dark"] {
+      --bg-body: #111827;
+      --bg-header: #111827;
+      --bg-card: #1f2937;
+      --bg-inner: #111827;
+      --border-color: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-arabic: #f3f4f6;
+      --accent: #38bdf8;
+      --rukoo-color: #f59e0b;
+      --scrollbar-thumb: #4b5563;
+    }
+
+    :root[data-theme="light"] {
+      --bg-body: #f8fafc;
+      --bg-header: #ffffff;
+      --bg-card: #ffffff;
+      --bg-inner: #f1f5f9;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-arabic: #0f172a;
+      --accent: #0284c7;
+      --rukoo-color: #d97706;
+      --scrollbar-thumb: #cbd5e1;
+    }
+
+    :root[data-theme="sepia"] {
+      --bg-body: #f4ebd9;
+      --bg-header: #ede0cb;
+      --bg-card: #eadeca;
+      --bg-inner: #e2d4be;
+      --border-color: #d3c4a8;
+      --text-main: #433422;
+      --text-muted: #78644c;
+      --text-arabic: #2d2013;
+      --accent: #b45309;
+      --rukoo-color: #b45309;
+      --scrollbar-thumb: #c4b396;
+    }
+
+    :root[data-theme="oled"] {
+      --bg-body: #000000;
+      --bg-header: #000000;
+      --bg-card: #0a0a0a;
+      --bg-inner: #000000;
+      --border-color: #262626;
+      --text-main: #ffffff;
+      --text-muted: #737373;
+      --text-arabic: #ffffff;
+      --accent: #38bdf8;
+      --rukoo-color: #fbbf24;
+      --scrollbar-thumb: #262626;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .theme-header {
+      background-color: var(--bg-header);
+      border-color: var(--border-color);
+    }
+
+    .theme-card {
+      background-color: var(--bg-card);
+      border-color: var(--border-color);
+    }
+
+    .theme-inner {
+      background-color: var(--bg-inner);
+      border-color: var(--border-color);
+    }
+
+    .theme-text-muted {
+      color: var(--text-muted);
+    }
+
+    .theme-accent-text {
+      color: var(--accent);
+    }
+
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
 
     /* Center aligned reading mode without block justification gaps */
     .reading-wrapper {
@@ -34,6 +119,7 @@
       direction: rtl;
       unicode-bidi: isolate;
       line-height: 2.8 !important;
+      color: var(--text-arabic);
     }
 
     .ayah-container {
@@ -55,7 +141,7 @@
       font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
       font-size: 0.75rem;
       font-weight: 700;
-      color: #38bdf8;
+      color: var(--accent);
       line-height: 1;
     }
 
@@ -66,30 +152,38 @@
       font-family: 'Scheherazade New', 'Amiri', serif;
       font-size: 0.85rem;
       font-weight: bold;
-      color: #f59e0b;
+      color: var(--rukoo-color);
       line-height: 1;
       pointer-events: none;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
+<body class="font-sans min-h-screen flex flex-col">
 
-  <header class="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
+  <header class="sticky top-0 z-50 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 text-blue-400 font-bold text-xl tracking-wide">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 theme-accent-text font-bold text-xl tracking-wide">
         <span>📖</span>
         <span>Quran Indo-Pak</span>
       </a>
 
       <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 text-blue-400 font-semibold transition">Surah</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Page</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Custom Range</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Juz (Para)</button>
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Page</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Custom Range</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Juz (Para)</button>
       </div>
 
       <div class="flex items-center space-x-2">
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-800 text-gray-300 text-xs font-semibold border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <!-- Theme Selector Dropdown -->
+        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="dark">🌙 Dark</option>
+          <option value="light">☀️ Light</option>
+          <option value="sepia">📜 Sepia</option>
+          <option value="oled">🖤 OLED</option>
+        </select>
+
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="verse">🔢 Verse-by-Verse</option>
           <option value="reading-arabic">📜 Reading (Arabic)</option>
           <option value="reading-translation">🌐 Reading (Translation)</option>
@@ -97,40 +191,40 @@
       </div>
     </div>
 
-    <div class="w-full bg-gray-800 border border-gray-700 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
+    <div class="w-full theme-card border rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
       <div id="controlsSurah" class="flex items-center space-x-2">
-        <span class="text-xs text-gray-400">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
+        <span class="text-xs theme-text-muted">Surah:</span>
+        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
           <option value="">Select Surah...</option>
         </select>
       </div>
 
       <div id="controlsPage" class="hidden items-center space-x-2">
-        <span class="text-xs text-gray-400">Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
+        <span class="text-xs theme-text-muted">Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
           <option value="">Select Page (1-610)...</option>
         </select>
       </div>
 
       <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-2">
         <div class="flex items-center space-x-1.5">
-          <span class="text-xs text-gray-400">From:</span>
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5">
+          <span class="text-xs theme-text-muted">From:</span>
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
             <option value="">Start Surah</option>
           </select>
-          <span class="text-xs text-gray-400">:</span>
-          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
+          <span class="text-xs theme-text-muted">:</span>
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
         </div>
 
-        <span class="text-blue-500 font-bold px-1">➔</span>
+        <span class="theme-accent-text font-bold px-1">➔</span>
 
         <div class="flex items-center space-x-1.5">
-          <span class="text-xs text-gray-400">To:</span>
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2.5 py-1.5">
+          <span class="text-xs theme-text-muted">To:</span>
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
             <option value="">End Surah</option>
           </select>
-          <span class="text-xs text-gray-400">:</span>
-          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
+          <span class="text-xs theme-text-muted">:</span>
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
         </div>
 
         <button onclick="applyCrossSurahRange()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
@@ -139,8 +233,8 @@
       </div>
 
       <div id="controlsJuz" class="hidden items-center space-x-2">
-        <span class="text-xs text-gray-400">Juz (Para):</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
+        <span class="text-xs theme-text-muted">Juz (Para):</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
@@ -150,7 +244,7 @@
   <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
     <div class="flex flex-col items-center justify-center py-20 space-y-4">
       <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-gray-400 text-sm">Initializing Quran Reader...</p>
+      <p class="theme-text-muted text-sm">Initializing Quran Reader...</p>
     </div>
   </main>
 
@@ -162,10 +256,23 @@
     let chaptersData = [];
     const translationCache = {};
     let displayMode = "verse";
+    let currentTheme = localStorage.getItem("quran_theme") || "dark";
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
     let MAX_PAGES = 610;
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("quran_theme", theme);
+      const sel = document.getElementById("themeSelect");
+      if (sel) sel.value = theme;
+    }
+
+    function changeTheme(newTheme) {
+      applyTheme(newTheme);
+    }
 
     async function loadPageMap() {
       try {
@@ -226,7 +333,7 @@
 
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           ${rukooSymbolHtml}
-          <svg viewBox="0 0 36 36" class="w-full h-full text-blue-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
@@ -238,7 +345,6 @@
         const currentRukoo = verses[i].rukoo;
         const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
         
-        // Force last verse of Surah to be a Rukoo end as requested
         const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
         const isEndOfList = (i === verses.length - 1);
 
@@ -332,7 +438,7 @@
         app.innerHTML = `
           <div class="text-center py-20 text-red-400">
             <h2 class="text-xl font-bold mb-2">Error Loading Page</h2>
-            <p class="text-sm text-gray-400">${err.message}</p>
+            <p class="text-sm theme-text-muted">${err.message}</p>
           </div>
         `;
       }
@@ -343,11 +449,11 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 text-blue-400 font-semibold transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition";
           ctrl.classList.remove("hidden");
           ctrl.classList.add("flex");
         } else {
-          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition";
+          tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition";
           ctrl.classList.add("hidden");
           ctrl.classList.remove("flex");
         }
@@ -536,24 +642,24 @@
 
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
-          <h1 class="text-3xl font-extrabold text-white">The Noble Quran</h1>
-          <p class="text-blue-400 font-medium text-xs">15-Line Indo-Pakistani Layout</p>
+          <h1 class="text-3xl font-extrabold">The Noble Quran</h1>
+          <p class="theme-accent-text font-medium text-xs">15-Line Indo-Pakistani Layout</p>
         </div>
 
         <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
-               class="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500 p-3.5 rounded-xl transition flex items-center justify-between group">
+               class="theme-card border p-3.5 rounded-xl transition flex items-center justify-between group hover:border-blue-500">
               <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center text-xs font-bold text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition">
+                <div class="w-9 h-9 rounded-lg theme-inner border flex items-center justify-center text-xs font-bold theme-accent-text group-hover:bg-blue-500 group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div>
-                  <div class="font-semibold text-sm text-gray-100 group-hover:text-blue-400 transition">${c.name_simple}</div>
-                  <div class="text-xs text-gray-400">${c.verses_count} Verses</div>
+                  <div class="font-semibold text-sm group-hover:text-blue-500 transition">${c.name_simple}</div>
+                  <div class="text-xs theme-text-muted">${c.verses_count} Verses</div>
                 </div>
               </div>
-              <div class="font-indopak text-lg text-gray-300" dir="rtl">${c.name_arabic}</div>
+              <div class="font-indopak text-lg" dir="rtl">${c.name_arabic}</div>
             </a>
           `).join("")}
         </div>
@@ -573,15 +679,15 @@
       ]);
 
       let html = `
-        <div class="w-full bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
+        <div class="w-full theme-card border rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
           <div class="space-y-2 relative z-10">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
-            <p class="text-blue-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
-            <div class="text-3xl font-indopak text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+            <h1 class="text-3xl md:text-4xl font-extrabold">${surahMeta.name_simple}</h1>
+            <p class="theme-accent-text font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <div class="text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
 
           ${surahId !== 1 && surahId !== 9 ? `
-            <div class="mt-6 font-indopak text-2xl md:text-3xl text-blue-400 border-t border-gray-700 pt-4 w-full max-w-md mx-auto" dir="rtl">
+            <div class="mt-6 font-indopak text-2xl md:text-3xl theme-accent-text border-t theme-inner pt-4 w-full max-w-md mx-auto" dir="rtl">
               بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
             </div>
           ` : ''}
@@ -621,17 +727,17 @@
       });
 
       let html = `
-        <div class="w-full bg-gray-800 border border-blue-500 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
-          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-blue-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-blue-400'}">
+        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
             ⬅ Previous
           </button>
           
           <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNum}</h1>
-            <p class="text-blue-400 font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+            <h1 class="text-2xl md:text-3xl font-extrabold">Page ${pageNum}</h1>
+            <p class="theme-accent-text font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
           </div>
 
-          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-blue-500 rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'text-blue-400'}">
+          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
             Next ➡
           </button>
         </div>
@@ -645,16 +751,16 @@
 
         html += `
           <div class="mb-10">
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-bold text-white">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
-                <span class="text-xs text-gray-400">${surahMeta.translated_name.name}</span>
+                <h2 class="text-lg font-bold">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
+                <span class="text-xs theme-text-muted">${surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl text-blue-400" dir="rtl">${surahMeta.name_arabic}</div>
+              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
 
             ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
-              <div class="text-center font-indopak text-2xl text-blue-400 py-3 mb-6 bg-gray-900 rounded-xl border border-gray-800" dir="rtl">
+              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -702,9 +808,9 @@
       }
 
       let html = `
-        <div class="w-full bg-gray-800 border border-blue-500 rounded-2xl p-6 mb-8 text-center">
-          <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-          <p class="text-blue-400 font-medium text-sm mt-1">
+        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center">
+          <h1 class="text-2xl md:text-3xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+          <p class="theme-accent-text font-medium text-sm mt-1">
             ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
           </p>
         </div>
@@ -713,16 +819,16 @@
       compiledSections.forEach(section => {
         html += `
           <div class="mb-10">
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
-                <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
+                <h2 class="text-lg font-bold">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
+                <span class="text-xs theme-text-muted">${section.surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl text-blue-400" dir="rtl">${section.surahMeta.name_arabic}</div>
+              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${section.surahMeta.name_arabic}</div>
             </div>
 
             ${section.showBismillah ? `
-              <div class="text-center font-indopak text-2xl text-blue-400 py-3 mb-6 bg-gray-900 rounded-xl border border-gray-800" dir="rtl">
+              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -758,7 +864,7 @@
             const pageMarkerHtml = pageNum ? `
               <div class="w-full flex items-center my-6">
                 <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-                <span class="px-4 py-1.5 bg-gray-800 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase">
+                <span class="px-4 py-1.5 theme-card border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase">
                   📄 Page ${pageNum}
                 </span>
                 <div class="flex-1 border-t border-blue-500 opacity-30"></div>
@@ -773,17 +879,17 @@
 
             return `
               ${pageMarkerHtml}
-              <div id="verse-${v.verse_key}" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-800 hover:border-gray-700 rounded-xl p-5 md:p-8 flex flex-col space-y-4">
+              <div id="verse-${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
                 <div class="flex items-center justify-between border-b border-gray-700 pb-3">
                   <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 bg-blue-500 bg-opacity-20 border border-blue-500 border-opacity-30 text-blue-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
+                    <span class="px-3 py-1 bg-blue-500 bg-opacity-20 border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
-                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-blue-400 transition">📋 Copy</button>
+                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs theme-text-muted hover:text-blue-400 transition">📋 Copy</button>
                 </div>
-                <div class="text-right indopak-text text-3xl md:text-4xl text-gray-100 px-2 pt-2 leading-relaxed">
+                <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
                   ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
-                ${translatedText ? `<div class="text-left text-sm md:text-base text-gray-300 border-t border-gray-700 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+                ${translatedText ? `<div class="text-left text-sm md:text-base border-t border-gray-700 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
           }).join("")}
@@ -800,7 +906,7 @@
           arabicParagraph += `
             <span class="w-full flex items-center my-8 block" contenteditable="false" dir="ltr">
               <span class="flex-1 border-t border-blue-500 opacity-30"></span>
-              <span class="px-4 py-1 bg-gray-900 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase mx-2">
+              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
               <span class="flex-1 border-t border-blue-500 opacity-30"></span>
@@ -816,8 +922,8 @@
       });
 
       return `
-        <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-4 md:p-8 my-4">
-          <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-relaxed">${arabicParagraph}</div>
+        <div class="w-full theme-card border rounded-2xl p-4 md:p-8 my-4">
+          <div class="reading-wrapper indopak-text text-3xl md:text-4xl leading-relaxed">${arabicParagraph}</div>
         </div>
       `;
     }
@@ -831,7 +937,7 @@
           items.push(`
             <div class="w-full flex items-center my-8">
               <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-              <span class="px-4 py-1 bg-gray-900 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase mx-2">
+              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
               <div class="flex-1 border-t border-blue-500 opacity-30"></div>
@@ -842,13 +948,13 @@
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
         if (translatedText) {
-          items.push(`<p><strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}</p>`);
+          items.push(`<p><strong class="theme-accent-text">[${v.verse_key}]</strong> ${translatedText}</p>`);
         }
       });
 
       return `
-        <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-6 md:p-8">
-          <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
+        <div class="w-full theme-card border rounded-2xl p-6 md:p-8">
+          <div class="text-left text-sm md:text-base leading-relaxed space-y-3">
             ${items.join("")}
           </div>
         </div>
@@ -859,7 +965,7 @@
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-4">
           <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p class="text-gray-400 text-sm animate-pulse">${msg}</p>
+          <p class="theme-text-muted text-sm animate-pulse">${msg}</p>
         </div>
       `;
     }
@@ -874,6 +980,7 @@
     }
 
     window.addEventListener("load", () => {
+      applyTheme(currentTheme);
       document.getElementById("displayModeSelect").value = displayMode;
       if (!window.location.hash) {
         window.location.hash = "#/";
