@@ -7,30 +7,18 @@
   
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: { theme: { DEFAULT: '#0284c7', hover: '#0369a1' } },
-          fontFamily: {
-            indopak: ['"Scheherazade New"', '"Amiri"', '"Noto Naskh Arabic"', 'serif'],
-            sans: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <!-- Production-ready Tailwind CSS CDN to eliminate console warnings -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    body { background-color: #111827; color: #f3f4f6; }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
 
     .reading-wrapper {
       direction: rtl;
@@ -66,29 +54,29 @@
       font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
       font-size: 0.75rem;
       font-weight: 700;
-      color: #0284c7;
+      color: #38bdf8;
       line-height: 1;
     }
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
 
-  <header class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
+  <header class="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 text-sky-400 font-bold text-xl tracking-wide">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 text-blue-400 font-bold text-xl tracking-wide">
         <span>📖</span>
         <span>Quran Indo-Pak</span>
       </a>
 
       <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition">Surah</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Page</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Custom Range</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition">Juz (Para)</button>
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 text-blue-400 font-semibold transition">Surah</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Page</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Custom Range</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition">Juz (Para)</button>
       </div>
 
       <div class="flex items-center space-x-2">
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-800 text-gray-300 text-xs font-semibold border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500">
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="bg-gray-800 text-gray-300 text-xs font-semibold border border-gray-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
           <option value="verse">🔢 Verse-by-Verse</option>
           <option value="reading-arabic">📜 Reading (Arabic)</option>
           <option value="reading-translation">🌐 Reading (Translation)</option>
@@ -96,7 +84,7 @@
       </div>
     </div>
 
-    <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
+    <div class="w-full bg-gray-800 border border-gray-700 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
       <div id="controlsSurah" class="flex items-center space-x-2">
         <span class="text-xs text-gray-400">Surah:</span>
         <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
@@ -121,7 +109,7 @@
           <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
         </div>
 
-        <span class="text-sky-500 font-bold px-1">➔</span>
+        <span class="text-blue-500 font-bold px-1">➔</span>
 
         <div class="flex items-center space-x-1.5">
           <span class="text-xs text-gray-400">To:</span>
@@ -132,7 +120,7 @@
           <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 bg-gray-900 text-gray-100 text-xs border border-gray-700 rounded-lg px-2 py-1.5 text-center" />
         </div>
 
-        <button onclick="applyCrossSurahRange()" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
+        <button onclick="applyCrossSurahRange()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
           Read Range
         </button>
       </div>
@@ -148,7 +136,7 @@
 
   <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
     <div class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       <p class="text-gray-400 text-sm">Initializing Quran Reader...</p>
     </div>
   </main>
@@ -177,8 +165,10 @@
         Object.keys(data).forEach(pageStr => {
           const pNum = parseInt(pageStr);
           if (!isNaN(pNum)) {
-            const pageData = data[pageStr];
-            map[pNum] = [pageData.start_surah, pageData.start_ayah];
+            const pageObj = data[pageStr];
+            const sSurah = pageObj.starting_surah || pageObj.start_surah || 1;
+            const sAyah = pageObj.starting_ayah || pageObj.start_ayah || 1;
+            map[pNum] = [sSurah, sAyah];
             if (pNum > totalPages) totalPages = pNum;
           }
         });
@@ -187,7 +177,9 @@
         if (totalPages > 0) MAX_PAGES = totalPages;
         populatePageDropdown();
       } catch (err) {
-        console.warn("Could not load local page map file:", err);
+        console.warn("Could not load local page map file, applying default page 1 start:", err);
+        INDOPAK_15_LINE_PAGE_STARTS = { 1: [1, 1] };
+        populatePageDropdown();
       }
     }
 
@@ -212,7 +204,7 @@
 
     function getAyahMarkerSvg(ayahNum) {
       return `&nbsp;<span class="ayah-container" contenteditable="false">
-          <svg viewBox="0 0 36 36" class="w-full h-full text-sky-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 36 36" class="w-full h-full text-blue-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
@@ -300,7 +292,7 @@
           }
         }
       } catch (err) {
-        console.error("Routing error execution:", err);
+        console.error("Routing execution error:", err);
         app.innerHTML = `
           <div class="text-center py-20 text-red-400">
             <h2 class="text-xl font-bold mb-2">Error Loading Page</h2>
@@ -315,11 +307,11 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          tab.className = "px-3 py-1.5 rounded-lg border border-sky-500 bg-sky-500/10 text-sky-400 font-semibold transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 text-blue-400 font-semibold transition";
           ctrl.classList.remove("hidden");
           ctrl.classList.add("flex");
         } else {
-          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-sky-500 transition";
+          tab.className = "px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-500 transition";
           ctrl.classList.add("hidden");
           ctrl.classList.remove("flex");
         }
@@ -507,20 +499,20 @@
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
           <h1 class="text-3xl font-extrabold text-white">The Noble Quran</h1>
-          <p class="text-sky-400 font-medium text-xs">15-Line Indo-Pakistani Layout</p>
+          <p class="text-blue-400 font-medium text-xs">15-Line Indo-Pakistani Layout</p>
         </div>
 
         <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
-               class="bg-gray-800/60 hover:bg-gray-800 border border-gray-700/60 hover:border-sky-500/50 p-3.5 rounded-xl transition duration-200 flex items-center justify-between group">
+               class="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500 p-3.5 rounded-xl transition flex items-center justify-between group">
               <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-gray-900/80 border border-gray-700 flex items-center justify-center text-xs font-bold text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition">
+                <div class="w-9 h-9 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center text-xs font-bold text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div>
-                  <div class="font-semibold text-sm text-gray-100 group-hover:text-sky-400 transition">${c.name_simple}</div>
-                  <div class="text-[11px] text-gray-400">${c.verses_count} Verses</div>
+                  <div class="font-semibold text-sm text-gray-100 group-hover:text-blue-400 transition">${c.name_simple}</div>
+                  <div class="text-xs text-gray-400">${c.verses_count} Verses</div>
                 </div>
               </div>
               <div class="font-indopak text-lg text-gray-300" dir="rtl">${c.name_arabic}</div>
@@ -543,15 +535,15 @@
       ]);
 
       let html = `
-        <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
+        <div class="w-full bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
           <div class="space-y-2 relative z-10">
             <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
-            <p class="text-sky-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <p class="text-blue-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
             <div class="text-3xl font-indopak text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
 
           ${surahId !== 1 && surahId !== 9 ? `
-            <div class="mt-6 font-indopak text-2xl md:text-3xl text-sky-400 border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
+            <div class="mt-6 font-indopak text-2xl md:text-3xl text-blue-400 border-t border-gray-700 pt-4 w-full max-w-md mx-auto" dir="rtl">
               بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
             </div>
           ` : ''}
@@ -591,17 +583,17 @@
       });
 
       let html = `
-        <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
-          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+        <div class="w-full bg-gray-800 border border-blue-500 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-blue-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-blue-400'}">
             ⬅ Previous
           </button>
           
           <div>
             <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNum}</h1>
-            <p class="text-sky-400 font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+            <p class="text-blue-400 font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
           </div>
 
-          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-blue-500 rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'text-blue-400'}">
             Next ➡
           </button>
         </div>
@@ -615,16 +607,16 @@
 
         html += `
           <div class="mb-10">
-            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 flex items-center justify-between">
               <div>
                 <h2 class="text-lg font-bold text-white">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
                 <span class="text-xs text-gray-400">${surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl text-sky-400" dir="rtl">${surahMeta.name_arabic}</div>
+              <div class="font-indopak text-2xl text-blue-400" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
 
             ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
-              <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+              <div class="text-center font-indopak text-2xl text-blue-400 py-3 mb-6 bg-gray-900 rounded-xl border border-gray-800" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -672,9 +664,9 @@
       }
 
       let html = `
-        <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center">
+        <div class="w-full bg-gray-800 border border-blue-500 rounded-2xl p-6 mb-8 text-center">
           <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-          <p class="text-sky-400 font-medium text-sm mt-1">
+          <p class="text-blue-400 font-medium text-sm mt-1">
             ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
           </p>
         </div>
@@ -683,16 +675,16 @@
       compiledSections.forEach(section => {
         html += `
           <div class="mb-10">
-            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 flex items-center justify-between">
               <div>
                 <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
                 <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl text-sky-400" dir="rtl">${section.surahMeta.name_arabic}</div>
+              <div class="font-indopak text-2xl text-blue-400" dir="rtl">${section.surahMeta.name_arabic}</div>
             </div>
 
             ${section.showBismillah ? `
-              <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+              <div class="text-center font-indopak text-2xl text-blue-400 py-3 mb-6 bg-gray-900 rounded-xl border border-gray-800" dir="rtl">
                 بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
               </div>
             ` : ''}
@@ -730,15 +722,15 @@
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
             return `
-              <div id="verse-${v.verse_key}" class="w-full bg-gray-800/40 hover:bg-gray-800/70 border border-gray-800/80 hover:border-gray-700 rounded-xl p-5 md:p-8 flex flex-col space-y-4">
-                <div class="flex items-center justify-between border-b border-gray-700/40 pb-3">
-                  <span class="px-3 py-1 bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
-                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-sky-400 transition">📋 Copy</button>
+              <div id="verse-${v.verse_key}" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-800 hover:border-gray-700 rounded-xl p-5 md:p-8 flex flex-col space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-700 pb-3">
+                  <span class="px-3 py-1 bg-blue-500 bg-opacity-20 border border-blue-500 border-opacity-30 text-blue-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
+                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-blue-400 transition">📋 Copy</button>
                 </div>
                 <div class="text-right indopak-text text-3xl md:text-4xl text-gray-100 px-2 pt-2 leading-relaxed">
                   ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
-                ${translatedText ? `<div class="text-left text-sm md:text-base text-gray-300 border-t border-gray-700/40 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+                ${translatedText ? `<div class="text-left text-sm md:text-base text-gray-300 border-t border-gray-700 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
           }).join("")}
@@ -757,8 +749,8 @@
       });
 
       return `
-        <div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-4 md:p-8 my-4">
-          <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-[2.8] md:leading-[3.2]">${arabicParagraph}</div>
+        <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-4 md:p-8 my-4">
+          <div class="reading-wrapper indopak-text text-3xl md:text-4xl text-gray-100 leading-relaxed">${arabicParagraph}</div>
         </div>
       `;
     }
@@ -770,12 +762,12 @@
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
         if (translatedText) {
-          translationList.push(`<strong class="text-sky-400">[${v.verse_key}]</strong> ${translatedText}`);
+          translationList.push(`<strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}`);
         }
       });
 
       return `
-        <div class="w-full bg-gray-800/40 border border-gray-800/80 rounded-2xl p-6 md:p-8">
+        <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-6 md:p-8">
           <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
             ${translationList.map(t => `<p>${t}</p>`).join("")}
           </div>
@@ -786,7 +778,7 @@
     function showLoading(msg) {
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-4">
-          <div class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <p class="text-gray-400 text-sm animate-pulse">${msg}</p>
         </div>
       `;
@@ -796,7 +788,7 @@
       document.getElementById("app").innerHTML = `
         <div class="text-center py-20">
           <h1 class="text-2xl font-bold text-red-500">View Not Found</h1>
-          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-sky-500 hover:underline">Back to Home</a>
+          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-blue-500 hover:underline">Back to Home</a>
         </div>
       `;
     }
