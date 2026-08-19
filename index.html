@@ -99,7 +99,7 @@
     <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
       <div id="controlsSurah" class="flex items-center space-x-2">
         <span class="text-xs text-gray-400">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate('page/' ? this.value : this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
+        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="bg-gray-900 text-gray-100 text-sm border border-gray-700 rounded-lg px-3 py-1.5">
           <option value="">Select Surah...</option>
         </select>
       </div>
@@ -146,7 +146,12 @@
     </div>
   </header>
 
-  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto"></main>
+  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
+    <div class="flex flex-col items-center justify-center py-20 space-y-4">
+      <div class="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-gray-400 text-sm">Initializing Quran Reader...</p>
+    </div>
+  </main>
 
   <script>
     const API_BASE = "https://api.alquran.cloud/v1";
@@ -162,7 +167,6 @@
 
     async function loadPageMap() {
       try {
-        // Strict relative path without leading slash
         const res = await fetch("final_610_quran_page_map.json");
         if (!res.ok) throw new Error(`HTTP status ${res.status}`);
         const data = await res.json();
@@ -183,7 +187,7 @@
         if (totalPages > 0) MAX_PAGES = totalPages;
         populatePageDropdown();
       } catch (err) {
-        console.error("Failed to fetch final_610_quran_page_map.json:", err);
+        console.warn("Could not load local page map file:", err);
       }
     }
 
@@ -233,65 +237,76 @@
       window.location.hash = queryString ? `${pathPart}?${queryString}` : pathPart;
     }
 
-    window.addEventListener("hashchange", router);
+    window.addEventListener("hashchange", () => router());
 
     async function router() {
-      const rawHash = window.location.hash.replace('#', '') || '/';
-      const [hash, queryPart] = rawHash.split('?');
-      const urlParams = new URLSearchParams(queryPart || '');
-      
-      if (urlParams.has('mode')) displayMode = urlParams.get('mode');
-      document.getElementById("displayModeSelect").value = displayMode;
+      const app = document.getElementById("app");
+      try {
+        const rawHash = window.location.hash.replace('#', '') || '/';
+        const [hash, queryPart] = rawHash.split('?');
+        const urlParams = new URLSearchParams(queryPart || '');
+        
+        if (urlParams.has('mode')) displayMode = urlParams.get('mode');
+        document.getElementById("displayModeSelect").value = displayMode;
 
-      if (chaptersData.length === 0) await loadChapters();
-      if (Object.keys(INDOPAK_15_LINE_PAGE_STARTS).length === 0) await loadPageMap();
+        if (chaptersData.length === 0) await loadChapters();
+        if (Object.keys(INDOPAK_15_LINE_PAGE_STARTS).length === 0) await loadPageMap();
 
-      resetNavControls();
+        resetNavControls();
 
-      if (hash === "/" || hash === "") {
-        setNavMode('surah');
-        renderHome();
-      } else if (hash.startsWith("/page/")) {
-        setNavMode('page');
-        const pageNum = parseInt(hash.split("/")[2]);
-        if (pageNum >= 1 && pageNum <= MAX_PAGES) {
-          document.getElementById("pageSelect").value = pageNum;
-          renderPage(pageNum);
-        } else {
-          render404();
-        }
-      } else if (hash.startsWith("/range")) {
-        setNavMode('range');
-        const fromS = parseInt(urlParams.get("fromSurah")) || 1;
-        const fromA = parseInt(urlParams.get("fromAyah")) || 1;
-        const toS = parseInt(urlParams.get("toSurah")) || fromS;
-        const toA = parseInt(urlParams.get("toAyah")) || 1;
-
-        document.getElementById("startSurahSelect").value = fromS;
-        document.getElementById("startAyahInput").value = fromA;
-        document.getElementById("endSurahSelect").value = toS;
-        document.getElementById("endAyahInput").value = toA;
-
-        renderCrossSurahRange(fromS, fromA, toS, toA);
-      } else if (hash.startsWith("/juz/")) {
-        setNavMode('juz');
-        const juzId = parseInt(hash.split("/")[2]);
-        if (juzId >= 1 && juzId <= 30) {
-          document.getElementById("juzSelect").value = juzId;
-          renderJuz(juzId);
-        } else {
-          render404();
-        }
-      } else {
-        const parts = hash.split("/");
-        const id = parseInt(parts[1] || parts[0]);
-        if (!isNaN(id) && id >= 1 && id <= 114) {
+        if (hash === "/" || hash === "") {
           setNavMode('surah');
-          document.getElementById("surahSelect").value = id;
-          renderSurah(id);
-        } else {
           renderHome();
+        } else if (hash.startsWith("/page/")) {
+          setNavMode('page');
+          const pageNum = parseInt(hash.split("/")[2]);
+          if (pageNum >= 1 && pageNum <= MAX_PAGES) {
+            document.getElementById("pageSelect").value = pageNum;
+            await renderPage(pageNum);
+          } else {
+            render404();
+          }
+        } else if (hash.startsWith("/range")) {
+          setNavMode('range');
+          const fromS = parseInt(urlParams.get("fromSurah")) || 1;
+          const fromA = parseInt(urlParams.get("fromAyah")) || 1;
+          const toS = parseInt(urlParams.get("toSurah")) || fromS;
+          const toA = parseInt(urlParams.get("toAyah")) || 1;
+
+          document.getElementById("startSurahSelect").value = fromS;
+          document.getElementById("startAyahInput").value = fromA;
+          document.getElementById("endSurahSelect").value = toS;
+          document.getElementById("endAyahInput").value = toA;
+
+          await renderCrossSurahRange(fromS, fromA, toS, toA);
+        } else if (hash.startsWith("/juz/")) {
+          setNavMode('juz');
+          const juzId = parseInt(hash.split("/")[2]);
+          if (juzId >= 1 && juzId <= 30) {
+            document.getElementById("juzSelect").value = juzId;
+            await renderJuz(juzId);
+          } else {
+            render404();
+          }
+        } else {
+          const parts = hash.split("/");
+          const id = parseInt(parts[1] || parts[0]);
+          if (!isNaN(id) && id >= 1 && id <= 114) {
+            setNavMode('surah');
+            document.getElementById("surahSelect").value = id;
+            await renderSurah(id);
+          } else {
+            renderHome();
+          }
         }
+      } catch (err) {
+        console.error("Routing error execution:", err);
+        app.innerHTML = `
+          <div class="text-center py-20 text-red-400">
+            <h2 class="text-xl font-bold mb-2">Error Loading Page</h2>
+            <p class="text-sm text-gray-400">${err.message}</p>
+          </div>
+        `;
       }
     }
 
@@ -333,6 +348,7 @@
         populateDropdowns();
       } catch (err) {
         console.error("Failed to fetch chapters:", err);
+        throw err;
       }
     }
 
@@ -521,37 +537,31 @@
       document.title = `${surahMeta.name_simple} - Indo-Pak Quran`;
       showLoading(`Loading Surah ${surahMeta.name_simple}...`);
 
-      try {
-        const [verses, translations] = await Promise.all([
-          fetchChapterVerses(surahId),
-          fetchSurahTranslation(surahId)
-        ]);
+      const [verses, translations] = await Promise.all([
+        fetchChapterVerses(surahId),
+        fetchSurahTranslation(surahId)
+      ]);
 
-        let html = `
-          <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
-            <div class="space-y-2 relative z-10">
-              <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
-              <p class="text-sky-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
-              <div class="text-3xl font-indopak text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
-            </div>
-
-            ${surahId !== 1 && surahId !== 9 ? `
-              <div class="mt-6 font-indopak text-2xl md:text-3xl text-sky-400 border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
-                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
-              </div>
-            ` : ''}
+      let html = `
+        <div class="w-full bg-gray-800/80 border border-gray-700/80 rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
+          <div class="space-y-2 relative z-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white">${surahMeta.name_simple}</h1>
+            <p class="text-sky-400 font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <div class="text-3xl font-indopak text-gray-200 pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
 
-          ${renderContent(verses, translations)}
-        `;
+          ${surahId !== 1 && surahId !== 9 ? `
+            <div class="mt-6 font-indopak text-2xl md:text-3xl text-sky-400 border-t border-gray-700/60 pt-4 w-full max-w-md mx-auto" dir="rtl">
+              بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+            </div>
+          ` : ''}
+        </div>
 
-        app.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        ${renderContent(verses, translations)}
+      `;
 
-      } catch (err) {
-        console.error(err);
-        app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load verses. Please try refreshing.</div>`;
-      }
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function renderPage(pageNum) {
@@ -559,79 +569,73 @@
       document.title = `Page ${pageNum} - Indo-Pak Quran`;
       showLoading(`Loading Page ${pageNum}...`);
 
-      try {
-        const pageVerses = await fetchPageVerses(pageNum);
+      const pageVerses = await fetchPageVerses(pageNum);
 
-        const surahGroups = {};
-        const surahIds = [];
+      const surahGroups = {};
+      const surahIds = [];
 
-        pageVerses.forEach(v => {
-          if (!surahGroups[v.surah_id]) {
-            surahGroups[v.surah_id] = [];
-            surahIds.push(v.surah_id);
-          }
-          surahGroups[v.surah_id].push(v);
-        });
+      pageVerses.forEach(v => {
+        if (!surahGroups[v.surah_id]) {
+          surahGroups[v.surah_id] = [];
+          surahIds.push(v.surah_id);
+        }
+        surahGroups[v.surah_id].push(v);
+      });
 
-        const translationPromises = surahIds.map(sId => fetchSurahTranslation(sId));
-        const translationResults = await Promise.all(translationPromises);
+      const translationPromises = surahIds.map(sId => fetchSurahTranslation(sId));
+      const translationResults = await Promise.all(translationPromises);
 
-        const pageTranslations = {};
-        surahIds.forEach((sId, index) => {
-          pageTranslations[sId] = translationResults[index];
-        });
+      const pageTranslations = {};
+      surahIds.forEach((sId, index) => {
+        pageTranslations[sId] = translationResults[index];
+      });
 
-        let html = `
-          <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
-            <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
-              ⬅ Previous
-            </button>
-            
-            <div>
-              <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNum}</h1>
-              <p class="text-sky-400 font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+      let html = `
+        <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+            ⬅ Previous
+          </button>
+          
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-white">Page ${pageNum}</h1>
+            <p class="text-sky-400 font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+          </div>
+
+          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
+            Next ➡
+          </button>
+        </div>
+      `;
+
+      surahIds.forEach(sId => {
+        const surahMeta = chaptersData.find(c => c.id === sId);
+        const verses = surahGroups[sId];
+        const translations = pageTranslations[sId];
+        const isStartOfSurah = verses[0].ayah_num === 1;
+
+        html += `
+          <div class="mb-10">
+            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-bold text-white">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
+                <span class="text-xs text-gray-400">${surahMeta.translated_name.name}</span>
+              </div>
+              <div class="font-indopak text-2xl text-sky-400" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
 
-            <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-sky-500 rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'text-sky-400'}">
-              Next ➡
-            </button>
+            ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
+              <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+              </div>
+            ` : ''}
+
+            ${renderContent(verses, translations)}
           </div>
         `;
+      });
 
-        surahIds.forEach(sId => {
-          const surahMeta = chaptersData.find(c => c.id === sId);
-          const verses = surahGroups[sId];
-          const translations = pageTranslations[sId];
-          const isStartOfSurah = verses[0].ayah_num === 1;
-
-          html += `
-            <div class="mb-10">
-              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
-                <div>
-                  <h2 class="text-lg font-bold text-white">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
-                  <span class="text-xs text-gray-400">${surahMeta.translated_name.name}</span>
-                </div>
-                <div class="font-indopak text-2xl text-sky-400" dir="rtl">${surahMeta.name_arabic}</div>
-              </div>
-
-              ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
-                <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
-                  بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
-                </div>
-              ` : ''}
-
-              ${renderContent(verses, translations)}
-            </div>
-          `;
-        });
-
-        app.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-
-      } catch (err) {
-        console.error(err);
-        app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load page. Please try again.</div>`;
-      }
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function renderCrossSurahRange(fromSurah, fromAyah, toSurah, toAyah, customHeaderTitle = null) {
@@ -642,77 +646,71 @@
       document.title = customHeaderTitle || `${startMeta.name_simple} (${fromAyah}) - ${endMeta.name_simple} (${toAyah}) - Range Read`;
       showLoading(`Fetching verses from ${startMeta.name_simple}:${fromAyah} to ${endMeta.name_simple}:${toAyah}...`);
 
-      try {
-        let compiledSections = [];
+      let compiledSections = [];
 
-        for (let sId = fromSurah; sId <= toSurah; sId++) {
-          const meta = chaptersData.find(c => c.id === sId);
-          const [verses, translations] = await Promise.all([
-            fetchChapterVerses(sId),
-            fetchSurahTranslation(sId)
-          ]);
+      for (let sId = fromSurah; sId <= toSurah; sId++) {
+        const meta = chaptersData.find(c => c.id === sId);
+        const [verses, translations] = await Promise.all([
+          fetchChapterVerses(sId),
+          fetchSurahTranslation(sId)
+        ]);
 
-          let startFilter = (sId === fromSurah) ? fromAyah : 1;
-          let endFilter = (sId === toSurah) ? toAyah : meta.verses_count;
+        let startFilter = (sId === fromSurah) ? fromAyah : 1;
+        let endFilter = (sId === toSurah) ? toAyah : meta.verses_count;
 
-          const filtered = verses.filter(v => {
-            const num = parseInt(v.verse_key.split(":")[1]);
-            return num >= startFilter && num <= endFilter;
-          });
-
-          compiledSections.push({
-            surahMeta: meta,
-            verses: filtered,
-            translations: translations,
-            showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
-          });
-        }
-
-        let html = `
-          <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-            <p class="text-sky-400 font-medium text-sm mt-1">
-              ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
-            </p>
-          </div>
-        `;
-
-        compiledSections.forEach(section => {
-          html += `
-            <div class="mb-10">
-              <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
-                <div>
-                  <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
-                  <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
-                </div>
-                <div class="font-indopak text-2xl text-sky-400" dir="rtl">${section.surahMeta.name_arabic}</div>
-              </div>
-
-              ${section.showBismillah ? `
-                <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
-                  بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
-                </div>
-              ` : ''}
-
-              ${renderContent(section.verses, section.translations)}
-            </div>
-          `;
+        const filtered = verses.filter(v => {
+          const num = parseInt(v.verse_key.split(":")[1]);
+          return num >= startFilter && num <= endFilter;
         });
 
-        app.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-
-      } catch (err) {
-        console.error(err);
-        app.innerHTML = `<div class="text-center py-20 text-red-500">Failed to load range. Please try again.</div>`;
+        compiledSections.push({
+          surahMeta: meta,
+          verses: filtered,
+          translations: translations,
+          showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
+        });
       }
+
+      let html = `
+        <div class="w-full bg-gray-800 border border-sky-500/30 rounded-2xl p-6 mb-8 text-center">
+          <h1 class="text-2xl md:text-3xl font-extrabold text-white">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+          <p class="text-sky-400 font-medium text-sm mt-1">
+            ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
+          </p>
+        </div>
+      `;
+
+      compiledSections.forEach(section => {
+        html += `
+          <div class="mb-10">
+            <div class="bg-gray-800/60 border border-gray-700/60 rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-bold text-white">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
+                <span class="text-xs text-gray-400">${section.surahMeta.translated_name.name}</span>
+              </div>
+              <div class="font-indopak text-2xl text-sky-400" dir="rtl">${section.surahMeta.name_arabic}</div>
+            </div>
+
+            ${section.showBismillah ? `
+              <div class="text-center font-indopak text-2xl text-sky-400 py-3 mb-6 bg-gray-900/50 rounded-xl border border-gray-800" dir="rtl">
+                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+              </div>
+            ` : ''}
+
+            ${renderContent(section.verses, section.translations)}
+          </div>
+        `;
+      });
+
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function renderJuz(juzNumber) {
       const bounds = INDOPAK_JUZ_BOUNDARIES[juzNumber];
       if (!bounds) { render404(); return; }
       const [fromS, fromA, toS, toA] = bounds;
-      renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
+      await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
     function renderContent(verses, translations) {
@@ -803,10 +801,13 @@
       `;
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("load", () => {
       document.getElementById("displayModeSelect").value = displayMode;
-      if (!window.location.hash) window.location.hash = "#/";
-      else router();
+      if (!window.location.hash) {
+        window.location.hash = "#/";
+      } else {
+        router();
+      }
     });
   </script>
 </body>
