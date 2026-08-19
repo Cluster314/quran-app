@@ -70,6 +70,26 @@
       line-height: 1;
       pointer-events: none;
     }
+
+    /* Marginal Rukoo Marker Block */
+    .rukoo-margin-badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      margin: 0 0.4rem;
+      padding: 0.2rem 0.4rem;
+      background-color: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 0.375rem;
+      font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+      font-size: 0.7rem;
+      line-height: 1.1;
+      color: #f59e0b;
+      direction: ltr;
+      user-select: none;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
@@ -211,8 +231,9 @@
     };
 
     function toArabicNumeral(num) {
+      if (num === undefined || num === null) return "";
       const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-      return num.toString().split('').map(d => arabicDigits[d]).join('');
+      return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
     function sanitizeArabicText(str) {
@@ -220,22 +241,57 @@
       return str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false) {
+    function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false, rukooInfo = null) {
       const rukooSymbolHtml = isLastOfRukoo ? `<span class="rukoo-top-mark">ع</span>` : '';
+      
+      let sideMarginHtml = '';
+      if (isLastOfRukoo && rukooInfo) {
+        sideMarginHtml = `
+          <span class="rukoo-margin-badge" contenteditable="false" title="Rukoo ${rukooInfo.rukooInSurah} of Surah, ${rukooInfo.ayahsInRukoo} Ayahs">
+            <span>${toArabicNumeral(rukooInfo.rukooInSurah)}</span>
+            <span class="font-bold border-t border-b border-amber-500 my-0.5 px-1">ع</span>
+            <span>${toArabicNumeral(rukooInfo.ayahsInRukoo)}</span>
+          </span>
+        `;
+      }
+
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           ${rukooSymbolHtml}
           <svg viewBox="0 0 36 36" class="w-full h-full text-blue-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span>${sideMarginHtml}&nbsp;`;
     }
 
     function markRukooEndings(verses) {
+      // Calculate indices per Rukoo
+      let rukooSurahCounter = 1;
+      let currentRukooNumber = verses.length > 0 ? verses[0].rukoo : null;
+      let currentRukooStartIdx = 0;
+
       for (let i = 0; i < verses.length; i++) {
         const currentRukoo = verses[i].rukoo;
         const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
-        verses[i].isLastOfRukoo = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
+        
+        // Force last verse of Surah to be a Rukoo end if it isn't already tagged differently
+        const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
+        const isEndOfList = (i === verses.length - 1);
+
+        if (isEndByRukooNum || isEndOfList) {
+          verses[i].isLastOfRukoo = true;
+          const ayahsInThisRukoo = i - currentRukooStartIdx + 1;
+          verses[i].rukooInfo = {
+            rukooInSurah: rukooSurahCounter,
+            ayahsInRukoo: ayahsInThisRukoo
+          };
+
+          rukooSurahCounter++;
+          currentRukooStartIdx = i + 1;
+          currentRukoo = nextRukoo;
+        } else {
+          verses[i].isLastOfRukoo = false;
+        }
       }
       return verses;
     }
@@ -760,7 +816,7 @@
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
             const cleanedArabic = sanitizeArabicText(v.text_indopak);
-            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
+            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo, v.rukooInfo);
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
@@ -803,7 +859,7 @@
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         const cleanedArabic = sanitizeArabicText(v.text_indopak);
-        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
+        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo, v.rukooInfo);
 
         arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
       });
