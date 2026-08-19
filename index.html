@@ -28,6 +28,7 @@
       --accent: #38bdf8;
       --rukoo-color: #f59e0b;
       --scrollbar-thumb: #4b5563;
+      --neon-glow: none;
     }
 
     :root[data-theme="light"] {
@@ -42,6 +43,7 @@
       --accent: #0284c7;
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
+      --neon-glow: none;
     }
 
     :root[data-theme="sepia"] {
@@ -56,20 +58,23 @@
       --accent: #b45309;
       --rukoo-color: #b45309;
       --scrollbar-thumb: #c4b396;
+      --neon-glow: none;
     }
 
+    /* OLED Neon Cyber Theme */
     :root[data-theme="oled"] {
       --bg-body: #000000;
       --bg-header: #000000;
-      --bg-card: #0a0a0a;
-      --bg-inner: #000000;
-      --border-color: #262626;
-      --text-main: #ffffff;
-      --text-muted: #737373;
-      --text-arabic: #ffffff;
-      --accent: #38bdf8;
-      --rukoo-color: #fbbf24;
-      --scrollbar-thumb: #262626;
+      --bg-card: #050508;
+      --bg-inner: #0a0a10;
+      --border-color: #1a1a2e;
+      --text-main: #00f0ff;
+      --text-muted: #7000ff;
+      --text-arabic: #00ffcc;
+      --accent: #00f0ff;
+      --rukoo-color: #ff0055;
+      --scrollbar-thumb: #ff0055;
+      --neon-glow: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 20px rgba(0, 240, 255, 0.2);
     }
 
     body {
@@ -86,6 +91,7 @@
     .theme-card {
       background-color: var(--bg-card);
       border-color: var(--border-color);
+      box-shadow: var(--neon-glow);
     }
 
     .theme-inner {
@@ -99,6 +105,15 @@
 
     .theme-accent-text {
       color: var(--accent);
+    }
+
+    /* Custom Neon Effects for OLED Mode */
+    [data-theme="oled"] .indopak-text {
+      text-shadow: 0 0 8px rgba(0, 255, 204, 0.6), 0 0 15px rgba(0, 255, 204, 0.3);
+    }
+
+    [data-theme="oled"] .theme-accent-text {
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
     }
 
     ::-webkit-scrollbar { width: 8px; }
@@ -156,11 +171,22 @@
       line-height: 1;
       pointer-events: none;
     }
+
+    /* Copy Toast Notification */
+    #copyToast {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
   </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col">
 
-  <header class="sticky top-0 z-50 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
+  <!-- Toast Notification -->
+  <div id="copyToast" class="fixed bottom-5 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+    <span class="text-xl">📋</span>
+    <span class="text-sm font-semibold">Verse copied to clipboard!</span>
+  </div>
+
+  <header class="sticky top-0 z-40 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
     <div class="flex items-center justify-between w-full">
       <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 theme-accent-text font-bold text-xl tracking-wide">
         <span>📖</span>
@@ -180,7 +206,7 @@
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
           <option value="sepia">📜 Sepia</option>
-          <option value="oled">🖤 OLED</option>
+          <option value="oled">⚡ Neon OLED</option>
         </select>
 
         <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -272,6 +298,22 @@
 
     function changeTheme(newTheme) {
       applyTheme(newTheme);
+    }
+
+    function showToast() {
+      const toast = document.getElementById("copyToast");
+      toast.classList.remove("translate-y-10", "opacity-0", "pointer-events-none");
+      setTimeout(() => {
+        toast.classList.add("translate-y-10", "opacity-0", "pointer-events-none");
+      }, 2500);
+    }
+
+    function copyVerseText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast();
+      }).catch(err => {
+        console.error("Copy failed: ", err);
+      });
     }
 
     async function loadPageMap() {
@@ -877,19 +919,27 @@
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
+            // Format full copy text: "Arabic (AyahNum)\nTranslation"
+            const fullVerseToCopy = `${cleanedArabic} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
+            const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+
             return `
               ${pageMarkerHtml}
               <div id="verse-${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
-                <div class="flex items-center justify-between border-b border-gray-700 pb-3">
+                <div class="flex items-center justify-between border-b theme-inner pb-3">
                   <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 bg-blue-500 bg-opacity-20 border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
+                    <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
-                  <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs theme-text-muted hover:text-blue-400 transition">📋 Copy</button>
+                  <!-- Re-added explicit Copy Verse Button -->
+                  <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                    <span>📋</span>
+                    <span>Copy Verse</span>
+                  </button>
                 </div>
                 <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
                   ${cleanedArabic} ${ayahMarkerSvg}
                 </div>
-                ${translatedText ? `<div class="text-left text-sm md:text-base border-t border-gray-700 pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+                ${translatedText ? `<div class="text-left text-sm md:text-base border-t theme-inner pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
           }).join("")}
