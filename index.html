@@ -41,8 +41,8 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      width: 2.2rem;
-      height: 2.2rem;
+      width: 2.4rem;
+      height: 2.4rem;
       margin: 0 0.3rem;
       vertical-align: middle;
       direction: ltr;
@@ -59,23 +59,16 @@
       line-height: 1;
     }
 
-    /* Inline Ruku Badge */
-    .rukoo-inline {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.1rem 0.5rem;
-      margin: 0 0.4rem;
+    /* Traditional Overlaid Ruku Symbol (Ain) */
+    .rukoo-top-mark {
+      position: absolute;
+      top: -0.7rem;
+      font-family: 'Scheherazade New', 'Amiri', serif;
       font-size: 0.85rem;
-      font-family: 'Noto Naskh Arabic', sans-serif;
       font-weight: bold;
       color: #f59e0b;
-      background-color: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      border-radius: 0.375rem;
-      vertical-align: middle;
-      white-space: nowrap;
-      direction: rtl;
+      line-height: 1;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -227,8 +220,10 @@
       return str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function getAyahMarkerSvg(ayahNum) {
+    function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false) {
+      const rukooSymbolHtml = isLastOfRukoo ? `<span class="rukoo-top-mark">ع</span>` : '';
       return `&nbsp;<span class="ayah-container" contenteditable="false">
+          ${rukooSymbolHtml}
           <svg viewBox="0 0 36 36" class="w-full h-full text-blue-500 fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
@@ -236,9 +231,13 @@
         </span>&nbsp;`;
     }
 
-    function getRukooInlineBadge(rukooNum) {
-      if (!rukooNum) return '';
-      return `<span class="rukoo-inline" contenteditable="false">رُكُوع ${toArabicNumeral(rukooNum)}</span>`;
+    function markRukooEndings(verses) {
+      for (let i = 0; i < verses.length; i++) {
+        const currentRukoo = verses[i].rukoo;
+        const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
+        verses[i].isLastOfRukoo = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
+      }
+      return verses;
     }
 
     function changeDisplayMode(newMode) {
@@ -738,17 +737,16 @@
     }
 
     function renderContent(verses, translations) {
-      if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
-      if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
-      return renderVerseByVerse(verses, translations);
+      const versesWithRukoo = markRukooEndings(verses);
+      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo);
+      if (displayMode === "reading-translation") return renderReadingTranslationMode(versesWithRukoo, translations);
+      return renderVerseByVerse(versesWithRukoo, translations);
     }
 
     function renderVerseByVerse(verses, translations) {
-      let currentRukoo = null;
-
       return `
         <div class="w-full space-y-4">
-          ${verses.map((v, index) => {
+          ${verses.map((v) => {
             const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
             const pageMarkerHtml = pageNum ? `
               <div class="w-full flex items-center my-6">
@@ -762,13 +760,7 @@
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
             const cleanedArabic = sanitizeArabicText(v.text_indopak);
-            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
-
-            let rukooBadge = '';
-            if (v.rukoo && v.rukoo !== currentRukoo) {
-              currentRukoo = v.rukoo;
-              rukooBadge = getRukooInlineBadge(v.rukoo);
-            }
+            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
@@ -778,7 +770,6 @@
                 <div class="flex items-center justify-between border-b border-gray-700 pb-3">
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 bg-blue-500 bg-opacity-20 border border-blue-500 border-opacity-30 text-blue-400 text-xs font-semibold rounded-full">${v.verse_key}</span>
-                    ${rukooBadge}
                   </div>
                   <button onclick="navigator.clipboard.writeText('${cleanedArabic.replace(/'/g, "\\'")} (${toArabicNumeral(ayahNum)})\n\n${translatedText.replace(/'/g, "\\'")}')" class="text-xs text-gray-400 hover:text-blue-400 transition">📋 Copy</button>
                 </div>
@@ -795,9 +786,8 @@
 
     function renderReadingArabicMode(verses) {
       let arabicParagraph = "";
-      let lastRukoo = null;
 
-      verses.forEach((v, index) => {
+      verses.forEach((v) => {
         const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
         if (pageNum) {
           arabicParagraph += `
@@ -813,16 +803,9 @@
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         const cleanedArabic = sanitizeArabicText(v.text_indopak);
-        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum);
+        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
-        // Append Ruku badge directly into text stream without line breaks
-        let rukooInlineHtml = '';
-        if (v.rukoo && v.rukoo !== lastRukoo) {
-          lastRukoo = v.rukoo;
-          rukooInlineHtml = getRukooInlineBadge(v.rukoo);
-        }
-
-        arabicParagraph += `${rukooInlineHtml}${cleanedArabic} ${ayahMarkerSvg} `;
+        arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
       });
 
       return `
