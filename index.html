@@ -816,20 +816,33 @@
     }
 
     function renderReadingTranslationMode(verses, translations) {
-      let translationList = [];
+      let items = [];
 
       verses.forEach(v => {
+        const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
+        if (pageNum) {
+          items.push(`
+            <div class="w-full flex items-center my-8">
+              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+              <span class="px-4 py-1 bg-gray-900 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase mx-2">
+                📄 Page ${pageNum}
+              </span>
+              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+            </div>
+          `);
+        }
+
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
         if (translatedText) {
-          translationList.push(`<strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}`);
+          items.push(`<p><strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}</p>`);
         }
       });
 
       return `
         <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-6 md:p-8">
           <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
-            ${translationList.map(t => `<p>${t}</p>`).join("")}
+            ${items.join("")}
           </div>
         </div>
       `;
