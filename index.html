@@ -7,7 +7,7 @@
   
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 
-  <!-- Production-ready Tailwind CSS CDN to eliminate console warnings -->
+  <!-- Production-ready Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,24 +56,6 @@
       font-weight: 700;
       color: #38bdf8;
       line-height: 1;
-    }
-
-    .page-marker-inline {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0.5rem 0.8rem;
-      padding: 0.2rem 0.8rem;
-      background-color: #1f2937;
-      border: 1px solid #3b82f6;
-      border-radius: 9999px;
-      color: #60a5fa;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 700;
-      direction: ltr;
-      unicode-bidi: isolate;
-      vertical-align: middle;
     }
   </style>
 </head>
@@ -779,7 +761,15 @@
       verses.forEach(v => {
         const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
         if (pageNum) {
-          arabicParagraph += `<span class="page-marker-inline" contenteditable="false">📄 Page ${pageNum}</span>`;
+          arabicParagraph += `
+            <span class="w-full flex items-center my-8 block" contenteditable="false" dir="ltr">
+              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
+              <span class="px-4 py-1 bg-gray-900 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase mx-2">
+                📄 Page ${pageNum}
+              </span>
+              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
+            </span>
+          `;
         }
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
@@ -796,33 +786,20 @@
     }
 
     function renderReadingTranslationMode(verses, translations) {
-      let translationContent = "";
+      let translationList = [];
 
       verses.forEach(v => {
-        const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
-        if (pageNum) {
-          translationContent += `
-            <div class="w-full flex items-center my-6">
-              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-              <span class="px-4 py-1.5 bg-gray-900 border border-blue-500 rounded-full text-blue-400 font-bold text-xs tracking-wider uppercase">
-                📄 Page ${pageNum}
-              </span>
-              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-            </div>
-          `;
-        }
-
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
         if (translatedText) {
-          translationContent += `<p class="mb-3"><strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}</p>`;
+          translationList.push(`<strong class="text-blue-400">[${v.verse_key}]</strong> ${translatedText}`);
         }
       });
 
       return `
         <div class="w-full bg-gray-800 border border-gray-800 rounded-2xl p-6 md:p-8">
-          <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed">
-            ${translationContent}
+          <div class="text-left text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
+            ${translationList.map(t => `<p>${t}</p>`).join("")}
           </div>
         </div>
       `;
