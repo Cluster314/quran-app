@@ -61,20 +61,20 @@
       --neon-glow: none;
     }
 
-    /* OLED Neon Cyber Theme */
+    /* Refined True OLED Black Theme with Subtle Glow */
     :root[data-theme="oled"] {
       --bg-body: #000000;
       --bg-header: #000000;
-      --bg-card: #050508;
-      --bg-inner: #0a0a10;
-      --border-color: #1a1a2e;
-      --text-main: #00f0ff;
-      --text-muted: #7000ff;
-      --text-arabic: #00ffcc;
-      --accent: #00f0ff;
-      --rukoo-color: #ff0055;
-      --scrollbar-thumb: #ff0055;
-      --neon-glow: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 20px rgba(0, 240, 255, 0.2);
+      --bg-card: #050505;
+      --bg-inner: #0d0d0d;
+      --border-color: #1c1c1c;
+      --text-main: #e2e8f0;
+      --text-muted: #8b949e;
+      --text-arabic: #00f2fe;
+      --accent: #00d2ff;
+      --rukoo-color: #ff3366;
+      --scrollbar-thumb: #222222;
+      --neon-glow: 0 0 12px rgba(0, 210, 255, 0.08);
     }
 
     body {
@@ -107,13 +107,13 @@
       color: var(--accent);
     }
 
-    /* Custom Neon Effects for OLED Mode */
+    /* Subtle Accent Glows for OLED */
     [data-theme="oled"] .indopak-text {
-      text-shadow: 0 0 8px rgba(0, 255, 204, 0.6), 0 0 15px rgba(0, 255, 204, 0.3);
+      text-shadow: 0 0 6px rgba(0, 242, 254, 0.25);
     }
 
     [data-theme="oled"] .theme-accent-text {
-      text-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
+      text-shadow: 0 0 6px rgba(0, 210, 255, 0.3);
     }
 
     ::-webkit-scrollbar { width: 8px; }
@@ -160,7 +160,7 @@
       line-height: 1;
     }
 
-    /* Traditional Overlaid Ruku Symbol (Ain) - Offset higher above the marker */
+    /* Traditional Overlaid Ruku Symbol (Ain) */
     .rukoo-top-mark {
       position: absolute;
       top: -1.2rem;
@@ -206,7 +206,7 @@
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
           <option value="sepia">📜 Sepia</option>
-          <option value="oled">⚡ Neon OLED</option>
+          <option value="oled">🖤 OLED</option>
         </select>
 
         <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -919,7 +919,6 @@
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
-            // Format full copy text: "Arabic (AyahNum)\nTranslation"
             const fullVerseToCopy = `${cleanedArabic} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
             const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
@@ -930,7 +929,7 @@
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
-                  <!-- Re-added explicit Copy Verse Button -->
+                  <!-- Copy Verse Button -->
                   <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
                     <span>📋</span>
                     <span>Copy Verse</span>
