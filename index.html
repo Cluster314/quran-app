@@ -448,11 +448,20 @@
         toA = 6;
       }
 
-      let pageVerses = [];
+      const requests = [];
       for (let sId = fromS; sId <= toS; sId++) {
-        const res = await fetch(`${API_BASE}/surah/${sId}/${API_EDITION}`);
-        const data = await res.json();
-        if (data.code !== 200) continue;
+        requests.push(
+          fetch(`${API_BASE}/surah/${sId}/${API_EDITION}`)
+            .then(res => res.json())
+            .then(data => ({ sId, data }))
+        );
+      }
+
+      const results = await Promise.all(requests);
+      let pageVerses = [];
+
+      results.sort((a, b) => a.sId - b.sId).forEach(({ sId, data }) => {
+        if (!data || data.code !== 200) return;
 
         let startFilter = (sId === fromS) ? fromA : 1;
         let endFilter = (sId === toS) ? toA : data.data.ayahs.length;
@@ -467,7 +476,7 @@
           }));
 
         pageVerses.push(...filtered);
-      }
+      });
 
       return pageVerses;
     }
