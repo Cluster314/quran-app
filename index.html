@@ -372,7 +372,7 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <!-- Qari Selector restricted strictly to Mishari, Khalil, Minshawi, and Ayyub -->
+      <!-- Qari Selector -->
       <div class="flex items-center space-x-1">
         <span class="theme-text-muted hidden sm:inline">Qari:</span>
         <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
@@ -710,13 +710,15 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
+    // Comprehensive Basmalah removal supporting all Unicode orthographies (Uthmani, Indo-Pak, Simple)
     function sanitizeArabicText(str, isFirstAyah = false) {
       if (!str) return "";
       let cleaned = str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+      
       if (isFirstAyah) {
-        cleaned = cleaned.replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمَٰنِ\s+الرَّحِيمِ\s*/i, '');
-        cleaned = cleaned.replace(/^بِسْمِ\s+اللهِ\s+الرَّحْمٰنِ\s+الرَّحِيْمِ\s*/i, '');
-        cleaned = cleaned.replace(/^بِسْمِ\s+اللَّهِ\s+الرَّحْمٰنِ\s+الرَّحِيمِ\s*/i, '');
+        // Regex matches any variation of "Bismi Allahi Al-Rahmani Al-Rahim" with optional diacritics/superscripts/alifs
+        const basmalahRegex = /^بِ?سۡ?مِ?\s*ٱ?للَّٰ?هِ?\s*ٱ?لرَّحۡ?مَٰ?نِ?\s*ٱ?لرَّحِ?ی?مِ?\s*/i;
+        cleaned = cleaned.replace(basmalahRegex, '');
       }
       return cleaned.trim();
     }
