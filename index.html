@@ -270,11 +270,13 @@
         <span>Quran Indo-Pak</span>
       </a>
 
+      <!-- Updated Order: Surah -> Juz -> Page -> Ayah Range -> Single Ayah -->
       <div class="flex items-center space-x-2 text-xs">
         <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Page</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Custom Range</button>
         <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Juz (Para)</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Page</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Ayah Range</button>
+        <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Single Ayah</button>
       </div>
 
       <div class="flex items-center space-x-2">
@@ -298,6 +300,13 @@
         <span class="text-xs theme-text-muted">Surah:</span>
         <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
           <option value="">Select Surah...</option>
+        </select>
+      </div>
+
+      <div id="controlsJuz" class="hidden items-center space-x-2">
+        <span class="text-xs theme-text-muted">Juz (Para):</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+          <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
 
@@ -334,11 +343,19 @@
         </button>
       </div>
 
-      <div id="controlsJuz" class="hidden items-center space-x-2">
-        <span class="text-xs theme-text-muted">Juz (Para):</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
-          <option value="">Select Juz (1-30)...</option>
-        </select>
+      <div id="controlsSingleAyah" class="hidden flex-wrap items-center justify-center gap-2">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-xs theme-text-muted">Ayah:</span>
+          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
+            <option value="">Select Surah</option>
+          </select>
+          <span class="text-xs theme-text-muted">:</span>
+          <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+        </div>
+
+        <button onclick="applySingleAyahNavigate()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
+          Read Ayah
+        </button>
       </div>
     </div>
   </header>
@@ -407,9 +424,27 @@
         </select>
       </div>
 
-      <button onclick="playActiveRange()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition">
-        ▶ Play Loaded Range
-      </button>
+      <!-- Audio Range Selector Replacing 'Play Loaded Range' -->
+      <div class="flex items-center space-x-1.5 border-l border-gray-600 pl-2">
+        <span class="text-xs theme-text-muted">Audio Range:</span>
+        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
+          <option value="">Start Surah</option>
+        </select>
+        <span class="text-xs theme-text-muted">:</span>
+        <input type="number" id="audioStartAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
+        
+        <span class="theme-accent-text font-bold">➔</span>
+        
+        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
+          <option value="">End Surah</option>
+        </select>
+        <span class="text-xs theme-text-muted">:</span>
+        <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
+
+        <button onclick="playSelectedAudioRange()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition ml-1">
+          ▶ Play Audio
+        </button>
+      </div>
     </div>
   </div>
 
@@ -504,9 +539,34 @@
       playAudioIndex(0);
     }
 
-    function playActiveRange() {
-      if (!currentLoadedVerses || currentLoadedVerses.length === 0) return;
+    function playSelectedAudioRange() {
+      const fromS = parseInt(document.getElementById("audioStartSurahSelect").value);
+      const fromA = parseInt(document.getElementById("audioStartAyahInput").value) || 1;
+      const toS = parseInt(document.getElementById("audioEndSurahSelect").value) || fromS;
+      const toA = parseInt(document.getElementById("audioEndAyahInput").value) || 1;
+
+      if (!fromS) {
+        alert("Please select a starting Surah for audio playback.");
+        return;
+      }
+
+      const audioRangeList = [];
+      for (let sId = fromS; sId <= toS; sId++) {
+        const meta = chaptersData.find(c => c.id === sId);
+        if (!meta) continue;
+        
+        let startFilter = (sId === fromS) ? fromA : 1;
+        let endFilter = (sId === toS) ? toA : meta.verses_count;
+
+        for (let aNum = startFilter; aNum <= endFilter; aNum++) {
+          audioRangeList.push({ verse_key: `${sId}:${aNum}` });
+        }
+      }
+
+      if (audioRangeList.length === 0) return;
+
       stopAudioPlayback();
+      currentLoadedVerses = audioRangeList;
       currentAudioIndex = 0;
       currentAyahRepeatCount = 0;
       currentRangeRepeatCount = 0;
@@ -571,7 +631,7 @@
 
     function resumeAudioPlayback() {
       if (!audioObject.src) {
-        playActiveRange();
+        playSelectedAudioRange();
         return;
       }
       if (!isPlayingAudio) {
@@ -710,33 +770,17 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
-    // Normalizes text to plain letters (stripping diacritics, superscript alifs, Tatweel, and letter variations)
-    function stripToBareArabic(str) {
-      return str
-        .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '') // Tashkeel / Harakat
-        .replace(/[\u0610-\u061A\u06DC-\u06E8]/g, '')     // Quranic symbols
-        .replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF\u00A0]/g, '')
-        .replace(/[آأإٱ]/g, 'ا')
-        .replace(/ى/g, 'ي')
-        .replace(/ـ/g, '') // Tatweel
-        .replace(/\s+/g, '')
-        .trim();
-    }
-
-    // Replacement function for sanitizeArabicText
     function sanitizeArabicText(str, isFirstAyah = false) {
       if (!str) return "";
       let cleaned = str.trim();
-    
+
       if (isFirstAyah) {
-        // Target exact character removal length requested (39 chars)
         const TARGET_REMOVE_LENGTH = 39;
-    
         if (cleaned.length > TARGET_REMOVE_LENGTH) {
           cleaned = cleaned.slice(TARGET_REMOVE_LENGTH).trim();
         }
       }
-    
+
       return cleaned;
     }
 
@@ -804,6 +848,15 @@
         if (hash === "/" || hash === "") {
           setNavMode('surah');
           renderHome();
+        } else if (hash.startsWith("/juz/")) {
+          setNavMode('juz');
+          const juzId = parseInt(hash.split("/")[2]);
+          if (juzId >= 1 && juzId <= 30) {
+            document.getElementById("juzSelect").value = juzId;
+            await renderJuz(juzId);
+          } else {
+            render404();
+          }
         } else if (hash.startsWith("/page/")) {
           setNavMode('page');
           const pageNum = parseInt(hash.split("/")[2]);
@@ -826,15 +879,6 @@
           document.getElementById("endAyahInput").value = toA;
 
           await renderCrossSurahRange(fromS, fromA, toS, toA);
-        } else if (hash.startsWith("/juz/")) {
-          setNavMode('juz');
-          const juzId = parseInt(hash.split("/")[2]);
-          if (juzId >= 1 && juzId <= 30) {
-            document.getElementById("juzSelect").value = juzId;
-            await renderJuz(juzId);
-          } else {
-            render404();
-          }
         } else {
           const parts = hash.split("/");
           const id = parseInt(parts[1] || parts[0]);
@@ -858,17 +902,15 @@
     }
 
     function setNavMode(mode) {
-      ['surah', 'page', 'range', 'juz'].forEach(m => {
+      ['surah', 'juz', 'page', 'range', 'singleAyah'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition";
-          ctrl.classList.remove("hidden");
-          ctrl.classList.add("flex");
+          if (tab) tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition";
+          if (ctrl) { ctrl.classList.remove("hidden"); ctrl.classList.add("flex"); }
         } else {
-          tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition";
-          ctrl.classList.add("hidden");
-          ctrl.classList.remove("flex");
+          if (tab) tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition";
+          if (ctrl) { ctrl.classList.add("hidden"); ctrl.classList.remove("flex"); }
         }
       });
     }
@@ -906,6 +948,10 @@
       document.getElementById("surahSelect").innerHTML = options;
       document.getElementById("startSurahSelect").innerHTML = options;
       document.getElementById("endSurahSelect").innerHTML = options;
+      document.getElementById("singleSurahSelect").innerHTML = options;
+
+      document.getElementById("audioStartSurahSelect").innerHTML = options;
+      document.getElementById("audioEndSurahSelect").innerHTML = options;
 
       populatePageDropdown();
 
@@ -938,6 +984,27 @@
       document.getElementById("endAyahInput").max = meta.verses_count;
     }
 
+    function updateSingleAyahMax() {
+      const sId = parseInt(document.getElementById("singleSurahSelect").value);
+      if (!sId) return;
+      const meta = chaptersData.find(c => c.id === sId);
+      document.getElementById("singleAyahInput").max = meta.verses_count;
+    }
+
+    function updateAudioStartAyahMax() {
+      const sId = parseInt(document.getElementById("audioStartSurahSelect").value);
+      if (!sId) return;
+      const meta = chaptersData.find(c => c.id === sId);
+      document.getElementById("audioStartAyahInput").max = meta.verses_count;
+    }
+
+    function updateAudioEndAyahMax() {
+      const sId = parseInt(document.getElementById("audioEndSurahSelect").value);
+      if (!sId) return;
+      const meta = chaptersData.find(c => c.id === sId);
+      document.getElementById("audioEndAyahInput").max = meta.verses_count;
+    }
+
     function applyCrossSurahRange() {
       const fromS = parseInt(document.getElementById("startSurahSelect").value);
       const fromA = parseInt(document.getElementById("startAyahInput").value) || 1;
@@ -950,6 +1017,18 @@
       }
 
       navigate(`range?fromSurah=${fromS}&fromAyah=${fromA}&toSurah=${toS}&toAyah=${toA}`);
+    }
+
+    function applySingleAyahNavigate() {
+      const sId = parseInt(document.getElementById("singleSurahSelect").value);
+      const aNum = parseInt(document.getElementById("singleAyahInput").value) || 1;
+
+      if (!sId) {
+        alert("Please select a Surah.");
+        return;
+      }
+
+      navigate(`range?fromSurah=${sId}&fromAyah=${aNum}&toSurah=${sId}&toAyah=${aNum}`);
     }
 
     async function fetchSurahTranslation(surahId) {
