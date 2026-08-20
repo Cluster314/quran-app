@@ -17,38 +17,40 @@
   <style>
     /* Theme CSS Variables */
     :root[data-theme="dark"] {
-      --bg-body: #111827;
-      --bg-header: #111827;
-      --bg-card: #1f2937;
-      --bg-inner: #111827;
-      --border-color: #374151;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --text-arabic: #f3f4f6;
+      --bg-body: #0f172a;
+      --bg-header: rgba(15, 23, 42, 0.85);
+      --bg-card: #1e293b;
+      --bg-inner: #0f172a;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-arabic: #f8fafc;
       --accent: #38bdf8;
-      --rukoo-color: #f59e0b;
-      --scrollbar-thumb: #4b5563;
-      --neon-glow: none;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --rukoo-color: #fbbf24;
+      --scrollbar-thumb: #475569;
+      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
     }
 
     :root[data-theme="light"] {
-      --bg-body: #f8fafc;
-      --bg-header: #ffffff;
+      --bg-body: #f1f5f9;
+      --bg-header: rgba(255, 255, 255, 0.85);
       --bg-card: #ffffff;
-      --bg-inner: #f1f5f9;
+      --bg-inner: #f8fafc;
       --border-color: #e2e8f0;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --text-arabic: #0f172a;
       --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.12);
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
-      --neon-glow: none;
+      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
 
     :root[data-theme="sepia"] {
       --bg-body: #f4ebd9;
-      --bg-header: #ede0cb;
+      --bg-header: rgba(237, 224, 203, 0.85);
       --bg-card: #eadeca;
       --bg-inner: #e2d4be;
       --border-color: #d3c4a8;
@@ -56,41 +58,52 @@
       --text-muted: #78644c;
       --text-arabic: #2d2013;
       --accent: #b45309;
+      --accent-glow: rgba(180, 83, 9, 0.12);
       --rukoo-color: #b45309;
       --scrollbar-thumb: #c4b396;
-      --neon-glow: none;
+      --neon-glow: 0 10px 25px -5px rgba(67, 52, 34, 0.08);
     }
 
     :root[data-theme="oled"] {
       --bg-body: #000000;
-      --bg-header: #000000;
-      --bg-card: #050505;
-      --bg-inner: #0d0d0d;
-      --border-color: #1c1c1c;
+      --bg-header: rgba(0, 0, 0, 0.85);
+      --bg-card: #080808;
+      --bg-inner: #121212;
+      --border-color: #222222;
       --text-main: #e2e8f0;
       --text-muted: #8b949e;
       --text-arabic: #00f2fe;
       --accent: #00d2ff;
+      --accent-glow: rgba(0, 210, 255, 0.2);
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
-      --neon-glow: 0 0 12px rgba(0, 210, 255, 0.08);
+      --neon-glow: 0 0 20px rgba(0, 210, 255, 0.15);
     }
 
+    /* Base Layout Enhancements */
     body {
       background-color: var(--bg-body);
       color: var(--text-main);
-      transition: background-color 0.2s ease, color 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
+      background-attachment: fixed;
     }
 
+    /* Glassmorphic Elements */
     .theme-header {
       background-color: var(--bg-header);
       border-color: var(--border-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
     }
 
     .theme-card {
       background-color: var(--bg-card);
       border-color: var(--border-color);
       box-shadow: var(--neon-glow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .theme-inner {
@@ -106,18 +119,58 @@
       color: var(--accent);
     }
 
+    /* Interactive UI Cards & Hover Animations */
+    #surahGrid a.theme-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #surahGrid a.theme-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    #surahGrid a.theme-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px -8px var(--accent-glow);
+    }
+
+    /* Modern Dropdowns & Buttons */
+    select, input, button {
+      transition: all 0.2s ease-in-out;
+    }
+
+    select:hover, input:hover {
+      border-color: var(--accent);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* Text Glow & Display Settings */
     [data-theme="oled"] .indopak-text {
-      text-shadow: 0 0 6px rgba(0, 242, 254, 0.25);
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
     }
 
     [data-theme="oled"] .theme-accent-text {
-      text-shadow: 0 0 6px rgba(0, 210, 255, 0.3);
+      text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
     }
 
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-body); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 6px; border: 2px solid var(--bg-body); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+    /* Typography & Quran Reader Visuals */
     .reading-wrapper {
       direction: rtl;
       text-align: center;
@@ -132,6 +185,7 @@
       unicode-bidi: isolate;
       line-height: 2.8 !important;
       color: var(--text-arabic);
+      font-feature-settings: "cv01" 1, "cv02" 1;
     }
 
     .ayah-container {
@@ -139,13 +193,18 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      width: 2.4rem;
-      height: 2.4rem;
-      margin: 0 0.3rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      margin: 0 0.4rem;
       vertical-align: middle;
       direction: ltr;
       unicode-bidi: isolate;
       white-space: nowrap;
+      transition: transform 0.2s ease;
+    }
+
+    .ayah-container:hover {
+      transform: scale(1.1);
     }
 
     .ayah-number {
@@ -159,22 +218,32 @@
 
     .rukoo-top-mark {
       position: absolute;
-      top: -1.2rem;
+      top: -1.3rem;
       font-family: 'Scheherazade New', 'Amiri', serif;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: bold;
       color: var(--rukoo-color);
       line-height: 1;
       pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     }
 
+    /* Audio Playback State Enhancements */
     #copyToast {
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(8px);
     }
 
     .active-ayah-playing {
-      outline: 2px solid var(--accent);
-      border-radius: 0.75rem;
+      outline: 2px solid var(--accent) !important;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px var(--accent-glow) !important;
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px var(--accent-glow); }
+      50% { box-shadow: 0 0 25px var(--accent-glow); }
     }
   </style>
 </head>
