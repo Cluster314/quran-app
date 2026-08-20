@@ -710,16 +710,37 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
-    // Comprehensive Basmalah removal supporting all Unicode orthographies (Uthmani, Indo-Pak, Simple)
+    // Normalization and word-slicing logic to reliably strip Basmalah from 1st Ayah
     function sanitizeArabicText(str, isFirstAyah = false) {
       if (!str) return "";
-      let cleaned = str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
       
+      let cleaned = str
+        .replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
       if (isFirstAyah) {
-        // Regex matches any variation of "Bismi Allahi Al-Rahmani Al-Rahim" with optional diacritics/superscripts/alifs
+        // Direct RegEx attempt for Uthmani & IndoPak variations
         const basmalahRegex = /^بِ?سۡ?مِ?\s*ٱ?للَّٰ?هِ?\s*ٱ?لرَّحۡ?مَٰ?نِ?\s*ٱ?لرَّحِ?ی?مِ?\s*/i;
         cleaned = cleaned.replace(basmalahRegex, '');
+
+        // Fallback: Strip diacritics to plain characters and inspect first 4 words
+        const plainText = cleaned
+          .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+          .replace(/ٱ/g, 'ا')
+          .replace(/ی/g, 'ي');
+
+        if (plainText.startsWith("بسم الله الرحمن الرحيم") || plainText.startsWith("بسم الله")) {
+          const words = cleaned.split(" ");
+          if (words.length > 4) {
+            cleaned = words.slice(4).join(" ");
+          } else if (words.length === 4) {
+            cleaned = "";
+          }
+        }
       }
+
       return cleaned.trim();
     }
 
@@ -1090,14 +1111,14 @@
             <div class="text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
 
-          ${surahId !== 9 ? `
+          ${surahId !== 1 && surahId !== 9 ? `
             <div class="mt-6 font-indopak text-2xl md:text-3xl theme-accent-text border-t theme-inner pt-4 w-full max-w-md mx-auto" dir="rtl">
               ${BISMILLAH_ARABIC}
             </div>
           ` : ''}
         </div>
 
-        ${renderContent(verses, translations, false)}
+        ${renderContent(verses, translations, false, surahId)}
       `;
 
       app.innerHTML = html;
@@ -1154,12 +1175,9 @@
         const surahMeta = chaptersData.find(c => c.id === sId);
         const verses = surahGroups[sId];
         const translations = pageTranslations[sId];
-        
-        const firstVerseKey = verses[0].verse_key;
-        const isStartOfSurah = verses[0].ayah_num === 1;
-        const isStartOfRange = (idx === 0);
 
-        const shouldShowBismillah = (sId !== 9) && (isStartOfSurah || isStartOfRange) && (firstVerseKey !== "9:1");
+        const isStartOfSurah = verses[0].ayah_num === 1;
+        const shouldShowBismillah = (sId !== 1 && sId !== 9) && isStartOfSurah;
 
         html += `
           <div class="mb-10">
@@ -1177,7 +1195,7 @@
               </div>
             ` : ''}
 
-            ${renderContent(verses, translations, false)}
+            ${renderContent(verses, translations, false, sId)}
           </div>
         `;
       });
@@ -1215,17 +1233,15 @@
 
         allVerses.push(...filtered);
 
-        const firstVerseKey = filtered.length > 0 ? filtered[0].verse_key : "";
         const isStartOfSurah = (startFilter === 1);
-        const isStartOfRange = (sId === fromSurah);
-
-        const showBismillah = (sId !== 9) && (isStartOfSurah || isStartOfRange) && (firstVerseKey !== "9:1");
+        const showBismillah = (sId !== 1 && sId !== 9) && isStartOfSurah;
 
         compiledSections.push({
           surahMeta: meta,
           verses: filtered,
           translations: translations,
-          showBismillah: showBismillah
+          showBismillah: showBismillah,
+          surahId: sId
         });
       }
 
@@ -1257,7 +1273,7 @@
               </div>
             ` : ''}
 
-            ${renderContent(section.verses, section.translations, false)}
+            ${renderContent(section.verses, section.translations, false, section.surahId)}
           </div>
         `;
       });
@@ -1274,14 +1290,14 @@
       await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    function renderContent(verses, translations, renderBismillahHeader = false) {
+    function renderContent(verses, translations, renderBismillahHeader = false, surahId = 1) {
       const versesWithRukoo = markRukooEndings(verses);
-      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo, renderBismillahHeader);
+      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo, renderBismillahHeader, surahId);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(versesWithRukoo, translations);
-      return renderVerseByVerse(versesWithRukoo, translations);
+      return renderVerseByVerse(versesWithRukoo, translations, surahId);
     }
 
-    function renderVerseByVerse(verses, translations) {
+    function renderVerseByVerse(verses, translations, surahId) {
       return `
         <div class="w-full space-y-4">
           ${verses.map((v) => {
@@ -1297,8 +1313,10 @@
             ` : '';
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
-            const isFirstAyah = (ayahNum === 1);
-            const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyah);
+            
+            // Surah Al-Fatiha (1) keeps Basmalah as Ayah 1. All other Surahs strip Basmalah from Ayah 1.
+            const isFirstAyahOfSurah = (ayahNum === 1 && surahId !== 1);
+            const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
@@ -1335,7 +1353,7 @@
       `;
     }
 
-    function renderReadingArabicMode(verses, renderBismillahHeader = false) {
+    function renderReadingArabicMode(verses, renderBismillahHeader = false, surahId = 1) {
       let arabicParagraph = "";
 
       if (renderBismillahHeader) {
@@ -1357,8 +1375,8 @@
         }
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const isFirstAyah = (ayahNum === 1);
-        const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyah);
+        const isFirstAyahOfSurah = (ayahNum === 1 && surahId !== 1);
+        const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
         arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${cleanedArabic} ${ayahMarkerSvg}</span> `;
