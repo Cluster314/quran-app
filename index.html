@@ -723,38 +723,20 @@
         .trim();
     }
 
-    // Character mapping index locator to safely slice original text without losing HTML formatting or diacritics
+    // Replacement function for sanitizeArabicText
     function sanitizeArabicText(str, isFirstAyah = false) {
       if (!str) return "";
       let cleaned = str.trim();
-
+    
       if (isFirstAyah) {
-        const bareBasmalah = "بسماللهالرحمنالرحيم";
-        const bareStr = stripToBareArabic(cleaned);
-
-        if (bareStr.startsWith(bareBasmalah)) {
-          // Count matched letters to map back to original character position
-          let matchedLetters = 0;
-          let cutIndex = 0;
-
-          for (let i = 0; i < cleaned.length; i++) {
-            const char = cleaned[i];
-            const bareChar = stripToBareArabic(char);
-            
-            if (bareChar.length > 0) {
-              matchedLetters++;
-            }
-
-            if (matchedLetters === bareBasmalah.length) {
-              cutIndex = i + 1;
-              break;
-            }
-          }
-
-          cleaned = cleaned.slice(cutIndex).trim();
+        // Target exact character removal length requested (39 chars)
+        const TARGET_REMOVE_LENGTH = 39;
+    
+        if (cleaned.length > TARGET_REMOVE_LENGTH) {
+          cleaned = cleaned.slice(TARGET_REMOVE_LENGTH).trim();
         }
       }
-
+    
       return cleaned;
     }
 
