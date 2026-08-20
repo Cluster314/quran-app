@@ -176,12 +176,17 @@
     #copyToast {
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
+
+    .active-ayah-playing {
+      outline: 2px solid var(--accent);
+      border-radius: 0.75rem;
+    }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col">
+<body class="font-sans min-h-screen flex flex-col pb-24">
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-5 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+  <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
     <span class="text-xl">📋</span>
     <span class="text-sm font-semibold">Verse copied to clipboard!</span>
   </div>
@@ -274,6 +279,65 @@
     </div>
   </main>
 
+  <!-- Sticky Audio Player Bar -->
+  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="flex items-center space-x-3">
+      <button id="playPauseBtn" onclick="toggleAudioPlayback()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8">
+        ▶
+      </button>
+      <button onclick="stopAudioPlayback()" class="theme-inner border hover:border-red-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8">
+        ⏹
+      </button>
+      <div class="flex flex-col">
+        <span id="playerStatus" class="font-bold theme-accent-text">Ready</span>
+        <span id="playerDetail" class="theme-text-muted text-2xs">Select range or play an ayah</span>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Qari Selector -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Qari:</span>
+        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="ar.alafasy">Mishary Rashid Alafasy</option>
+          <option value="ar.abdulbasitmurattal">Abdul Basit (Murattal)</option>
+          <option value="ar.hudhaify">Ali Al-Hudhaify</option>
+          <option value="ar.minshawi">Mohamed Siddiq Al-Minshawi</option>
+          <option value="ar.husary">Mahmoud Khalil Al-Husary</option>
+          <option value="ar.sudais">Abdul Rahman Al-Sudais</option>
+        </select>
+      </div>
+
+      <!-- Ayah Repeat Selector -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Repeat Ayah:</span>
+        <select id="ayahRepeatSelect" onchange="audioSettings.ayahRepeats = parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="5">5x</option>
+          <option value="10">10x</option>
+        </select>
+      </div>
+
+      <!-- Range Repeat Selector -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Repeat Range:</span>
+        <select id="rangeRepeatSelect" onchange="audioSettings.rangeRepeats = this.value === 'infinite' ? 'infinite' : parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="5">5x</option>
+          <option value="infinite">Infinite ♾️</option>
+        </select>
+      </div>
+
+      <button onclick="playActiveRange()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition">
+        ▶ Play Loaded Range
+      </button>
+    </div>
+  </div>
+
   <script>
     const API_BASE = "https://api.alquran.cloud/v1";
     const API_EDITION = "quran-quran-portal";
@@ -288,6 +352,20 @@
     let REVERSE_PAGE_LOOKUP = {};
     let MAX_PAGES = 610;
 
+    // Audio Player State Variables
+    let audioObject = new Audio();
+    let currentLoadedVerses = [];
+    let currentAudioIndex = 0;
+    let currentAyahRepeatCount = 0;
+    let currentRangeRepeatCount = 0;
+    let isPlayingAudio = false;
+
+    let audioSettings = {
+      qari: localStorage.getItem("quran_qari") || "ar.alafasy",
+      ayahRepeats: 1,
+      rangeRepeats: 1
+    };
+
     function applyTheme(theme) {
       currentTheme = theme;
       document.documentElement.setAttribute("data-theme", theme);
@@ -298,6 +376,14 @@
 
     function changeTheme(newTheme) {
       applyTheme(newTheme);
+    }
+
+    function changeQari(newQari) {
+      audioSettings.qari = newQari;
+      localStorage.setItem("quran_qari", newQari);
+      if (isPlayingAudio) {
+        playAudioIndex(currentAudioIndex);
+      }
     }
 
     function showToast() {
@@ -314,6 +400,146 @@
       }).catch(err => {
         console.error("Copy failed: ", err);
       });
+    }
+
+    /* Audio Playback Controls */
+    function getAudioUrl(verseKey, qari) {
+      const [s, a] = verseKey.split(":");
+      return `https://cdn.islamic.network/quran/audio/128/${qari}/${getAbsoluteAyahNumber(parseInt(s), parseInt(a))}.mp3`;
+    }
+
+    function getAbsoluteAyahNumber(surahNum, ayahNum) {
+      if (chaptersData.length === 0) return 1;
+      let total = 0;
+      for (let i = 1; i < surahNum; i++) {
+        const meta = chaptersData.find(c => c.id === i);
+        if (meta) total += meta.verses_count;
+      }
+      return total + ayahNum;
+    }
+
+    function playSingleVerse(verseKey) {
+      stopAudioPlayback();
+      currentLoadedVerses = [{ verse_key: verseKey }];
+      currentAudioIndex = 0;
+      currentAyahRepeatCount = 0;
+      currentRangeRepeatCount = 0;
+      playAudioIndex(0);
+    }
+
+    function playActiveRange() {
+      if (!currentLoadedVerses || currentLoadedVerses.length === 0) return;
+      stopAudioPlayback();
+      currentAudioIndex = 0;
+      currentAyahRepeatCount = 0;
+      currentRangeRepeatCount = 0;
+      playAudioIndex(0);
+    }
+
+    function playAudioIndex(index) {
+      if (!currentLoadedVerses || index < 0 || index >= currentLoadedVerses.length) {
+        handleRangeEnd();
+        return;
+      }
+
+      currentAudioIndex = index;
+      const verseKey = currentLoadedVerses[index].verse_key;
+      const url = getAudioUrl(verseKey, audioSettings.qari);
+
+      highlightPlayingAyah(verseKey);
+
+      audioObject.src = url;
+      audioObject.play().then(() => {
+        isPlayingAudio = true;
+        updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${currentAyahRepeatCount + 1}/${audioSettings.ayahRepeats}`);
+      }).catch(err => {
+        console.error("Audio playback error:", err);
+        updatePlayerUI(false, "Audio Error", "Could not play track");
+      });
+    }
+
+    audioObject.onended = () => {
+      currentAyahRepeatCount++;
+      if (currentAyahRepeatCount < audioSettings.ayahRepeats) {
+        playAudioIndex(currentAudioIndex);
+      } else {
+        currentAyahRepeatCount = 0;
+        currentAudioIndex++;
+        if (currentAudioIndex < currentLoadedVerses.length) {
+          playAudioIndex(currentAudioIndex);
+        } else {
+          handleRangeEnd();
+        }
+      }
+    };
+
+    function handleRangeEnd() {
+      if (audioSettings.rangeRepeats === "infinite") {
+        currentAudioIndex = 0;
+        currentAyahRepeatCount = 0;
+        playAudioIndex(0);
+      } else if (typeof audioSettings.rangeRepeats === "number") {
+        currentRangeRepeatCount++;
+        if (currentRangeRepeatCount < audioSettings.rangeRepeats) {
+          currentAudioIndex = 0;
+          currentAyahRepeatCount = 0;
+          playAudioIndex(0);
+        } else {
+          stopAudioPlayback();
+        }
+      } else {
+        stopAudioPlayback();
+      }
+    }
+
+    function toggleAudioPlayback() {
+      if (!audioObject.src) {
+        playActiveRange();
+        return;
+      }
+
+      if (isPlayingAudio) {
+        audioObject.pause();
+        isPlayingAudio = false;
+        updatePlayerUI(false, "Paused", currentLoadedVerses[currentAudioIndex]?.verse_key || "");
+      } else {
+        audioObject.play();
+        isPlayingAudio = true;
+        updatePlayerUI(true, `Playing ${currentLoadedVerses[currentAudioIndex]?.verse_key || ""}`, "");
+      }
+    }
+
+    function stopAudioPlayback() {
+      audioObject.pause();
+      audioObject.currentTime = 0;
+      isPlayingAudio = false;
+      highlightPlayingAyah(null);
+      updatePlayerUI(false, "Stopped", "Ready");
+    }
+
+    function updatePlayerUI(playing, statusText, detailText) {
+      const btn = document.getElementById("playPauseBtn");
+      if (btn) btn.innerText = playing ? "⏸" : "▶";
+
+      const status = document.getElementById("playerStatus");
+      if (status) status.innerText = statusText;
+
+      const detail = document.getElementById("playerDetail");
+      if (detail) detail.innerText = detailText;
+    }
+
+    function highlightPlayingAyah(verseKey) {
+      document.querySelectorAll(".active-ayah-playing").forEach(el => {
+        el.classList.remove("active-ayah-playing");
+      });
+
+      if (verseKey) {
+        const el = document.getElementById(`verse-${verseKey}`);
+        if (el) {
+          el.classList.add("active-ayah-playing");
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
     }
 
     async function loadPageMap() {
@@ -541,6 +767,9 @@
       let juzOpts = `<option value="">Select Juz...</option>`;
       for (let i = 1; i <= 30; i++) juzOpts += `<option value="${i}">Juz (Para) ${i}</option>`;
       document.getElementById("juzSelect").innerHTML = juzOpts;
+
+      const qariSel = document.getElementById("qariSelect");
+      if (qariSel) qariSel.value = audioSettings.qari;
     }
 
     function populatePageDropdown() {
@@ -682,6 +911,8 @@
       const app = document.getElementById("app");
       document.title = "The Noble Quran - Indo-Pak Reader";
 
+      currentLoadedVerses = [];
+
       app.innerHTML = `
         <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
           <h1 class="text-3xl font-extrabold">The Noble Quran</h1>
@@ -720,6 +951,8 @@
         fetchSurahTranslation(surahId)
       ]);
 
+      currentLoadedVerses = verses;
+
       let html = `
         <div class="w-full theme-card border rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
           <div class="space-y-2 relative z-10">
@@ -748,6 +981,8 @@
       showLoading(`Loading Page ${pageNum}...`);
 
       const pageVerses = await fetchPageVerses(pageNum);
+
+      currentLoadedVerses = pageVerses;
 
       const surahGroups = {};
       const surahIds = [];
@@ -825,6 +1060,7 @@
       showLoading(`Fetching verses from ${startMeta.name_simple}:${fromAyah} to ${endMeta.name_simple}:${toAyah}...`);
 
       let compiledSections = [];
+      let allVerses = [];
 
       for (let sId = fromSurah; sId <= toSurah; sId++) {
         const meta = chaptersData.find(c => c.id === sId);
@@ -841,6 +1077,8 @@
           return num >= startFilter && num <= endFilter;
         });
 
+        allVerses.push(...filtered);
+
         compiledSections.push({
           surahMeta: meta,
           verses: filtered,
@@ -848,6 +1086,8 @@
           showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
         });
       }
+
+      currentLoadedVerses = allVerses;
 
       let html = `
         <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center">
@@ -929,11 +1169,18 @@
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
-                  <!-- Copy Verse Button -->
-                  <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
-                    <span>📋</span>
-                    <span>Copy Verse</span>
-                  </button>
+                  <div class="flex items-center space-x-2">
+                    <!-- Audio Listen Button -->
+                    <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                      <span>▶</span>
+                      <span>Play</span>
+                    </button>
+                    <!-- Copy Verse Button -->
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                      <span>📋</span>
+                      <span>Copy</span>
+                    </button>
+                  </div>
                 </div>
                 <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
                   ${cleanedArabic} ${ayahMarkerSvg}
