@@ -434,6 +434,9 @@
     let currentRangeRepeatCount = 0;
     let isPlayingAudio = false;
 
+    let scrollObserver = null;
+    let lastActiveVerseKey = null;
+
     let audioSettings = {
       qari: localStorage.getItem("quran_qari") || "ar.alafasy",
       ayahRepeats: 1,
@@ -615,6 +618,48 @@
       }
     }
 
+    /* Track visible verses on scroll using IntersectionObserver */
+    function initScrollObserver() {
+      if (scrollObserver) {
+        scrollObserver.disconnect();
+      }
+
+      scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const verseKey = entry.target.getAttribute('data-verse-key');
+            if (verseKey) {
+              lastActiveVerseKey = verseKey;
+              const currentPath = window.location.hash.replace('#', '').split('?')[0];
+              localStorage.setItem(`last_verse_${currentPath}`, verseKey);
+            }
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '-10% 0px -70% 0px',
+        threshold: 0
+      });
+
+      document.querySelectorAll('[data-verse-key]').forEach(el => {
+        scrollObserver.observe(el);
+      });
+    }
+
+    function restoreScrollPosition() {
+      const currentPath = window.location.hash.replace('#', '').split('?')[0];
+      const targetVerseKey = lastActiveVerseKey || localStorage.getItem(`last_verse_${currentPath}`);
+
+      if (targetVerseKey) {
+        setTimeout(() => {
+          const targetEl = document.querySelector(`[data-verse-key="${targetVerseKey}"]`);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+    }
+
     async function loadPageMap() {
       try {
         const res = await fetch("final_610_quran_page_map.json");
@@ -704,6 +749,7 @@
     }
 
     function navigate(path) {
+      lastActiveVerseKey = null;
       const cleanPath = path.startsWith('/') ? path : '/' + path;
       const [pathPart, queryPart] = cleanPath.split('?');
       const params = new URLSearchParams(queryPart || '');
@@ -1046,7 +1092,8 @@
       `;
 
       app.innerHTML = html;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      initScrollObserver();
+      restoreScrollPosition();
     }
 
     async function renderPage(pageNum) {
@@ -1122,7 +1169,8 @@
       });
 
       app.innerHTML = html;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      initScrollObserver();
+      restoreScrollPosition();
     }
 
     async function renderCrossSurahRange(fromSurah, fromAyah, toSurah, toAyah, customHeaderTitle = null) {
@@ -1195,7 +1243,8 @@
       });
 
       app.innerHTML = html;
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      initScrollObserver();
+      restoreScrollPosition();
     }
 
     async function renderJuz(juzNumber) {
@@ -1238,7 +1287,7 @@
 
             return `
               ${pageMarkerHtml}
-              <div id="verse-${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
+              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
                 <div class="flex items-center justify-between border-b theme-inner pb-3">
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
@@ -1286,7 +1335,7 @@
         const cleanedArabic = sanitizeArabicText(v.text_indopak);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
-        arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
+        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${cleanedArabic} ${ayahMarkerSvg}</span> `;
       });
 
       return `
@@ -1316,7 +1365,7 @@
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
         if (translatedText) {
-          items.push(`<p><strong class="theme-accent-text">[${v.verse_key}]</strong> ${translatedText}</p>`);
+          items.push(`<p id="verse-${v.verse_key}" data-verse-key="${v.verse_key}"><strong class="theme-accent-text">[${v.verse_key}]</strong> ${translatedText}</p>`);
         }
       });
 
