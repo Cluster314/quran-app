@@ -417,6 +417,7 @@
     const API_BASE = "https://api.alquran.cloud/v1";
     const API_EDITION = "quran-quran-portal";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
+    const BISMILLAH_ARABIC = "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ";
     
     let chaptersData = [];
     const translationCache = {};
@@ -1081,14 +1082,14 @@
             <div class="text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
 
-          ${surahId !== 1 && surahId !== 9 ? `
+          ${surahId !== 9 ? `
             <div class="mt-6 font-indopak text-2xl md:text-3xl theme-accent-text border-t theme-inner pt-4 w-full max-w-md mx-auto" dir="rtl">
-              بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+              ${BISMILLAH_ARABIC}
             </div>
           ` : ''}
         </div>
 
-        ${renderContent(verses, translations)}
+        ${renderContent(verses, translations, false)}
       `;
 
       app.innerHTML = html;
@@ -1141,11 +1142,16 @@
         </div>
       `;
 
-      surahIds.forEach(sId => {
+      surahIds.forEach((sId, idx) => {
         const surahMeta = chaptersData.find(c => c.id === sId);
         const verses = surahGroups[sId];
         const translations = pageTranslations[sId];
+        
+        const firstVerseKey = verses[0].verse_key;
         const isStartOfSurah = verses[0].ayah_num === 1;
+        const isStartOfRange = (idx === 0);
+
+        const shouldShowBismillah = (sId !== 9) && (isStartOfSurah || isStartOfRange) && (firstVerseKey !== "9:1");
 
         html += `
           <div class="mb-10">
@@ -1157,13 +1163,13 @@
               <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
 
-            ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
+            ${shouldShowBismillah ? `
               <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
-                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+                ${BISMILLAH_ARABIC}
               </div>
             ` : ''}
 
-            ${renderContent(verses, translations)}
+            ${renderContent(verses, translations, false)}
           </div>
         `;
       });
@@ -1201,11 +1207,17 @@
 
         allVerses.push(...filtered);
 
+        const firstVerseKey = filtered.length > 0 ? filtered[0].verse_key : "";
+        const isStartOfSurah = (startFilter === 1);
+        const isStartOfRange = (sId === fromSurah);
+
+        const showBismillah = (sId !== 9) && (isStartOfSurah || isStartOfRange) && (firstVerseKey !== "9:1");
+
         compiledSections.push({
           surahMeta: meta,
           verses: filtered,
           translations: translations,
-          showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
+          showBismillah: showBismillah
         });
       }
 
@@ -1233,11 +1245,11 @@
 
             ${section.showBismillah ? `
               <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
-                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+                ${BISMILLAH_ARABIC}
               </div>
             ` : ''}
 
-            ${renderContent(section.verses, section.translations)}
+            ${renderContent(section.verses, section.translations, false)}
           </div>
         `;
       });
@@ -1254,9 +1266,9 @@
       await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
     }
 
-    function renderContent(verses, translations) {
+    function renderContent(verses, translations, renderBismillahHeader = false) {
       const versesWithRukoo = markRukooEndings(verses);
-      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo);
+      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo, renderBismillahHeader);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(versesWithRukoo, translations);
       return renderVerseByVerse(versesWithRukoo, translations);
     }
@@ -1314,8 +1326,12 @@
       `;
     }
 
-    function renderReadingArabicMode(verses) {
+    function renderReadingArabicMode(verses, renderBismillahHeader = false) {
       let arabicParagraph = "";
+
+      if (renderBismillahHeader) {
+        arabicParagraph += `<div class="w-full text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>`;
+      }
 
       verses.forEach((v) => {
         const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
