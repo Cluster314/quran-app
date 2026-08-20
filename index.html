@@ -253,6 +253,25 @@
       0%, 100% { box-shadow: 0 0 15px var(--accent-glow); }
       50% { box-shadow: 0 0 25px var(--accent-glow); }
     }
+
+    /* Toggle Button Styles */
+    .toggle-btn {
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-inner);
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .toggle-btn.finite {
+      background-color: #007bff;
+      color: #ffffff;
+      border-color: #0056b3;
+    }
   </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col pb-24">
@@ -400,31 +419,27 @@
         </select>
       </div>
 
-      <!-- Ayah Repeat Selector -->
-      <div class="flex items-center space-x-1">
+      <!-- Ayah Repeat Toggle Controls -->
+      <div class="flex items-center space-x-1.5">
         <span class="theme-text-muted hidden sm:inline">Repeat Ayah:</span>
-        <select id="ayahRepeatSelect" onchange="audioSettings.ayahRepeats = parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
-          <option value="1">1x</option>
-          <option value="2">2x</option>
-          <option value="3">3x</option>
-          <option value="5">5x</option>
-          <option value="10">10x</option>
-        </select>
+        <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">Infinite</button>
+        <div id="ayahCountWrapper" class="hidden flex items-center space-x-1">
+          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded px-1 py-0.5 text-center" />
+          <span class="theme-text-muted text-2xs">x</span>
+        </div>
       </div>
 
-      <!-- Range Repeat Selector -->
-      <div class="flex items-center space-x-1">
+      <!-- Range Repeat Toggle Controls -->
+      <div class="flex items-center space-x-1.5">
         <span class="theme-text-muted hidden sm:inline">Repeat Range:</span>
-        <select id="rangeRepeatSelect" onchange="audioSettings.rangeRepeats = this.value === 'infinite' ? 'infinite' : parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
-          <option value="1">1x</option>
-          <option value="2">2x</option>
-          <option value="3">3x</option>
-          <option value="5">5x</option>
-          <option value="infinite">Infinite ♾️</option>
-        </select>
+        <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">Infinite</button>
+        <div id="rangeCountWrapper" class="hidden flex items-center space-x-1">
+          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded px-1 py-0.5 text-center" />
+          <span class="theme-text-muted text-2xs">x</span>
+        </div>
       </div>
 
-      <!-- Audio Range Selector Replacing 'Play Loaded Range' -->
+      <!-- Audio Range Selector -->
       <div class="flex items-center space-x-1.5 border-l border-gray-600 pl-2">
         <span class="text-xs theme-text-muted">Audio Range:</span>
         <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
@@ -473,11 +488,43 @@
     let scrollObserver = null;
     let lastActiveVerseKey = null;
 
-    let audioSettings = {
-      qari: localStorage.getItem("quran_qari") || "ar.alafasy",
-      ayahRepeats: 1,
-      rangeRepeats: 1
+    let repeatSettings = {
+      ayah: { isInfinite: true },
+      range: { isInfinite: true }
     };
+
+    let audioSettings = {
+      qari: localStorage.getItem("quran_qari") || "ar.alafasy"
+    };
+
+    function toggleMode(type) {
+      const settings = repeatSettings[type];
+      settings.isInfinite = !settings.isInfinite;
+
+      const btn = document.getElementById(`${type}ToggleBtn`);
+      const wrapper = document.getElementById(`${type}CountWrapper`);
+
+      if (settings.isInfinite) {
+        btn.textContent = 'Infinite';
+        btn.classList.remove('finite');
+        wrapper.classList.add('hidden');
+      } else {
+        btn.textContent = 'Finite';
+        btn.classList.add('finite');
+        wrapper.classList.remove('hidden');
+      }
+    }
+
+    function getRepeatConfig() {
+      return {
+        ayahRepeat: repeatSettings.ayah.isInfinite 
+          ? Infinity 
+          : Math.max(1, parseInt(document.getElementById('ayahRepeatCount').value, 10) || 1),
+        rangeRepeat: repeatSettings.range.isInfinite 
+          ? Infinity 
+          : Math.max(1, parseInt(document.getElementById('rangeRepeatCount').value, 10) || 1)
+      };
+    }
 
     function applyTheme(theme) {
       currentTheme = theme;
@@ -585,10 +632,13 @@
 
       highlightPlayingAyah(verseKey);
 
+      const config = getRepeatConfig();
+      const repeatLabel = config.ayahRepeat === Infinity ? "∞" : `${currentAyahRepeatCount + 1}/${config.ayahRepeat}`;
+
       audioObject.src = url;
       audioObject.play().then(() => {
         isPlayingAudio = true;
-        updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${currentAyahRepeatCount + 1}/${audioSettings.ayahRepeats}`);
+        updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${repeatLabel}`);
       }).catch(err => {
         console.error("Audio playback error:", err);
         updatePlayerUI(false, "Audio Error", "Could not play track");
@@ -596,8 +646,9 @@
     }
 
     audioObject.onended = () => {
+      const config = getRepeatConfig();
       currentAyahRepeatCount++;
-      if (currentAyahRepeatCount < audioSettings.ayahRepeats) {
+      if (currentAyahRepeatCount < config.ayahRepeat) {
         playAudioIndex(currentAudioIndex);
       } else {
         currentAyahRepeatCount = 0;
@@ -611,19 +662,13 @@
     };
 
     function handleRangeEnd() {
-      if (audioSettings.rangeRepeats === "infinite") {
+      const config = getRepeatConfig();
+      currentRangeRepeatCount++;
+
+      if (currentRangeRepeatCount < config.rangeRepeat) {
         currentAudioIndex = 0;
         currentAyahRepeatCount = 0;
         playAudioIndex(0);
-      } else if (typeof audioSettings.rangeRepeats === "number") {
-        currentRangeRepeatCount++;
-        if (currentRangeRepeatCount < audioSettings.rangeRepeats) {
-          currentAudioIndex = 0;
-          currentAyahRepeatCount = 0;
-          playAudioIndex(0);
-        } else {
-          stopAudioPlayback();
-        }
       } else {
         stopAudioPlayback();
       }
