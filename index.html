@@ -1,106 +1,1283 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quran Recitations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Noble Quran - Indo-Pak Reader</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+
+  <!-- Production-ready Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
+    /* Theme CSS Variables */
+    :root[data-theme="dark"] {
+      --bg-body: #111827;
+      --bg-header: #111827;
+      --bg-card: #1f2937;
+      --bg-inner: #111827;
+      --border-color: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-arabic: #f3f4f6;
+      --accent: #38bdf8;
+      --rukoo-color: #f59e0b;
+      --scrollbar-thumb: #4b5563;
+      --neon-glow: none;
+    }
+
+    :root[data-theme="light"] {
+      --bg-body: #f8fafc;
+      --bg-header: #ffffff;
+      --bg-card: #ffffff;
+      --bg-inner: #f1f5f9;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-arabic: #0f172a;
+      --accent: #0284c7;
+      --rukoo-color: #d97706;
+      --scrollbar-thumb: #cbd5e1;
+      --neon-glow: none;
+    }
+
+    :root[data-theme="sepia"] {
+      --bg-body: #f4ebd9;
+      --bg-header: #ede0cb;
+      --bg-card: #eadeca;
+      --bg-inner: #e2d4be;
+      --border-color: #d3c4a8;
+      --text-main: #433422;
+      --text-muted: #78644c;
+      --text-arabic: #2d2013;
+      --accent: #b45309;
+      --rukoo-color: #b45309;
+      --scrollbar-thumb: #c4b396;
+      --neon-glow: none;
+    }
+
+    :root[data-theme="oled"] {
+      --bg-body: #000000;
+      --bg-header: #000000;
+      --bg-card: #050505;
+      --bg-inner: #0d0d0d;
+      --border-color: #1c1c1c;
+      --text-main: #e2e8f0;
+      --text-muted: #8b949e;
+      --text-arabic: #00f2fe;
+      --accent: #00d2ff;
+      --rukoo-color: #ff3366;
+      --scrollbar-thumb: #222222;
+      --neon-glow: 0 0 12px rgba(0, 210, 255, 0.08);
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #ffffff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
-    .player-card {
-      background: #1e1e1e;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      width: 320px;
+
+    .theme-header {
+      background-color: var(--bg-header);
+      border-color: var(--border-color);
+    }
+
+    .theme-card {
+      background-color: var(--bg-card);
+      border-color: var(--border-color);
+      box-shadow: var(--neon-glow);
+    }
+
+    .theme-inner {
+      background-color: var(--bg-inner);
+      border-color: var(--border-color);
+    }
+
+    .theme-text-muted {
+      color: var(--text-muted);
+    }
+
+    .theme-accent-text {
+      color: var(--accent);
+    }
+
+    [data-theme="oled"] .indopak-text {
+      text-shadow: 0 0 6px rgba(0, 242, 254, 0.25);
+    }
+
+    [data-theme="oled"] .theme-accent-text {
+      text-shadow: 0 0 6px rgba(0, 210, 255, 0.3);
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+
+    .reading-wrapper {
+      direction: rtl;
       text-align: center;
+      text-align-last: center;
+      word-spacing: normal;
     }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-      color: #aaaaaa;
+
+    .indopak-text {
+      font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
+      text-rendering: optimizeLegibility;
+      direction: rtl;
+      unicode-bidi: isolate;
+      line-height: 2.8 !important;
+      color: var(--text-arabic);
     }
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      background: #2a2a2a;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 6px;
-      font-size: 1rem;
+
+    .ayah-container {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 2.4rem;
+      height: 2.4rem;
+      margin: 0 0.3rem;
+      vertical-align: middle;
+      direction: ltr;
+      unicode-bidi: isolate;
+      white-space: nowrap;
     }
-    .btn-toggle {
-      background-color: #1db954;
-      color: white;
-      border: none;
-      padding: 12px 28px;
-      font-size: 1rem;
-      border-radius: 25px;
-      cursor: pointer;
+
+    .ayah-number {
+      position: absolute;
+      font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .rukoo-top-mark {
+      position: absolute;
+      top: -1.2rem;
+      font-family: 'Scheherazade New', 'Amiri', serif;
+      font-size: 0.85rem;
       font-weight: bold;
-      transition: background 0.2s ease;
+      color: var(--rukoo-color);
+      line-height: 1;
+      pointer-events: none;
     }
-    .btn-toggle:hover {
-      background-color: #1ed760;
+
+    #copyToast {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .active-ayah-playing {
+      outline: 2px solid var(--accent);
+      border-radius: 0.75rem;
     }
   </style>
 </head>
-<body>
+<body class="font-sans min-h-screen flex flex-col pb-24">
 
-<div class="player-card">
-  <label for="qariSelect">Select Reciter:</label>
-  <select id="qariSelect" onchange="changeReciter()">
-    <option value="https://server8.mp3quran.net/afs/001.mp3">Mishary Rashid Alafasy</option>
-    <option value="https://server13.mp3quran.net/husr/001.mp3">Mahmoud Khalil Al-Husary</option>
-    <option value="https://server10.mp3quran.net/minsh/001.mp3">Mohamed Siddiq El-Minshawi</option>
-    <option value="https://server8.mp3quran.net/ayyub/001.mp3">Sheikh Muhammad Ayyub</option>
-  </select>
+  <!-- Toast Notification -->
+  <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+    <span class="text-xl">📋</span>
+    <span class="text-sm font-semibold">Verse copied to clipboard!</span>
+  </div>
 
-  <audio id="quranAudio" src="https://server8.mp3quran.net/afs/001.mp3"></audio>
+  <header class="sticky top-0 z-40 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
+    <div class="flex items-center justify-between w-full">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 theme-accent-text font-bold text-xl tracking-wide">
+        <span>📖</span>
+        <span>Quran Indo-Pak</span>
+      </a>
 
-  <button id="toggleBtn" class="btn-toggle" onclick="togglePlayPause()">Play</button>
-</div>
+      <div class="flex items-center space-x-2 text-xs">
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Page</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Custom Range</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Juz (Para)</button>
+      </div>
 
-<script>
-  const audio = document.getElementById('quranAudio');
-  const toggleBtn = document.getElementById('toggleBtn');
-  const qariSelect = document.getElementById('qariSelect');
+      <div class="flex items-center space-x-2">
+        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="dark">🌙 Dark</option>
+          <option value="light">☀️ Light</option>
+          <option value="sepia">📜 Sepia</option>
+          <option value="oled">🖤 OLED</option>
+        </select>
 
-  function togglePlayPause() {
-    if (audio.paused) {
-      audio.play();
-      toggleBtn.textContent = 'Pause';
-    } else {
-      audio.pause();
-      toggleBtn.textContent = 'Play';
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="verse">🔢 Verse-by-Verse</option>
+          <option value="reading-arabic">📜 Reading (Arabic)</option>
+          <option value="reading-translation">🌐 Reading (Translation)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="w-full theme-card border rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
+      <div id="controlsSurah" class="flex items-center space-x-2">
+        <span class="text-xs theme-text-muted">Surah:</span>
+        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+          <option value="">Select Surah...</option>
+        </select>
+      </div>
+
+      <div id="controlsPage" class="hidden items-center space-x-2">
+        <span class="text-xs theme-text-muted">Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+          <option value="">Select Page (1-610)...</option>
+        </select>
+      </div>
+
+      <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-2">
+        <div class="flex items-center space-x-1.5">
+          <span class="text-xs theme-text-muted">From:</span>
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
+            <option value="">Start Surah</option>
+          </select>
+          <span class="text-xs theme-text-muted">:</span>
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+        </div>
+
+        <span class="theme-accent-text font-bold px-1">➔</span>
+
+        <div class="flex items-center space-x-1.5">
+          <span class="text-xs theme-text-muted">To:</span>
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
+            <option value="">End Surah</option>
+          </select>
+          <span class="text-xs theme-text-muted">:</span>
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+        </div>
+
+        <button onclick="applyCrossSurahRange()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
+          Read Range
+        </button>
+      </div>
+
+      <div id="controlsJuz" class="hidden items-center space-x-2">
+        <span class="text-xs theme-text-muted">Juz (Para):</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+          <option value="">Select Juz (1-30)...</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
+    <div class="flex flex-col items-center justify-center py-20 space-y-4">
+      <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="theme-text-muted text-sm">Initializing Quran Reader...</p>
+    </div>
+  </main>
+
+  <!-- Sticky Audio Player Bar -->
+  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="flex items-center space-x-2">
+      <!-- Play Button -->
+      <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Play">
+        ▶
+      </button>
+      <!-- Pause Button -->
+      <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border hover:border-yellow-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Pause">
+        ⏸
+      </button>
+      <!-- Stop Button -->
+      <button onclick="stopAudioPlayback()" class="theme-inner border hover:border-red-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Stop">
+        ⏹
+      </button>
+      <div class="flex flex-col ml-2">
+        <span id="playerStatus" class="font-bold theme-accent-text">Ready</span>
+        <span id="playerDetail" class="theme-text-muted text-2xs">Select range or play an ayah</span>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Qari Selector restricted strictly to Mishari, Khalil, Minshawi, and Ayyub -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Qari:</span>
+        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="ar.alafasy">Mishary Rashid Alafasy</option>
+          <option value="ar.husary">Mahmoud Khalil Al-Husary</option>
+          <option value="ar.minshawi">Mohamed Siddiq Al-Minshawi</option>
+          <option value="ar.ayyoub">Sheikh Muhammad Ayyub</option>
+        </select>
+      </div>
+
+      <!-- Ayah Repeat Selector -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Repeat Ayah:</span>
+        <select id="ayahRepeatSelect" onchange="audioSettings.ayahRepeats = parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="5">5x</option>
+          <option value="10">10x</option>
+        </select>
+      </div>
+
+      <!-- Range Repeat Selector -->
+      <div class="flex items-center space-x-1">
+        <span class="theme-text-muted hidden sm:inline">Repeat Range:</span>
+        <select id="rangeRepeatSelect" onchange="audioSettings.rangeRepeats = this.value === 'infinite' ? 'infinite' : parseInt(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="3">3x</option>
+          <option value="5">5x</option>
+          <option value="infinite">Infinite ♾️</option>
+        </select>
+      </div>
+
+      <button onclick="playActiveRange()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition">
+        ▶ Play Loaded Range
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://api.alquran.cloud/v1";
+    const API_EDITION = "quran-quran-portal";
+    const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
+    
+    let chaptersData = [];
+    const translationCache = {};
+    let displayMode = "verse";
+    let currentTheme = localStorage.getItem("quran_theme") || "dark";
+
+    let INDOPAK_15_LINE_PAGE_STARTS = {};
+    let REVERSE_PAGE_LOOKUP = {};
+    let MAX_PAGES = 610;
+
+    let audioObject = new Audio();
+    let currentLoadedVerses = [];
+    let currentAudioIndex = 0;
+    let currentAyahRepeatCount = 0;
+    let currentRangeRepeatCount = 0;
+    let isPlayingAudio = false;
+
+    let audioSettings = {
+      qari: localStorage.getItem("quran_qari") || "ar.alafasy",
+      ayahRepeats: 1,
+      rangeRepeats: 1
+    };
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("quran_theme", theme);
+      const sel = document.getElementById("themeSelect");
+      if (sel) sel.value = theme;
     }
-  }
 
-  function changeReciter() {
-    const wasPlaying = !audio.paused;
-    audio.src = qariSelect.value;
-    if (wasPlaying) {
-      audio.play();
-      toggleBtn.textContent = 'Pause';
-    } else {
-      toggleBtn.textContent = 'Play';
+    function changeTheme(newTheme) {
+      applyTheme(newTheme);
     }
-  }
 
-  audio.onended = () => {
-    toggleBtn.textContent = 'Play';
-  };
-</script>
+    function changeQari(newQari) {
+      audioSettings.qari = newQari;
+      localStorage.setItem("quran_qari", newQari);
+      if (isPlayingAudio) {
+        playAudioIndex(currentAudioIndex);
+      }
+    }
 
+    function showToast() {
+      const toast = document.getElementById("copyToast");
+      toast.classList.remove("translate-y-10", "opacity-0", "pointer-events-none");
+      setTimeout(() => {
+        toast.classList.add("translate-y-10", "opacity-0", "pointer-events-none");
+      }, 2500);
+    }
+
+    function copyVerseText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast();
+      }).catch(err => {
+        console.error("Copy failed: ", err);
+      });
+    }
+
+    function getAudioUrl(verseKey, qari) {
+      const [s, a] = verseKey.split(":");
+      return `https://cdn.islamic.network/quran/audio/128/${qari}/${getAbsoluteAyahNumber(parseInt(s), parseInt(a))}.mp3`;
+    }
+
+    function getAbsoluteAyahNumber(surahNum, ayahNum) {
+      if (chaptersData.length === 0) return 1;
+      let total = 0;
+      for (let i = 1; i < surahNum; i++) {
+        const meta = chaptersData.find(c => c.id === i);
+        if (meta) total += meta.verses_count;
+      }
+      return total + ayahNum;
+    }
+
+    function playSingleVerse(verseKey) {
+      stopAudioPlayback();
+      currentLoadedVerses = [{ verse_key: verseKey }];
+      currentAudioIndex = 0;
+      currentAyahRepeatCount = 0;
+      currentRangeRepeatCount = 0;
+      playAudioIndex(0);
+    }
+
+    function playActiveRange() {
+      if (!currentLoadedVerses || currentLoadedVerses.length === 0) return;
+      stopAudioPlayback();
+      currentAudioIndex = 0;
+      currentAyahRepeatCount = 0;
+      currentRangeRepeatCount = 0;
+      playAudioIndex(0);
+    }
+
+    function playAudioIndex(index) {
+      if (!currentLoadedVerses || index < 0 || index >= currentLoadedVerses.length) {
+        handleRangeEnd();
+        return;
+      }
+
+      currentAudioIndex = index;
+      const verseKey = currentLoadedVerses[index].verse_key;
+      const url = getAudioUrl(verseKey, audioSettings.qari);
+
+      highlightPlayingAyah(verseKey);
+
+      audioObject.src = url;
+      audioObject.play().then(() => {
+        isPlayingAudio = true;
+        updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${currentAyahRepeatCount + 1}/${audioSettings.ayahRepeats}`);
+      }).catch(err => {
+        console.error("Audio playback error:", err);
+        updatePlayerUI(false, "Audio Error", "Could not play track");
+      });
+    }
+
+    audioObject.onended = () => {
+      currentAyahRepeatCount++;
+      if (currentAyahRepeatCount < audioSettings.ayahRepeats) {
+        playAudioIndex(currentAudioIndex);
+      } else {
+        currentAyahRepeatCount = 0;
+        currentAudioIndex++;
+        if (currentAudioIndex < currentLoadedVerses.length) {
+          playAudioIndex(currentAudioIndex);
+        } else {
+          handleRangeEnd();
+        }
+      }
+    };
+
+    function handleRangeEnd() {
+      if (audioSettings.rangeRepeats === "infinite") {
+        currentAudioIndex = 0;
+        currentAyahRepeatCount = 0;
+        playAudioIndex(0);
+      } else if (typeof audioSettings.rangeRepeats === "number") {
+        currentRangeRepeatCount++;
+        if (currentRangeRepeatCount < audioSettings.rangeRepeats) {
+          currentAudioIndex = 0;
+          currentAyahRepeatCount = 0;
+          playAudioIndex(0);
+        } else {
+          stopAudioPlayback();
+        }
+      } else {
+        stopAudioPlayback();
+      }
+    }
+
+    function resumeAudioPlayback() {
+      if (!audioObject.src) {
+        playActiveRange();
+        return;
+      }
+      if (!isPlayingAudio) {
+        audioObject.play();
+        isPlayingAudio = true;
+        updatePlayerUI(true, `Playing ${currentLoadedVerses[currentAudioIndex]?.verse_key || ""}`, "");
+      }
+    }
+
+    function pauseAudioPlayback() {
+      if (isPlayingAudio) {
+        audioObject.pause();
+        isPlayingAudio = false;
+        updatePlayerUI(false, "Paused", currentLoadedVerses[currentAudioIndex]?.verse_key || "");
+      }
+    }
+
+    function stopAudioPlayback() {
+      audioObject.pause();
+      audioObject.currentTime = 0;
+      isPlayingAudio = false;
+      highlightPlayingAyah(null);
+      updatePlayerUI(false, "Stopped", "Ready");
+    }
+
+    function updatePlayerUI(playing, statusText, detailText) {
+      const status = document.getElementById("playerStatus");
+      if (status) status.innerText = statusText;
+
+      const detail = document.getElementById("playerDetail");
+      if (detail) detail.innerText = detailText;
+    }
+
+    function highlightPlayingAyah(verseKey) {
+      document.querySelectorAll(".active-ayah-playing").forEach(el => {
+        el.classList.remove("active-ayah-playing");
+      });
+
+      if (verseKey) {
+        const el = document.getElementById(`verse-${verseKey}`);
+        if (el) {
+          el.classList.add("active-ayah-playing");
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    async function loadPageMap() {
+      try {
+        const res = await fetch("final_610_quran_page_map.json");
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        const data = await res.json();
+        
+        const map = {};
+        const revMap = {};
+        let totalPages = 0;
+
+        Object.keys(data).forEach(pageStr => {
+          const pNum = parseInt(pageStr);
+          if (!isNaN(pNum)) {
+            const pageObj = data[pageStr];
+            const sSurah = pageObj.starting_surah || pageObj.start_surah || 1;
+            const sAyah = pageObj.starting_ayah || pageObj.start_ayah || 1;
+            map[pNum] = [sSurah, sAyah];
+            revMap[`${sSurah}:${sAyah}`] = pNum;
+            if (pNum > totalPages) totalPages = pNum;
+          }
+        });
+
+        INDOPAK_15_LINE_PAGE_STARTS = map;
+        REVERSE_PAGE_LOOKUP = revMap;
+        if (totalPages > 0) MAX_PAGES = totalPages;
+        populatePageDropdown();
+      } catch (err) {
+        console.warn("Could not load local page map file, applying default page 1 start:", err);
+        INDOPAK_15_LINE_PAGE_STARTS = { 1: [1, 1] };
+        REVERSE_PAGE_LOOKUP = { "1:1": 1 };
+        populatePageDropdown();
+      }
+    }
+
+    const INDOPAK_JUZ_BOUNDARIES = {
+      1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
+      6:  [4, 148, 5, 81], 7:  [5, 82, 6, 110], 8:  [6, 111, 7, 87], 9:  [7, 88, 8, 40], 10: [8, 41, 9, 93],
+      11: [9, 94, 11, 5], 12: [11, 6, 12, 52], 13: [12, 53, 15, 1], 14: [15, 2, 16, 128], 15: [17, 1, 18, 74],
+      16: [18, 75, 20, 135], 17: [21, 1, 22, 78], 18: [23, 1, 25, 20], 19: [25, 21, 27, 59], 20: [27, 60, 29, 44],
+      21: [29, 45, 33, 30], 22: [33, 31, 36, 21], 23: [36, 22, 39, 31], 24: [39, 32, 41, 46], 25: [41, 47, 45, 37],
+      26: [46, 1, 51, 30], 27: [51, 31, 57, 29], 28: [58, 1, 66, 12], 29: [67, 1, 77, 50], 30: [78, 1, 114, 6]
+    };
+
+    function toArabicNumeral(num) {
+      if (num === undefined || num === null) return "";
+      const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return num.toString().split('').map(d => arabicDigits[d] || d).join('');
+    }
+
+    function sanitizeArabicText(str) {
+      if (!str) return "";
+      return str.replace(/[\u25A0-\u25FF\u2B00-\u2BFF\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false) {
+      const rukooSymbolHtml = isLastOfRukoo ? `<span class="rukoo-top-mark">ع</span>` : '';
+
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
+          ${rukooSymbolHtml}
+          <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
+          </svg>
+          <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
+        </span>&nbsp;`;
+    }
+
+    function markRukooEndings(verses) {
+      for (let i = 0; i < verses.length; i++) {
+        const currentRukoo = verses[i].rukoo;
+        const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
+        
+        const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
+        const isEndOfList = (i === verses.length - 1);
+
+        verses[i].isLastOfRukoo = isEndByRukooNum || isEndOfList;
+      }
+      return verses;
+    }
+
+    function changeDisplayMode(newMode) {
+      displayMode = newMode;
+      const rawHash = window.location.hash.replace('#', '') || '/';
+      const [pathPart, queryPart] = rawHash.split('?');
+      const params = new URLSearchParams(queryPart || '');
+      params.set('mode', newMode);
+      window.location.hash = `#${pathPart}?${params.toString()}`;
+    }
+
+    function navigate(path) {
+      const cleanPath = path.startsWith('/') ? path : '/' + path;
+      const [pathPart, queryPart] = cleanPath.split('?');
+      const params = new URLSearchParams(queryPart || '');
+      if (displayMode && displayMode !== 'verse') params.set('mode', displayMode);
+      const queryString = params.toString();
+      window.location.hash = queryString ? `${pathPart}?${queryString}` : pathPart;
+    }
+
+    window.addEventListener("hashchange", () => router());
+
+    async function router() {
+      const app = document.getElementById("app");
+      try {
+        const rawHash = window.location.hash.replace('#', '') || '/';
+        const [hash, queryPart] = rawHash.split('?');
+        const urlParams = new URLSearchParams(queryPart || '');
+        
+        if (urlParams.has('mode')) displayMode = urlParams.get('mode');
+        document.getElementById("displayModeSelect").value = displayMode;
+
+        if (chaptersData.length === 0) await loadChapters();
+        if (Object.keys(INDOPAK_15_LINE_PAGE_STARTS).length === 0) await loadPageMap();
+
+        resetNavControls();
+
+        if (hash === "/" || hash === "") {
+          setNavMode('surah');
+          renderHome();
+        } else if (hash.startsWith("/page/")) {
+          setNavMode('page');
+          const pageNum = parseInt(hash.split("/")[2]);
+          if (pageNum >= 1 && pageNum <= MAX_PAGES) {
+            document.getElementById("pageSelect").value = pageNum;
+            await renderPage(pageNum);
+          } else {
+            render404();
+          }
+        } else if (hash.startsWith("/range")) {
+          setNavMode('range');
+          const fromS = parseInt(urlParams.get("fromSurah")) || 1;
+          const fromA = parseInt(urlParams.get("fromAyah")) || 1;
+          const toS = parseInt(urlParams.get("toSurah")) || fromS;
+          const toA = parseInt(urlParams.get("toAyah")) || 1;
+
+          document.getElementById("startSurahSelect").value = fromS;
+          document.getElementById("startAyahInput").value = fromA;
+          document.getElementById("endSurahSelect").value = toS;
+          document.getElementById("endAyahInput").value = toA;
+
+          await renderCrossSurahRange(fromS, fromA, toS, toA);
+        } else if (hash.startsWith("/juz/")) {
+          setNavMode('juz');
+          const juzId = parseInt(hash.split("/")[2]);
+          if (juzId >= 1 && juzId <= 30) {
+            document.getElementById("juzSelect").value = juzId;
+            await renderJuz(juzId);
+          } else {
+            render404();
+          }
+        } else {
+          const parts = hash.split("/");
+          const id = parseInt(parts[1] || parts[0]);
+          if (!isNaN(id) && id >= 1 && id <= 114) {
+            setNavMode('surah');
+            document.getElementById("surahSelect").value = id;
+            await renderSurah(id);
+          } else {
+            renderHome();
+          }
+        }
+      } catch (err) {
+        console.error("Routing execution error:", err);
+        app.innerHTML = `
+          <div class="text-center py-20 text-red-400">
+            <h2 class="text-xl font-bold mb-2">Error Loading Page</h2>
+            <p class="text-sm theme-text-muted">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function setNavMode(mode) {
+      ['surah', 'page', 'range', 'juz'].forEach(m => {
+        const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
+        const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
+        if (m === mode) {
+          tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition";
+          ctrl.classList.remove("hidden");
+          ctrl.classList.add("flex");
+        } else {
+          tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition";
+          ctrl.classList.add("hidden");
+          ctrl.classList.remove("flex");
+        }
+      });
+    }
+
+    function resetNavControls() {
+      document.getElementById("surahSelect").value = "";
+      document.getElementById("pageSelect").value = "";
+      document.getElementById("juzSelect").value = "";
+    }
+
+    async function loadChapters() {
+      try {
+        const res = await fetch(`${API_BASE}/surah`);
+        const data = await res.json();
+        if (data.code !== 200) throw new Error("API Error fetching chapters");
+        
+        chaptersData = data.data.map(c => ({
+          id: c.number,
+          name_simple: c.englishName,
+          name_arabic: c.name,
+          verses_count: c.numberOfAyahs,
+          translated_name: { name: c.englishNameTranslation }
+        }));
+        populateDropdowns();
+      } catch (err) {
+        console.error("Failed to fetch chapters:", err);
+        throw err;
+      }
+    }
+
+    function populateDropdowns() {
+      const options = `<option value="">Select Surah...</option>` + 
+        chaptersData.map(c => `<option value="${c.id}">${c.id}. ${c.name_simple} (${c.name_arabic})</option>`).join("");
+
+      document.getElementById("surahSelect").innerHTML = options;
+      document.getElementById("startSurahSelect").innerHTML = options;
+      document.getElementById("endSurahSelect").innerHTML = options;
+
+      populatePageDropdown();
+
+      let juzOpts = `<option value="">Select Juz...</option>`;
+      for (let i = 1; i <= 30; i++) juzOpts += `<option value="${i}">Juz (Para) ${i}</option>`;
+      document.getElementById("juzSelect").innerHTML = juzOpts;
+
+      const qariSel = document.getElementById("qariSelect");
+      if (qariSel) qariSel.value = audioSettings.qari;
+    }
+
+    function populatePageDropdown() {
+      let pageOpts = `<option value="">Select Page...</option>`;
+      for (let i = 1; i <= MAX_PAGES; i++) pageOpts += `<option value="${i}">Page ${i}</option>`;
+      const pageSelect = document.getElementById("pageSelect");
+      if (pageSelect) pageSelect.innerHTML = pageOpts;
+    }
+
+    function updateStartAyahMax() {
+      const sId = parseInt(document.getElementById("startSurahSelect").value);
+      if (!sId) return;
+      const meta = chaptersData.find(c => c.id === sId);
+      document.getElementById("startAyahInput").max = meta.verses_count;
+    }
+
+    function updateEndAyahMax() {
+      const sId = parseInt(document.getElementById("endSurahSelect").value);
+      if (!sId) return;
+      const meta = chaptersData.find(c => c.id === sId);
+      document.getElementById("endAyahInput").max = meta.verses_count;
+    }
+
+    function applyCrossSurahRange() {
+      const fromS = parseInt(document.getElementById("startSurahSelect").value);
+      const fromA = parseInt(document.getElementById("startAyahInput").value) || 1;
+      const toS = parseInt(document.getElementById("endSurahSelect").value) || fromS;
+      const toA = parseInt(document.getElementById("endAyahInput").value) || 1;
+
+      if (!fromS) {
+        alert("Please select a starting Surah.");
+        return;
+      }
+
+      navigate(`range?fromSurah=${fromS}&fromAyah=${fromA}&toSurah=${toS}&toAyah=${toA}`);
+    }
+
+    async function fetchSurahTranslation(surahId) {
+      if (translationCache[surahId]) return translationCache[surahId];
+
+      try {
+        const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
+        if (!res.ok) throw new Error(`Failed to load translation`);
+        const data = await res.json();
+        
+        const map = {};
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (Array.isArray(item) && item.length >= 2 && typeof item[0] === 'number') {
+              map[item[0]] = Array.isArray(item[1]) ? item[1].join(' ') : String(item[1]);
+            } else if (typeof item === 'object' && item !== null) {
+              const num = item.ayah || item.verse || item.id;
+              const text = item.text || item.translation;
+              if (num && text) map[num] = String(text);
+            }
+          });
+        } else if (typeof data === 'object' && data !== null) {
+          Object.keys(data).forEach(key => {
+            map[key] = String(data[key]);
+          });
+        }
+
+        translationCache[surahId] = map;
+        return map;
+      } catch (err) {
+        console.error(`Error loading translation:`, err);
+        return {};
+      }
+    }
+
+    async function fetchChapterVerses(surahId) {
+      const res = await fetch(`${API_BASE}/surah/${surahId}/${API_EDITION}`);
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(`API Error: ${data.status}`);
+      
+      return data.data.ayahs.map(a => ({
+        verse_key: `${surahId}:${a.numberInSurah}`,
+        text_indopak: a.text,
+        rukoo: a.ruku
+      }));
+    }
+
+    async function fetchPageVerses(pageNum) {
+      const start = INDOPAK_15_LINE_PAGE_STARTS[pageNum] || [1, 1];
+      const nextStart = INDOPAK_15_LINE_PAGE_STARTS[pageNum + 1];
+
+      let fromS = start[0], fromA = start[1];
+      let toS, toA;
+
+      if (nextStart) {
+        if (nextStart[1] > 1) {
+          toS = nextStart[0];
+          toA = nextStart[1] - 1;
+        } else {
+          toS = nextStart[0] - 1;
+          const prevSurahMeta = chaptersData.find(c => c.id === toS);
+          toA = prevSurahMeta ? prevSurahMeta.verses_count : 1;
+        }
+      } else {
+        toS = 114;
+        toA = 6;
+      }
+
+      const requests = [];
+      for (let sId = fromS; sId <= toS; sId++) {
+        requests.push(
+          fetch(`${API_BASE}/surah/${sId}/${API_EDITION}`)
+            .then(res => res.json())
+            .then(data => ({ sId, data }))
+        );
+      }
+
+      const results = await Promise.all(requests);
+      let pageVerses = [];
+
+      results.sort((a, b) => a.sId - b.sId).forEach(({ sId, data }) => {
+        if (!data || data.code !== 200) return;
+
+        let startFilter = (sId === fromS) ? fromA : 1;
+        let endFilter = (sId === toS) ? toA : data.data.ayahs.length;
+
+        const filtered = data.data.ayahs
+          .filter(a => a.numberInSurah >= startFilter && a.numberInSurah <= endFilter)
+          .map(a => ({
+            verse_key: `${sId}:${a.numberInSurah}`,
+            surah_id: sId,
+            ayah_num: a.numberInSurah,
+            text_indopak: a.text,
+            rukoo: a.ruku
+          }));
+
+        pageVerses.push(...filtered);
+      });
+
+      return pageVerses;
+    }
+
+    function renderHome() {
+      const app = document.getElementById("app");
+      document.title = "The Noble Quran - Indo-Pak Reader";
+
+      currentLoadedVerses = [];
+
+      app.innerHTML = `
+        <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
+          <h1 class="text-3xl font-extrabold">The Noble Quran</h1>
+          <p class="theme-accent-text font-medium text-xs">15-Line Indo-Pakistani Layout</p>
+        </div>
+
+        <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
+          ${chaptersData.map(c => `
+            <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
+               class="theme-card border p-3.5 rounded-xl transition flex items-center justify-between group hover:border-blue-500">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-lg theme-inner border flex items-center justify-center text-xs font-bold theme-accent-text group-hover:bg-blue-500 group-hover:text-white transition">
+                  ${c.id}
+                </div>
+                <div>
+                  <div class="font-semibold text-sm group-hover:text-blue-500 transition">${c.name_simple}</div>
+                  <div class="text-xs theme-text-muted">${c.verses_count} Verses</div>
+                </div>
+              </div>
+              <div class="font-indopak text-lg" dir="rtl">${c.name_arabic}</div>
+            </a>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function renderSurah(surahId) {
+      const app = document.getElementById("app");
+      const surahMeta = chaptersData.find(c => c.id === surahId);
+      
+      document.title = `${surahMeta.name_simple} - Indo-Pak Quran`;
+      showLoading(`Loading Surah ${surahMeta.name_simple}...`);
+
+      const [verses, translations] = await Promise.all([
+        fetchChapterVerses(surahId),
+        fetchSurahTranslation(surahId)
+      ]);
+
+      currentLoadedVerses = verses;
+
+      let html = `
+        <div class="w-full theme-card border rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
+          <div class="space-y-2 relative z-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold">${surahMeta.name_simple}</h1>
+            <p class="theme-accent-text font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <div class="text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+          </div>
+
+          ${surahId !== 1 && surahId !== 9 ? `
+            <div class="mt-6 font-indopak text-2xl md:text-3xl theme-accent-text border-t theme-inner pt-4 w-full max-w-md mx-auto" dir="rtl">
+              بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+            </div>
+          ` : ''}
+        </div>
+
+        ${renderContent(verses, translations)}
+      `;
+
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function renderPage(pageNum) {
+      const app = document.getElementById("app");
+      document.title = `Page ${pageNum} - Indo-Pak Quran`;
+      showLoading(`Loading Page ${pageNum}...`);
+
+      const pageVerses = await fetchPageVerses(pageNum);
+
+      currentLoadedVerses = pageVerses;
+
+      const surahGroups = {};
+      const surahIds = [];
+
+      pageVerses.forEach(v => {
+        if (!surahGroups[v.surah_id]) {
+          surahGroups[v.surah_id] = [];
+          surahIds.push(v.surah_id);
+        }
+        surahGroups[v.surah_id].push(v);
+      });
+
+      const translationPromises = surahIds.map(sId => fetchSurahTranslation(sId));
+      const translationResults = await Promise.all(translationPromises);
+
+      const pageTranslations = {};
+      surahIds.forEach((sId, index) => {
+        pageTranslations[sId] = translationResults[index];
+      });
+
+      let html = `
+        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+            ⬅ Previous
+          </button>
+          
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold">Page ${pageNum}</h1>
+            <p class="theme-accent-text font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+          </div>
+
+          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+            Next ➡
+          </button>
+        </div>
+      `;
+
+      surahIds.forEach(sId => {
+        const surahMeta = chaptersData.find(c => c.id === sId);
+        const verses = surahGroups[sId];
+        const translations = pageTranslations[sId];
+        const isStartOfSurah = verses[0].ayah_num === 1;
+
+        html += `
+          <div class="mb-10">
+            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-bold">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
+                <span class="text-xs theme-text-muted">${surahMeta.translated_name.name}</span>
+              </div>
+              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
+            </div>
+
+            ${isStartOfSurah && sId !== 1 && sId !== 9 ? `
+              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
+                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+              </div>
+            ` : ''}
+
+            ${renderContent(verses, translations)}
+          </div>
+        `;
+      });
+
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function renderCrossSurahRange(fromSurah, fromAyah, toSurah, toAyah, customHeaderTitle = null) {
+      const app = document.getElementById("app");
+      const startMeta = chaptersData.find(c => c.id === fromSurah);
+      const endMeta = chaptersData.find(c => c.id === toSurah);
+
+      document.title = customHeaderTitle || `${startMeta.name_simple} (${fromAyah}) - ${endMeta.name_simple} (${toAyah}) - Range Read`;
+      showLoading(`Fetching verses from ${startMeta.name_simple}:${fromAyah} to ${endMeta.name_simple}:${toAyah}...`);
+
+      let compiledSections = [];
+      let allVerses = [];
+
+      for (let sId = fromSurah; sId <= toSurah; sId++) {
+        const meta = chaptersData.find(c => c.id === sId);
+        const [verses, translations] = await Promise.all([
+          fetchChapterVerses(sId),
+          fetchSurahTranslation(sId)
+        ]);
+
+        let startFilter = (sId === fromSurah) ? fromAyah : 1;
+        let endFilter = (sId === toSurah) ? toAyah : meta.verses_count;
+
+        const filtered = verses.filter(v => {
+          const num = parseInt(v.verse_key.split(":")[1]);
+          return num >= startFilter && num <= endFilter;
+        });
+
+        allVerses.push(...filtered);
+
+        compiledSections.push({
+          surahMeta: meta,
+          verses: filtered,
+          translations: translations,
+          showBismillah: sId !== 1 && sId !== 9 && (sId !== fromSurah || fromAyah === 1)
+        });
+      }
+
+      currentLoadedVerses = allVerses;
+
+      let html = `
+        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center">
+          <h1 class="text-2xl md:text-3xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+          <p class="theme-accent-text font-medium text-sm mt-1">
+            ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
+          </p>
+        </div>
+      `;
+
+      compiledSections.forEach(section => {
+        html += `
+          <div class="mb-10">
+            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-bold">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
+                <span class="text-xs theme-text-muted">${section.surahMeta.translated_name.name}</span>
+              </div>
+              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${section.surahMeta.name_arabic}</div>
+            </div>
+
+            ${section.showBismillah ? `
+              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
+                بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
+              </div>
+            ` : ''}
+
+            ${renderContent(section.verses, section.translations)}
+          </div>
+        `;
+      });
+
+      app.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function renderJuz(juzNumber) {
+      const bounds = INDOPAK_JUZ_BOUNDARIES[juzNumber];
+      if (!bounds) { render404(); return; }
+      const [fromS, fromA, toS, toA] = bounds;
+      await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`);
+    }
+
+    function renderContent(verses, translations) {
+      const versesWithRukoo = markRukooEndings(verses);
+      if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo);
+      if (displayMode === "reading-translation") return renderReadingTranslationMode(versesWithRukoo, translations);
+      return renderVerseByVerse(versesWithRukoo, translations);
+    }
+
+    function renderVerseByVerse(verses, translations) {
+      return `
+        <div class="w-full space-y-4">
+          ${verses.map((v) => {
+            const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
+            const pageMarkerHtml = pageNum ? `
+              <div class="w-full flex items-center my-6">
+                <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+                <span class="px-4 py-1.5 theme-card border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase">
+                  📄 Page ${pageNum}
+                </span>
+                <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+              </div>
+            ` : '';
+
+            const [, ayahNum] = v.verse_key.split(":").map(Number);
+            const cleanedArabic = sanitizeArabicText(v.text_indopak);
+            const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
+
+            let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
+
+            const fullVerseToCopy = `${cleanedArabic} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
+            const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+
+            return `
+              ${pageMarkerHtml}
+              <div id="verse-${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
+                <div class="flex items-center justify-between border-b theme-inner pb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                      <span>▶</span>
+                      <span>Play</span>
+                    </button>
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                      <span>📋</span>
+                      <span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
+                  ${cleanedArabic} ${ayahMarkerSvg}
+                </div>
+                ${translatedText ? `<div class="text-left text-sm md:text-base border-t theme-inner pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function renderReadingArabicMode(verses) {
+      let arabicParagraph = "";
+
+      verses.forEach((v) => {
+        const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
+        if (pageNum) {
+          arabicParagraph += `
+            <span class="w-full flex items-center my-8 block" contenteditable="false" dir="ltr">
+              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
+              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+                📄 Page ${pageNum}
+              </span>
+              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
+            </span>
+          `;
+        }
+
+        const [, ayahNum] = v.verse_key.split(":").map(Number);
+        const cleanedArabic = sanitizeArabicText(v.text_indopak);
+        const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
+
+        arabicParagraph += `${cleanedArabic} ${ayahMarkerSvg} `;
+      });
+
+      return `
+        <div class="w-full theme-card border rounded-2xl p-4 md:p-8 my-4">
+          <div class="reading-wrapper indopak-text text-3xl md:text-4xl leading-relaxed">${arabicParagraph}</div>
+        </div>
+      `;
+    }
+
+    function renderReadingTranslationMode(verses, translations) {
+      let items = [];
+
+      verses.forEach(v => {
+        const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
+        if (pageNum) {
+          items.push(`
+            <div class="w-full flex items-center my-8">
+              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+                📄 Page ${pageNum}
+              </span>
+              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+            </div>
+          `);
+        }
+
+        const [, ayahNum] = v.verse_key.split(":").map(Number);
+        let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
+        if (translatedText) {
+          items.push(`<p><strong class="theme-accent-text">[${v.verse_key}]</strong> ${translatedText}</p>`);
+        }
+      });
+
+      return `
+        <div class="w-full theme-card border rounded-2xl p-6 md:p-8">
+          <div class="text-left text-sm md:text-base leading-relaxed space-y-3">
+            ${items.join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function showLoading(msg) {
+      document.getElementById("app").innerHTML = `
+        <div class="flex flex-col items-center justify-center py-20 space-y-4">
+          <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p class="theme-text-muted text-sm animate-pulse">${msg}</p>
+        </div>
+      `;
+    }
+
+    function render404() {
+      document.getElementById("app").innerHTML = `
+        <div class="text-center py-20">
+          <h1 class="text-2xl font-bold text-red-500">View Not Found</h1>
+          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-blue-500 hover:underline">Back to Home</a>
+        </div>
+      `;
+    }
+
+    window.addEventListener("load", () => {
+      applyTheme(currentTheme);
+      document.getElementById("displayModeSelect").value = displayMode;
+      if (!window.location.hash) {
+        window.location.hash = "#/";
+      } else {
+        router();
+      }
+    });
+  </script>
 </body>
 </html>
