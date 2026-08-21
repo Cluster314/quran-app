@@ -278,8 +278,8 @@
 
   <!-- Toast Notification -->
   <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
-    <span class="text-xl">📋</span>
-    <span class="text-sm font-semibold">Verse copied to clipboard!</span>
+    <span class="text-xl" id="toastIcon">📋</span>
+    <span class="text-sm font-semibold" id="toastText">Verse copied to clipboard!</span>
   </div>
 
   <header class="sticky top-0 z-40 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
@@ -546,8 +546,14 @@
       }
     }
 
-    function showToast() {
+    function showToast(text, icon = "📋") {
       const toast = document.getElementById("copyToast");
+      const toastText = document.getElementById("toastText");
+      const toastIcon = document.getElementById("toastIcon");
+
+      if (toastText) toastText.innerText = text;
+      if (toastIcon) toastIcon.innerText = icon;
+
       toast.classList.remove("translate-y-10", "opacity-0", "pointer-events-none");
       setTimeout(() => {
         toast.classList.add("translate-y-10", "opacity-0", "pointer-events-none");
@@ -556,10 +562,36 @@
 
     function copyVerseText(text) {
       navigator.clipboard.writeText(text).then(() => {
-        showToast();
+        showToast("Verse copied to clipboard!", "📋");
       }).catch(err => {
         console.error("Copy failed: ", err);
       });
+    }
+
+    function setAudioStartVerse(verseKey) {
+      const [surah, ayah] = verseKey.split(":").map(Number);
+      const startSurahSel = document.getElementById("audioStartSurahSelect");
+      const startAyahInp = document.getElementById("audioStartAyahInput");
+
+      if (startSurahSel && startAyahInp) {
+        startSurahSel.value = surah;
+        updateAudioStartAyahMax();
+        startAyahInp.value = ayah;
+        showToast(`Set Start Range: ${verseKey}`, "📍");
+      }
+    }
+
+    function setAudioEndVerse(verseKey) {
+      const [surah, ayah] = verseKey.split(":").map(Number);
+      const endSurahSel = document.getElementById("audioEndSurahSelect");
+      const endAyahInp = document.getElementById("audioEndAyahInput");
+
+      if (endSurahSel && endAyahInp) {
+        endSurahSel.value = surah;
+        updateAudioEndAyahMax();
+        endAyahInp.value = ayah;
+        showToast(`Set End Range: ${verseKey}`, "🏁");
+      }
     }
 
     function getAudioUrl(verseKey, qari) {
@@ -1450,10 +1482,18 @@
                   <div class="flex items-center gap-2">
                     <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
-                  <div class="flex items-center space-x-2">
+                  <div class="flex flex-wrap items-center space-x-2">
                     <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
                       <span>▶</span>
                       <span>Play</span>
+                    </button>
+                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio Start">
+                      <span>📍</span>
+                      <span>Set Start</span>
+                    </button>
+                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio End">
+                      <span>🏁</span>
+                      <span>Set End</span>
                     </button>
                     <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
                       <span>📋</span>
