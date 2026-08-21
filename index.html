@@ -847,11 +847,12 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
-    function sanitizeArabicText(str, isFirstAyah = false) {
+    function sanitizeArabicText(str, isFirstAyah = false, surahId = 1) {
       if (!str) return "";
       let cleaned = str.trim();
 
-      if (isFirstAyah) {
+      // Surah 9 (At-Tawbah) does not have a Bismillah header to strip!
+      if (isFirstAyah && surahId !== 9) {
         const TARGET_REMOVE_LENGTH = 39;
         if (cleaned.length > TARGET_REMOVE_LENGTH) {
           cleaned = cleaned.slice(TARGET_REMOVE_LENGTH).trim();
@@ -878,10 +879,15 @@
         const currentRukoo = verses[i].rukoo;
         const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
         
+        // ONLY mark a Rukoo if the rukoo number actively changes within the dataset.
+        // Prevent showing a false rukoo mark on the last verse of a custom range if it isn't an actual end of a rukoo!
         const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
-        const isEndOfList = (i === verses.length - 1);
+        
+        const [sId, aNum] = verses[i].verse_key.split(":").map(Number);
+        const meta = chaptersData.find(c => c.id === sId);
+        const isActualEndOfSurah = meta && (aNum === meta.verses_count);
 
-        verses[i].isLastOfRukoo = isEndByRukooNum || isEndOfList;
+        verses[i].isLastOfRukoo = isEndByRukooNum || isActualEndOfSurah;
       }
       return verses;
     }
@@ -1466,8 +1472,8 @@
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
             
-            const isFirstAyahOfSurah = (ayahNum === 1 && surahId !== 1);
-            const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah);
+            const isFirstAyahOfSurah = (ayahNum === 1);
+            const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah, surahId);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
@@ -1534,8 +1540,8 @@
         }
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const isFirstAyahOfSurah = (ayahNum === 1 && surahId !== 1);
-        const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah);
+        const isFirstAyahOfSurah = (ayahNum === 1);
+        const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah, surahId);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
         arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${cleanedArabic} ${ayahMarkerSvg}</span> `;
