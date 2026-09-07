@@ -6,8 +6,8 @@
   <title>The Noble Quran - Indo-Pak Reader</title>
   
   <!-- Favicon for Browser Tabs -->
-  <link rel="icon" type="image/png" href="https://cluster314.github.io/quran-app/og-banner.png" />
-  <link rel="apple-touch-icon" href="https://cluster314.github.io/quran-app/og-banner.png" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="favicon.ico" />
 
   <!-- Base Site URL for Open Graph Links -->
   <link rel="canonical" href="https://cluster314.github.io/quran-app/" />
@@ -37,7 +37,7 @@
   <!-- Production-ready Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- Robust Arabic & English Web Fonts (Prevents Missing Glyph Boxes) -->
+  <!-- Robust Arabic & English Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -182,7 +182,7 @@
       transform: translateX(-50%) translateY(-4px);
     }
 
-    /* Fallback Font Stacks to Fix Missing Glyph Boxes */
+    /* Fallback Font Stacks */
     .indopak-text {
       font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', serif;
       text-rendering: optimizeLegibility;
@@ -481,7 +481,6 @@
       qari: localStorage.getItem("quran_qari") || "ar.alafasy"
     };
 
-    // Helper: Dynamic Discord Embed Meta Tags Updater
     function updateDiscordEmbed({ title, description, path = "" }) {
       document.title = title;
 
@@ -495,7 +494,6 @@
       if (ogUrl) ogUrl.setAttribute("content", fullUrl);
     }
 
-    // Helper: Cleans missing glyph codes / invisible Unicode control characters
     function sanitizeArabicText(text) {
       if (!text) return "";
       return text.replace(/[\u0610-\u061A\u06D6-\u06ED\u200B-\u200F\uFEFF]/g, '').trim();
