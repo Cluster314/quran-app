@@ -5,24 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Noble Quran - Indo-Pak Reader</title>
   
-  <!-- Favicon Reference -->
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Base Site URL for Open Graph Links -->
+  <link rel="canonical" href="https://cluster314.github.io/quran-app/" />
 
-  <!-- Web App Manifest -->
+  <!-- Discord & Open Graph Meta Tags -->
+  <meta property="og:type" content="website" />
+  <meta id="ogTitle" property="og:title" content="The Noble Quran - Indo-Pak Reader" />
+  <meta id="ogDescription" property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta id="ogImage" property="og:image" content="https://cluster314.github.io/quran-app/og-banner.png" />
+  <meta id="ogUrl" property="og:url" content="https://cluster314.github.io/quran-app/" />
+  <meta id="ogSiteName" property="og:site_name" content="Noble Quran Reader" />
+  <meta name="theme-color" content="#40bfff" />
+
+  <!-- Twitter / Discord Large Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Noble Quran - Indo-Pak Reader" />
+  <meta name="twitter:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta name="twitter:image" content="https://cluster314.github.io/quran-app/og-banner.png" />
+
+  <!-- Web App Manifest & Theme -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
   <!-- Production-ready Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
+  <!-- Robust Arabic & English Web Fonts (Prevents Missing Glyph Boxes) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* Theme CSS Variables */
+    /* Dynamic Theme CSS Variables */
     :root[data-theme="dark"] {
       --bg-body: #0f172a;
       --bg-header: rgba(15, 23, 42, 0.85);
@@ -32,8 +47,8 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.15);
+      --accent: #40bfff;
+      --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #fbbf24;
       --scrollbar-thumb: #475569;
       --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
@@ -48,8 +63,8 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --text-arabic: #0f172a;
-      --accent: #0284c7;
-      --accent-glow: rgba(2, 132, 199, 0.12);
+      --accent: #40bfff;
+      --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
       --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -64,8 +79,8 @@
       --text-main: #433422;
       --text-muted: #78644c;
       --text-arabic: #2d2013;
-      --accent: #b45309;
-      --accent-glow: rgba(180, 83, 9, 0.12);
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.15);
       --rukoo-color: #b45309;
       --scrollbar-thumb: #c4b396;
       --neon-glow: 0 10px 25px -5px rgba(67, 52, 34, 0.08);
@@ -79,25 +94,23 @@
       --border-color: #222222;
       --text-main: #e2e8f0;
       --text-muted: #8b949e;
-      --text-arabic: #00f2fe;
-      --accent: #00d2ff;
-      --accent-glow: rgba(0, 210, 255, 0.2);
+      --text-arabic: #40bfff;
+      --accent: #40bfff;
+      --accent-glow: rgba(64, 191, 255, 0.25);
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
-      --neon-glow: 0 0 20px rgba(0, 210, 255, 0.15);
+      --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
     }
 
-    /* Base Layout Enhancements */
     body {
       background-color: var(--bg-body);
       color: var(--text-main);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       transition: background-color 0.3s ease, color 0.3s ease;
       background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
       background-attachment: fixed;
     }
 
-    /* Glassmorphic Elements */
     .theme-header {
       background-color: var(--bg-header);
       border-color: var(--border-color);
@@ -118,15 +131,10 @@
       border-color: var(--border-color);
     }
 
-    .theme-text-muted {
-      color: var(--text-muted);
-    }
+    .theme-text-muted { color: var(--text-muted); }
+    .theme-accent-text { color: var(--accent); }
 
-    .theme-accent-text {
-      color: var(--accent);
-    }
-
-    /* Word-by-Word Hover Tooltip Styling */
+    /* Word Tooltips */
     .word-tooltip {
       position: relative;
       display: inline-block;
@@ -161,7 +169,6 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       z-index: 50;
       direction: ltr;
-      text-shadow: none;
     }
 
     .word-tooltip:hover::after {
@@ -169,68 +176,9 @@
       transform: translateX(-50%) translateY(-4px);
     }
 
-    /* Interactive UI Cards & Hover Animations */
-    #surahGrid a.theme-card {
-      position: relative;
-      border-radius: 0.75rem;
-    }
-
-    #surahGrid a.theme-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-      pointer-events: none;
-      border-radius: 0.75rem;
-    }
-
-    #surahGrid a.theme-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 12px 24px -8px var(--accent-glow);
-    }
-
-    /* Modern Dropdowns & Buttons */
-    select, input, button {
-      transition: all 0.2s ease-in-out;
-    }
-
-    select:hover, input:hover {
-      border-color: var(--accent);
-    }
-
-    button:active {
-      transform: scale(0.97);
-    }
-
-    /* Text Glow & Display Settings */
-    [data-theme="oled"] .indopak-text {
-      text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
-    }
-
-    [data-theme="oled"] .theme-accent-text {
-      text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 6px; border: 2px solid var(--bg-body); }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-    /* Typography & Quran Reader Visuals */
-    .reading-wrapper {
-      direction: rtl;
-      text-align: center;
-      text-align-last: center;
-      word-spacing: normal;
-    }
-
+    /* Fallback Font Stacks to Fix Missing Glyph Boxes */
     .indopak-text {
-      font-family: 'Scheherazade New', 'Amiri', 'Noto Naskh Arabic', serif;
+      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', serif;
       text-rendering: optimizeLegibility;
       direction: rtl;
       unicode-bidi: isolate;
@@ -239,6 +187,11 @@
       font-feature-settings: "cv01" 1, "cv02" 1;
     }
 
+    .font-indopak {
+      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
+    }
+
+    /* Custom UI Elements */
     .ayah-container {
       display: inline-flex !important;
       align-items: center;
@@ -254,9 +207,7 @@
       transition: transform 0.2s ease;
     }
 
-    .ayah-container:hover {
-      transform: scale(1.1);
-    }
+    .ayah-container:hover { transform: scale(1.1); }
 
     .ayah-number {
       position: absolute;
@@ -276,28 +227,14 @@
       color: var(--rukoo-color);
       line-height: 1;
       pointer-events: none;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     }
 
-    /* Audio Playback State Enhancements */
-    #copyToast {
-      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      backdrop-filter: blur(8px);
-    }
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-body); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 6px; border: 2px solid var(--bg-body); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-    .active-ayah-playing {
-      outline: 2px solid var(--accent) !important;
-      border-radius: 1rem;
-      box-shadow: 0 0 20px var(--accent-glow) !important;
-      animation: pulse-glow 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 15px var(--accent-glow); }
-      50% { box-shadow: 0 0 25px var(--accent-glow); }
-    }
-
-    /* Toggle Button Styles */
     .toggle-btn {
       padding: 3px 10px;
       border-radius: 12px;
@@ -307,22 +244,27 @@
       font-weight: bold;
       font-size: 0.75rem;
       color: var(--text-muted);
-      transition: background-color 0.2s, color 0.2s;
     }
 
     .toggle-btn.finite {
-      background-color: #007bff;
+      background-color: #40bfff;
       color: #ffffff;
-      border-color: #0056b3;
+      border-color: #0284c7;
+    }
+
+    .active-ayah-playing {
+      outline: 2px solid var(--accent) !important;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px var(--accent-glow) !important;
     }
   </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col pb-24">
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-500 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3">
+  <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all">
     <span class="text-xl" id="toastIcon">📋</span>
-    <span class="text-sm font-semibold" id="toastText">Verse copied to clipboard!</span>
+    <span class="text-sm font-semibold" id="toastText">Copied!</span>
   </div>
 
   <header class="sticky top-0 z-40 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
@@ -334,22 +276,22 @@
 
       <!-- Navigation Tabs -->
       <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Juz (Para)</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Page</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Ayah Range</button>
-        <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Single Ayah</button>
+        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
+        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Juz</button>
+        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Page</button>
+        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Range</button>
+        <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Single Ayah</button>
       </div>
 
       <div class="flex items-center space-x-2">
-        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
           <option value="sepia">📜 Sepia</option>
           <option value="oled">🖤 OLED</option>
         </select>
 
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none">
           <option value="verse">🔢 Verse-by-Verse</option>
           <option value="reading-arabic">📜 Reading (Arabic)</option>
           <option value="reading-translation">🌐 Reading (Translation)</option>
@@ -400,7 +342,7 @@
           <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
         </div>
 
-        <button onclick="applyCrossSurahRange()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
+        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
           Read Range
         </button>
       </div>
@@ -415,7 +357,7 @@
           <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
         </div>
 
-        <button onclick="applySingleAyahNavigate()" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
+        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
           Read Ayah
         </button>
       </div>
@@ -424,7 +366,7 @@
 
   <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
     <div class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
       <p class="theme-text-muted text-sm">Initializing Quran Reader...</p>
     </div>
   </main>
@@ -432,7 +374,7 @@
   <!-- Sticky Audio Player Bar -->
   <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
     <div class="flex items-center space-x-2">
-      <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Play">
+      <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 hover:bg-blue-500 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Play">
         ▶
       </button>
       <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border hover:border-yellow-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Pause">
@@ -492,14 +434,15 @@
         <span class="text-xs theme-text-muted">:</span>
         <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
 
-        <button onclick="playSelectedAudioRange()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition ml-1">
-          ▶ Play Audio
+        <button onclick="playSelectedAudioRange()" class="bg-blue-400 hover:bg-blue-500 text-white font-semibold px-3 py-1 rounded-lg transition ml-1">
+          ▶ Play
         </button>
       </div>
     </div>
   </div>
 
   <script>
+    const SITE_BASE_URL = "https://cluster314.github.io/quran-app/";
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     const BISMILLAH_ARABIC = "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ";
@@ -531,6 +474,26 @@
     let audioSettings = {
       qari: localStorage.getItem("quran_qari") || "ar.alafasy"
     };
+
+    // Helper: Dynamic Discord Embed Meta Tags Updater
+    function updateDiscordEmbed({ title, description, path = "" }) {
+      document.title = title;
+
+      const fullUrl = `${SITE_BASE_URL}#/${path}`;
+      const ogTitle = document.getElementById("ogTitle");
+      const ogDescription = document.getElementById("ogDescription");
+      const ogUrl = document.getElementById("ogUrl");
+
+      if (ogTitle) ogTitle.setAttribute("content", title);
+      if (ogDescription) ogDescription.setAttribute("content", description);
+      if (ogUrl) ogUrl.setAttribute("content", fullUrl);
+    }
+
+    // Helper: Cleans missing glyph codes / invisible Unicode control characters
+    function sanitizeArabicText(text) {
+      if (!text) return "";
+      return text.replace(/[\u0610-\u061A\u06D6-\u06ED\u200B-\u200F\uFEFF]/g, '').trim();
+    }
 
     function toggleMode(type) {
       const settings = repeatSettings[type];
@@ -576,9 +539,7 @@
     function changeQari(newQari) {
       audioSettings.qari = newQari;
       localStorage.setItem("quran_qari", newQari);
-      if (isPlayingAudio) {
-        playAudioIndex(currentAudioIndex);
-      }
+      if (isPlayingAudio) playAudioIndex(currentAudioIndex);
     }
 
     function showToast(text, icon = "📋") {
@@ -792,9 +753,7 @@
     }
 
     function initScrollObserver() {
-      if (scrollObserver) {
-        scrollObserver.disconnect();
-      }
+      if (scrollObserver) scrollObserver.disconnect();
 
       scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -807,15 +766,9 @@
             }
           }
         });
-      }, {
-        root: null,
-        rootMargin: '-10% 0px -70% 0px',
-        threshold: 0
-      });
+      }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
 
-      document.querySelectorAll('[data-verse-key]').forEach(el => {
-        scrollObserver.observe(el);
-      });
+      document.querySelectorAll('[data-verse-key]').forEach(el => scrollObserver.observe(el));
     }
 
     function restoreScrollPosition() {
@@ -825,9 +778,7 @@
       if (targetVerseKey) {
         setTimeout(() => {
           const targetEl = document.querySelector(`[data-verse-key="${targetVerseKey}"]`);
-          if (targetEl) {
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
       }
     }
@@ -859,7 +810,6 @@
         if (totalPages > 0) MAX_PAGES = totalPages;
         populatePageDropdown();
       } catch (err) {
-        console.warn("Could not load local page map file, applying default page 1 start:", err);
         INDOPAK_15_LINE_PAGE_STARTS = { 1: [1, 1] };
         REVERSE_PAGE_LOOKUP = { "1:1": 1 };
         populatePageDropdown();
@@ -897,7 +847,7 @@
       if (!words || !words.length) return "";
       return words.map(w => {
         if (w.char_type_name === "end") return "";
-        const arabic = w.text_indopak || w.text || "";
+        const arabic = sanitizeArabicText(w.text_indopak || w.text || "");
         const translation = (w.translation && w.translation.text) ? w.translation.text : "";
         return `<span class="word-tooltip" data-translation="${translation}">${arabic}</span>`;
       }).join(" ");
@@ -907,7 +857,7 @@
       if (!words || !words.length) return "";
       return words
         .filter(w => w.char_type_name !== "end")
-        .map(w => w.text_indopak || w.text || "")
+        .map(w => sanitizeArabicText(w.text_indopak || w.text || ""))
         .join(" ");
     }
 
@@ -1023,10 +973,10 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          if (tab) tab.className = "px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition";
+          if (tab) tab.className = "px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold transition";
           if (ctrl) { ctrl.classList.remove("hidden"); ctrl.classList.add("flex"); }
         } else {
-          if (tab) tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition";
+          if (tab) tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition";
           if (ctrl) { ctrl.classList.add("hidden"); ctrl.classList.remove("flex"); }
         }
       });
@@ -1046,7 +996,7 @@
         chaptersData = data.chapters.map(c => ({
           id: c.id,
           name_simple: c.name_simple,
-          name_arabic: c.name_arabic,
+          name_arabic: sanitizeArabicText(c.name_arabic),
           verses_count: c.verses_count,
           translated_name: { name: c.translated_name.name }
         }));
@@ -1167,15 +1117,12 @@
             }
           });
         } else if (typeof data === 'object' && data !== null) {
-          Object.keys(data).forEach(key => {
-            map[key] = String(data[key]);
-          });
+          Object.keys(data).forEach(key => map[key] = String(data[key]));
         }
 
         translationCache[surahId] = map;
         return map;
       } catch (err) {
-        console.error(`Error loading translation:`, err);
         return {};
       }
     }
@@ -1251,7 +1198,12 @@
 
     function renderHome() {
       const app = document.getElementById("app");
-      document.title = "The Noble Quran - Indo-Pak Reader";
+
+      updateDiscordEmbed({
+        title: "The Noble Quran - Indo-Pak Reader",
+        description: "Browse and read the Noble Quran in 15-line Indo-Pak script with translations and recitations.",
+        path: ""
+      });
 
       currentLoadedVerses = [];
 
@@ -1265,13 +1217,13 @@
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
                title="${c.name_simple}"
-               class="theme-card border p-3.5 rounded-xl transition flex items-center justify-between gap-2 group hover:border-blue-500">
+               class="theme-card border p-3.5 rounded-xl transition flex items-center justify-between gap-2 group hover:border-blue-400">
               <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-9 h-9 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-xs font-bold theme-accent-text group-hover:bg-blue-500 group-hover:text-white transition">
+                <div class="w-9 h-9 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-xs font-bold theme-accent-text group-hover:bg-blue-400 group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div class="min-w-0">
-                  <div class="font-semibold text-sm group-hover:text-blue-500 transition truncate" title="${c.name_simple}">${c.name_simple}</div>
+                  <div class="font-semibold text-sm group-hover:text-blue-400 transition truncate" title="${c.name_simple}">${c.name_simple}</div>
                   <div class="text-xs theme-text-muted">${c.verses_count} Verses</div>
                 </div>
               </div>
@@ -1285,8 +1237,13 @@
     async function renderSurah(surahId) {
       const app = document.getElementById("app");
       const surahMeta = chaptersData.find(c => c.id === surahId);
-      
-      document.title = `${surahMeta.name_simple} - Indo-Pak Quran`;
+
+      updateDiscordEmbed({
+        title: `Surah ${surahMeta.name_simple} (${surahMeta.name_arabic})`,
+        description: `Reading Surah ${surahMeta.name_simple} • ${surahMeta.translated_name.name} (${surahMeta.verses_count} Verses)`,
+        path: `${surahId}`
+      });
+
       showLoading(`Loading Surah ${surahMeta.name_simple}...`);
 
       const [verses, translations] = await Promise.all([
@@ -1321,11 +1278,16 @@
 
     async function renderPage(pageNum) {
       const app = document.getElementById("app");
-      document.title = `Page ${pageNum} - Indo-Pak Quran`;
+
+      updateDiscordEmbed({
+        title: `Quran Page ${pageNum} - 15-Line Indo-Pak`,
+        description: `Currently reading Page ${pageNum} of ${MAX_PAGES} in the Noble Quran.`,
+        path: `page/${pageNum}`
+      });
+
       showLoading(`Loading Page ${pageNum}...`);
 
       const pageVerses = await fetchPageVerses(pageNum);
-
       currentLoadedVerses = pageVerses;
 
       const surahGroups = {};
@@ -1343,12 +1305,10 @@
       const translationResults = await Promise.all(translationPromises);
 
       const pageTranslations = {};
-      surahIds.forEach((sId, index) => {
-        pageTranslations[sId] = translationResults[index];
-      });
+      surahIds.forEach((sId, index) => pageTranslations[sId] = translationResults[index]);
 
       let html = `
-        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
+        <div class="w-full theme-card border border-blue-400 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
           <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
             ⬅ Previous
           </button>
@@ -1364,7 +1324,7 @@
         </div>
       `;
 
-      surahIds.forEach((sId, idx) => {
+      surahIds.forEach((sId) => {
         const surahMeta = chaptersData.find(c => c.id === sId);
         const verses = surahGroups[sId];
         const translations = pageTranslations[sId];
@@ -1403,8 +1363,13 @@
       const startMeta = chaptersData.find(c => c.id === fromSurah);
       const endMeta = chaptersData.find(c => c.id === toSurah);
 
-      document.title = customHeaderTitle || `${startMeta.name_simple} (${fromAyah}) - ${endMeta.name_simple} (${toAyah}) - Range Read`;
-      showLoading(`Fetching verses from ${startMeta.name_simple}:${fromAyah} to ${endMeta.name_simple}:${toAyah}...`);
+      updateDiscordEmbed({
+        title: customHeaderTitle || `Ayah Range: ${startMeta.name_simple}:${fromAyah} - ${endMeta.name_simple}:${toAyah}`,
+        description: `Reading range ${startMeta.name_simple} [${fromAyah}] to ${endMeta.name_simple} [${toAyah}]`,
+        path: `range?fromSurah=${fromSurah}&fromAyah=${fromAyah}&toSurah=${toSurah}&toAyah=${toAyah}`
+      });
+
+      showLoading(`Fetching verses...`);
 
       let compiledSections = [];
       let allVerses = [];
@@ -1441,7 +1406,7 @@
       currentLoadedVerses = allVerses;
 
       let html = `
-        <div class="w-full theme-card border border-blue-500 rounded-2xl p-6 mb-8 text-center">
+        <div class="w-full theme-card border border-blue-400 rounded-2xl p-6 mb-8 text-center">
           <h1 class="text-2xl md:text-3xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
           <p class="theme-accent-text font-medium text-sm mt-1">
             ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
@@ -1497,11 +1462,11 @@
             const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
             const pageMarkerHtml = pageNum ? `
               <div class="w-full flex items-center my-6">
-                <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-                <span class="px-4 py-1.5 theme-card border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase">
+                <div class="flex-1 border-t border-blue-400 opacity-30"></div>
+                <span class="px-4 py-1.5 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase">
                   📄 Page ${pageNum}
                 </span>
-                <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+                <div class="flex-1 border-t border-blue-400 opacity-30"></div>
               </div>
             ` : '';
 
@@ -1521,22 +1486,22 @@
               <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
                 <div class="flex items-center justify-between border-b theme-inner pb-3">
                   <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 theme-inner border border-blue-500 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
+                    <span class="px-3 py-1 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
                   </div>
                   <div class="flex flex-wrap items-center space-x-2">
-                    <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                    <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">
                       <span>▶</span>
                       <span>Play</span>
                     </button>
-                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio Start">
+                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio Start">
                       <span>📍</span>
                       <span>Set Start</span>
                     </button>
-                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio End">
+                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio End">
                       <span>🏁</span>
                       <span>Set End</span>
                     </button>
-                    <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-500 hover:text-white px-3 py-1.5 rounded-lg border border-blue-500 border-opacity-40 theme-accent-text font-semibold transition">
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">
                       <span>📋</span>
                       <span>Copy</span>
                     </button>
@@ -1565,11 +1530,11 @@
         if (pageNum) {
           arabicParagraph += `
             <span class="w-full flex items-center my-8 block" contenteditable="false" dir="ltr">
-              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
-              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
+              <span class="px-4 py-1 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
-              <span class="flex-1 border-t border-blue-500 opacity-30"></span>
+              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
             </span>
           `;
         }
@@ -1596,11 +1561,11 @@
         if (pageNum) {
           items.push(`
             <div class="w-full flex items-center my-8">
-              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
-              <span class="px-4 py-1 theme-inner border border-blue-500 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
+              <span class="px-4 py-1 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
-              <div class="flex-1 border-t border-blue-500 opacity-30"></div>
+              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
             </div>
           `);
         }
@@ -1624,7 +1589,7 @@
     function showLoading(msg) {
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-4">
-          <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
           <p class="theme-text-muted text-sm animate-pulse">${msg}</p>
         </div>
       `;
@@ -1634,7 +1599,7 @@
       document.getElementById("app").innerHTML = `
         <div class="text-center py-20">
           <h1 class="text-2xl font-bold text-red-500">View Not Found</h1>
-          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-blue-500 hover:underline">Back to Home</a>
+          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-blue-400 hover:underline">Back to Home</a>
         </div>
       `;
     }
