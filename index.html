@@ -126,6 +126,49 @@
       color: var(--accent);
     }
 
+    /* Word-by-Word Hover Tooltip Styling */
+    .word-tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      padding: 0 2px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .word-tooltip:hover {
+      color: var(--accent);
+      background-color: var(--accent-glow);
+    }
+
+    .word-tooltip::after {
+      content: attr(data-translation);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--accent);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 50;
+      direction: ltr;
+      text-shadow: none;
+    }
+
+    .word-tooltip:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
     /* Interactive UI Cards & Hover Animations */
     #surahGrid a.theme-card {
       position: relative;
@@ -289,7 +332,7 @@
         <span>Quran Indo-Pak</span>
       </a>
 
-      <!-- Updated Order: Surah -> Juz -> Page -> Ayah Range -> Single Ayah -->
+      <!-- Navigation Tabs -->
       <div class="flex items-center space-x-2 text-xs">
         <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-500 bg-blue-500 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
         <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-500 transition">Juz (Para)</button>
@@ -389,15 +432,12 @@
   <!-- Sticky Audio Player Bar -->
   <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
     <div class="flex items-center space-x-2">
-      <!-- Play Button -->
       <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Play">
         ▶
       </button>
-      <!-- Pause Button -->
       <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border hover:border-yellow-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Pause">
         ⏸
       </button>
-      <!-- Stop Button -->
       <button onclick="stopAudioPlayback()" class="theme-inner border hover:border-red-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Stop">
         ⏹
       </button>
@@ -408,7 +448,6 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <!-- Qari Selector -->
       <div class="flex items-center space-x-1">
         <span class="theme-text-muted hidden sm:inline">Qari:</span>
         <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
@@ -419,7 +458,6 @@
         </select>
       </div>
 
-      <!-- Ayah Repeat Toggle Controls -->
       <div class="flex items-center space-x-1.5">
         <span class="theme-text-muted hidden sm:inline">Repeat Ayah:</span>
         <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">Infinite</button>
@@ -429,7 +467,6 @@
         </div>
       </div>
 
-      <!-- Range Repeat Toggle Controls -->
       <div class="flex items-center space-x-1.5">
         <span class="theme-text-muted hidden sm:inline">Repeat Range:</span>
         <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">Infinite</button>
@@ -439,7 +476,6 @@
         </div>
       </div>
 
-      <!-- Audio Range Selector -->
       <div class="flex items-center space-x-1.5 border-l border-gray-600 pl-2">
         <span class="text-xs theme-text-muted">Audio Range:</span>
         <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
@@ -464,8 +500,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://api.alquran.cloud/v1";
-    const API_EDITION = "quran-quran-portal";
+    const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     const BISMILLAH_ARABIC = "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ";
     
@@ -756,7 +791,6 @@
       }
     }
 
-    /* Track visible verses on scroll using IntersectionObserver */
     function initScrollObserver() {
       if (scrollObserver) {
         scrollObserver.disconnect();
@@ -847,21 +881,6 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
-    function sanitizeArabicText(str, isFirstAyah = false, surahId = 1) {
-      if (!str) return "";
-      let cleaned = str.trim();
-
-      // Surah 9 (At-Tawbah) does not have a Bismillah header to strip!
-      if (isFirstAyah && surahId !== 9) {
-        const TARGET_REMOVE_LENGTH = 39;
-        if (cleaned.length > TARGET_REMOVE_LENGTH) {
-          cleaned = cleaned.slice(TARGET_REMOVE_LENGTH).trim();
-        }
-      }
-
-      return cleaned;
-    }
-
     function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false) {
       const rukooSymbolHtml = isLastOfRukoo ? `<span class="rukoo-top-mark">ع</span>` : '';
 
@@ -874,13 +893,28 @@
         </span>&nbsp;`;
     }
 
+    function renderWordByWord(words) {
+      if (!words || !words.length) return "";
+      return words.map(w => {
+        if (w.char_type_name === "end") return "";
+        const arabic = w.text_indopak || w.text || "";
+        const translation = (w.translation && w.translation.text) ? w.translation.text : "";
+        return `<span class="word-tooltip" data-translation="${translation}">${arabic}</span>`;
+      }).join(" ");
+    }
+
+    function getPlainVerseArabic(words) {
+      if (!words || !words.length) return "";
+      return words
+        .filter(w => w.char_type_name !== "end")
+        .map(w => w.text_indopak || w.text || "")
+        .join(" ");
+    }
+
     function markRukooEndings(verses) {
       for (let i = 0; i < verses.length; i++) {
         const currentRukoo = verses[i].rukoo;
         const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
-        
-        // ONLY mark a Rukoo if the rukoo number actively changes within the dataset.
-        // Prevent showing a false rukoo mark on the last verse of a custom range if it isn't an actual end of a rukoo!
         const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
         
         const [sId, aNum] = verses[i].verse_key.split(":").map(Number);
@@ -1006,16 +1040,15 @@
 
     async function loadChapters() {
       try {
-        const res = await fetch(`${API_BASE}/surah`);
+        const res = await fetch(`${API_BASE}/chapters?language=en`);
         const data = await res.json();
-        if (data.code !== 200) throw new Error("API Error fetching chapters");
         
-        chaptersData = data.data.map(c => ({
-          id: c.number,
-          name_simple: c.englishName,
-          name_arabic: c.name,
-          verses_count: c.numberOfAyahs,
-          translated_name: { name: c.englishNameTranslation }
+        chaptersData = data.chapters.map(c => ({
+          id: c.id,
+          name_simple: c.name_simple,
+          name_arabic: c.name_arabic,
+          verses_count: c.verses_count,
+          translated_name: { name: c.translated_name.name }
         }));
         populateDropdowns();
       } catch (err) {
@@ -1148,14 +1181,13 @@
     }
 
     async function fetchChapterVerses(surahId) {
-      const res = await fetch(`${API_BASE}/surah/${surahId}/${API_EDITION}`);
+      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
       const data = await res.json();
-      if (data.code !== 200) throw new Error(`API Error: ${data.status}`);
       
-      return data.data.ayahs.map(a => ({
-        verse_key: `${surahId}:${a.numberInSurah}`,
-        text_indopak: a.text,
-        rukoo: a.ruku
+      return data.verses.map(v => ({
+        verse_key: v.verse_key,
+        words: v.words,
+        rukoo: v.rub_el_hizb_number
       }));
     }
 
@@ -1183,7 +1215,7 @@
       const requests = [];
       for (let sId = fromS; sId <= toS; sId++) {
         requests.push(
-          fetch(`${API_BASE}/surah/${sId}/${API_EDITION}`)
+          fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`)
             .then(res => res.json())
             .then(data => ({ sId, data }))
         );
@@ -1193,19 +1225,22 @@
       let pageVerses = [];
 
       results.sort((a, b) => a.sId - b.sId).forEach(({ sId, data }) => {
-        if (!data || data.code !== 200) return;
+        if (!data || !data.verses) return;
 
         let startFilter = (sId === fromS) ? fromA : 1;
-        let endFilter = (sId === toS) ? toA : data.data.ayahs.length;
+        let endFilter = (sId === toS) ? toA : data.verses.length;
 
-        const filtered = data.data.ayahs
-          .filter(a => a.numberInSurah >= startFilter && a.numberInSurah <= endFilter)
-          .map(a => ({
-            verse_key: `${sId}:${a.numberInSurah}`,
+        const filtered = data.verses
+          .filter(v => {
+            const num = parseInt(v.verse_key.split(":")[1]);
+            return num >= startFilter && num <= endFilter;
+          })
+          .map(v => ({
+            verse_key: v.verse_key,
             surah_id: sId,
-            ayah_num: a.numberInSurah,
-            text_indopak: a.text,
-            rukoo: a.ruku
+            ayah_num: parseInt(v.verse_key.split(":")[1]),
+            words: v.words,
+            rukoo: v.rub_el_hizb_number
           }));
 
         pageVerses.push(...filtered);
@@ -1472,13 +1507,13 @@
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
             
-            const isFirstAyahOfSurah = (ayahNum === 1);
-            const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah, surahId);
+            const wordByWordHtml = renderWordByWord(v.words);
+            const plainArabicText = getPlainVerseArabic(v.words);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
-            const fullVerseToCopy = `${cleanedArabic} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
+            const fullVerseToCopy = `${plainArabicText} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
             const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
             return `
@@ -1508,7 +1543,7 @@
                   </div>
                 </div>
                 <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
-                  ${cleanedArabic} ${ayahMarkerSvg}
+                  ${wordByWordHtml} ${ayahMarkerSvg}
                 </div>
                 ${translatedText ? `<div class="text-left text-sm md:text-base border-t theme-inner pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
@@ -1540,11 +1575,10 @@
         }
 
         const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const isFirstAyahOfSurah = (ayahNum === 1);
-        const cleanedArabic = sanitizeArabicText(v.text_indopak, isFirstAyahOfSurah, surahId);
+        const wordByWordHtml = renderWordByWord(v.words);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
 
-        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${cleanedArabic} ${ayahMarkerSvg}</span> `;
+        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${wordByWordHtml} ${ayahMarkerSvg}</span> `;
       });
 
       return `
