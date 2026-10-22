@@ -40,7 +40,7 @@
   <!-- Robust Arabic & English Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* Dynamic Theme CSS Variables */
@@ -142,6 +142,7 @@
 
     /* Word Tooltips */
     .word-tooltip {
+      font-family: inherit;
       position: relative;
       display: inline-block;
       cursor: pointer;
@@ -184,7 +185,8 @@
 
     /* Fallback Font Stacks */
     .indopak-text {
-      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', serif;
+      font-family: 'Noto Naskh Arabic', 'Scheherazade New', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-synthesis: none;
       text-rendering: optimizeLegibility;
       direction: rtl;
       unicode-bidi: isolate;
@@ -194,7 +196,10 @@
     }
 
     .font-indopak {
-      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
+      font-family: 'Noto Naskh Arabic', 'Scheherazade New', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-synthesis: none;
+      font-kerning: normal;
+      font-variant-ligatures: common-ligatures contextual;
     }
 
     /* Custom UI Elements */
@@ -496,7 +501,9 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-      return text.replace(/[\u0610-\u061A\u06D6-\u06ED\u200B-\u200F\uFEFF]/g, '').trim();
+      // Keep Quranic annotation marks and extended Arabic characters.
+      // Remove only invisible formatting characters that can interfere with layout.
+      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
     }
 
     function toggleMode(type) {
