@@ -268,9 +268,76 @@
       border-radius: 1rem;
       box-shadow: 0 0 20px var(--accent-glow) !important;
     }
+    /* Always-available link to the matching location on Quran.com */
+    #quranComLink {
+      position: fixed;
+      right: 1rem;
+      bottom: 6.5rem;
+      z-index: 60;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 0.95rem;
+      border: 1px solid var(--accent);
+      border-radius: 9999px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: var(--neon-glow);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    #quranComLink:hover { background: var(--accent-glow); transform: translateY(-2px); }
+    @media (max-width: 480px) {
+      #quranComLink { right: 0.65rem; bottom: 6.3rem; padding: 0.6rem 0.75rem; font-size: 0.72rem; }
+    }
   </style>
 </head>
 <body class="font-sans min-h-screen flex flex-col pb-24">
+
+  <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
+    <span aria-hidden="true">↗</span><span>View in quran.com</span>
+  </a>
+
+  <script>
+    function updateQuranComLink() {
+      const link = document.getElementById("quranComLink");
+      if (!link) return;
+
+      const rawHash = window.location.hash.replace(/^#/, "") || "/";
+      const [rawPath, queryPart = ""] = rawHash.split("?");
+      const path = rawPath || "/";
+      const params = new URLSearchParams(queryPart);
+      let destination = "https://quran.com/";
+
+      if (path.startsWith("/juz/")) {
+        const juz = Number(path.split("/")[2]);
+        if (Number.isInteger(juz) && juz >= 1 && juz <= 30) destination += `juz/${juz}`;
+      } else if (path.startsWith("/page/")) {
+        const page = Number(path.split("/")[2]);
+        if (Number.isInteger(page) && page >= 1 && page <= 604) destination += `page/${page}`;
+      } else if (path.startsWith("/range")) {
+        const surah = Number(params.get("fromSurah")) || 1;
+        const ayah = Number(params.get("fromAyah")) || 1;
+        if (surah >= 1 && surah <= 114 && ayah >= 1) destination += `${surah}/${ayah}`;
+      } else {
+        const parts = path.split("/").filter(Boolean);
+        const surah = Number(parts[0]);
+        if (Number.isInteger(surah) && surah >= 1 && surah <= 114) {
+          const ayah = Number(parts[1]);
+          destination += surah;
+          if (Number.isInteger(ayah) && ayah >= 1) destination += `/${ayah}`;
+        }
+      }
+
+      link.href = destination;
+    }
+
+    window.addEventListener("hashchange", updateQuranComLink);
+    document.addEventListener("DOMContentLoaded", updateQuranComLink);
+    updateQuranComLink();
+  </script>
 
   <!-- Toast Notification -->
   <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all">
