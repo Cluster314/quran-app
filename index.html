@@ -43,6 +43,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
+    /* Custom Indo-Pak WebFont */
+    @font-face {
+      font-family: 'IndoPakQuran';
+      src: url('https://cdn.jsdelivr.net/gh/quran/quran.com-images@master/fonts/PDMS_Saleem_QuranFont.woff2') format('woff2');
+      font-display: swap;
+    }
+
     /* Dynamic Theme CSS Variables */
     :root[data-theme="dark"] {
       --bg-body: #0f172a;
@@ -185,7 +192,7 @@
 
     /* Fallback Font Stacks */
     .indopak-text {
-      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
       font-synthesis: none;
       text-rendering: optimizeLegibility;
       direction: rtl;
@@ -196,7 +203,7 @@
     }
 
     .font-indopak {
-      font-family: 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
       font-synthesis: none;
       font-kerning: normal;
       font-variant-ligatures: common-ligatures contextual;
@@ -232,7 +239,7 @@
     .rukoo-top-mark {
       position: absolute;
       top: -1.3rem;
-      font-family: 'Scheherazade New', 'Amiri', serif;
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
       font-size: 0.9rem;
       font-weight: bold;
       color: var(--rukoo-color);
@@ -568,9 +575,8 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-      // Keep Quranic annotation marks and extended Arabic characters.
-      // Remove only invisible formatting characters that can interfere with layout.
-      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
+      // Clean invisible control characters and unsupported private range glyphs
+      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').replace(/[\uE000-\uF8FF]/g, '').trim();
     }
 
     function toggleMode(type) {
