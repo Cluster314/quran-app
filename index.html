@@ -575,8 +575,13 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-      // Keep Private Use Area characters so Waqf signs render correctly!
-      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
+      // Remove invisible formatting characters[cite: 1]
+      let cleaned = text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
+      
+      // Collapse one or more consecutive missing PUA characters / glyph boxes into a single Waqf sign
+      cleaned = cleaned.replace(/[\uE000-\uF8FF\uFD3E\uFD3F\uFB50-\uFDFF\uFFFD\u25A0-\u25FF]+/g, ' ۬ ');
+      
+      return cleaned;
     }
 
     function toggleMode(type) {
