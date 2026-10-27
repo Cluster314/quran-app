@@ -575,8 +575,8 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-      // Clean invisible control characters and unsupported private range glyphs
-      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').replace(/[\uE000-\uF8FF]/g, '').trim();
+      // Keep Private Use Area characters so Waqf signs render correctly!
+      return text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
     }
 
     function toggleMode(type) {
