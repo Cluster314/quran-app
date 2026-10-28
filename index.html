@@ -119,7 +119,6 @@
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
       --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
-      /* Deep cyan/blue colorization filter for OLED mode */
       --mushaf-filter: invert(1) grayscale(1) brightness(1.1) sepia(1) hue-rotate(170deg) saturate(8);
       --mushaf-blend: screen;
     }
@@ -172,7 +171,7 @@
       border: none;
       box-shadow: none;
       padding: 0;
-      margin-bottom: 2rem;
+      margin-bottom: 0rem;
     }
 
     /* Word Tooltips */
@@ -1522,7 +1521,14 @@
       }
 
       const imagesHtml = pageNumbers.map(p => `
-        <div class="mushaf-container mb-6 text-center" id="page-mushaf-${p}">
+        <div class="mushaf-container mb-2 text-center" id="page-mushaf-${p}">
+          <div class="w-full flex items-center my-6">
+            <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+            <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+              Page ${p}
+            </span>
+            <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+          </div>
           <img 
             src="${p}.png" 
             alt="Quran Page ${p}" 
@@ -1533,7 +1539,7 @@
         </div>
       `).join("");
 
-      return `${navHeader}<div class="w-full space-y-2 max-w-3xl mx-auto">${imagesHtml}</div>`;
+      return `${navHeader}<div class="w-full space-y-4 max-w-3xl mx-auto">${imagesHtml}</div>`;
     }
 
     function renderVerseByVerse(verses, translations, surahId) {
@@ -1542,12 +1548,12 @@
           ${verses.map((v) => {
             const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
             const pageMarkerHtml = pageNum ? `
-              <div class="w-full flex items-center my-4">
-                <div class="flex-1 border-t border-blue-400 opacity-30"></div>
-                <span class="px-3 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase">
-                  📄 Page ${pageNum}
+              <div class="w-full flex items-center my-6">
+                <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+                <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+                  Page ${pageNum}
                 </span>
-                <div class="flex-1 border-t border-blue-400 opacity-30"></div>
+                <div class="flex-1 border-t border-blue-400 opacity-40"></div>
               </div>
             ` : '';
 
@@ -1594,11 +1600,11 @@
         if (pageNum) {
           arabicParagraph += `
             <span class="w-full flex items-center my-6 block" contenteditable="false" dir="ltr">
-              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
-              <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase mx-2">
-                📄 Page ${pageNum}
+              <span class="flex-1 border-t border-blue-400 opacity-40"></span>
+              <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+                Page ${pageNum}
               </span>
-              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
+              <span class="flex-1 border-t border-blue-400 opacity-40"></span>
             </span>
           `;
         }
@@ -1623,11 +1629,11 @@
         if (pageNum) {
           items.push(`
             <div class="w-full flex items-center my-6">
-              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
-              <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase mx-2">
-                📄 Page ${pageNum}
+              <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+              <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+                Page ${pageNum}
               </span>
-              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
+              <div class="flex-1 border-t border-blue-400 opacity-40"></div>
             </div>
           `);
         }
