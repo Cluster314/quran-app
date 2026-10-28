@@ -2,7 +2,7 @@
 <html lang="ar" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>The Noble Quran - Indo-Pak Reader</title>
   
   <!-- Favicon for Browser Tabs -->
@@ -53,7 +53,7 @@
     /* Dynamic Theme CSS Variables */
     :root[data-theme="dark"] {
       --bg-body: #0f172a;
-      --bg-header: rgba(15, 23, 42, 0.85);
+      --bg-header: rgba(15, 23, 42, 0.9);
       --bg-card: #1e293b;
       --bg-inner: #0f172a;
       --border-color: #334155;
@@ -69,7 +69,7 @@
 
     :root[data-theme="light"] {
       --bg-body: #f1f5f9;
-      --bg-header: rgba(255, 255, 255, 0.85);
+      --bg-header: rgba(255, 255, 255, 0.9);
       --bg-card: #ffffff;
       --bg-inner: #f8fafc;
       --border-color: #e2e8f0;
@@ -85,7 +85,7 @@
 
     :root[data-theme="sepia"] {
       --bg-body: #f4ebd9;
-      --bg-header: rgba(237, 224, 203, 0.85);
+      --bg-header: rgba(237, 224, 203, 0.9);
       --bg-card: #eadeca;
       --bg-inner: #e2d4be;
       --border-color: #d3c4a8;
@@ -101,7 +101,7 @@
 
     :root[data-theme="oled"] {
       --bg-body: #000000;
-      --bg-header: rgba(0, 0, 0, 0.85);
+      --bg-header: rgba(0, 0, 0, 0.9);
       --bg-card: #080808;
       --bg-inner: #121212;
       --border-color: #222222;
@@ -122,6 +122,7 @@
       transition: background-color 0.3s ease, color 0.3s ease;
       background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
       background-attachment: fixed;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .theme-header {
@@ -215,9 +216,9 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      width: 2.5rem;
-      height: 2.5rem;
-      margin: 0 0.4rem;
+      width: 2.2rem;
+      height: 2.2rem;
+      margin: 0 0.3rem;
       vertical-align: middle;
       direction: ltr;
       unicode-bidi: isolate;
@@ -230,7 +231,7 @@
     .ayah-number {
       position: absolute;
       font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
       color: var(--accent);
       line-height: 1;
@@ -238,9 +239,9 @@
 
     .rukoo-top-mark {
       position: absolute;
-      top: -1.3rem;
+      top: -1.2rem;
       font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: bold;
       color: var(--rukoo-color);
       line-height: 1;
@@ -248,19 +249,19 @@
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 6px; border: 2px solid var(--bg-body); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
     .toggle-btn {
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
       border: 1px solid var(--border-color);
       background-color: var(--bg-inner);
       cursor: pointer;
       font-weight: bold;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
 
@@ -275,36 +276,39 @@
       border-radius: 1rem;
       box-shadow: 0 0 20px var(--accent-glow) !important;
     }
+
     /* Always-available link to the matching location on Quran.com */
     #quranComLink {
       position: fixed;
-      right: 1rem;
-      bottom: 6.5rem;
+      right: 0.75rem;
+      bottom: 5.5rem;
       z-index: 60;
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      padding: 0.7rem 0.95rem;
+      gap: 0.35rem;
+      padding: 0.55rem 0.85rem;
       border: 1px solid var(--accent);
       border-radius: 9999px;
       background: var(--bg-card);
       color: var(--text-main);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       text-decoration: none;
       box-shadow: var(--neon-glow);
       transition: background-color 0.2s ease, transform 0.2s ease;
     }
     #quranComLink:hover { background: var(--accent-glow); transform: translateY(-2px); }
-    @media (max-width: 480px) {
-      #quranComLink { right: 0.65rem; bottom: 6.3rem; padding: 0.6rem 0.75rem; font-size: 0.72rem; }
+
+    @media (max-width: 640px) {
+      .indopak-text { font-size: 1.75rem !important; line-height: 3.2 !important; }
+      #quranComLink { bottom: 6.2rem; right: 0.5rem; font-size: 0.7rem; padding: 0.45rem 0.65rem; }
     }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col pb-24">
+<body class="font-sans min-h-screen flex flex-col pb-36 sm:pb-28">
 
   <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
-    <span aria-hidden="true">↗</span><span>View in quran.com</span>
+    <span aria-hidden="true">↗</span><span>quran.com</span>
   </a>
 
   <script>
@@ -347,181 +351,158 @@
   </script>
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-24 right-5 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transition-all">
-    <span class="text-xl" id="toastIcon">📋</span>
-    <span class="text-sm font-semibold" id="toastText">Copied!</span>
+  <div id="copyToast" class="fixed bottom-28 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all">
+    <span class="text-lg" id="toastIcon">📋</span>
+    <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
 
-  <header class="sticky top-0 z-40 theme-header border-b px-4 lg:px-8 py-3 flex flex-col gap-3 w-full">
+  <header class="sticky top-0 z-40 theme-header border-b px-3 sm:px-6 py-2.5 flex flex-col gap-2.5 w-full">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-2 theme-accent-text font-bold text-xl tracking-wide">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1.5 theme-accent-text font-bold text-base sm:text-lg tracking-wide">
         <span>📖</span>
-        <span>Quran Indo-Pak</span>
+        <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Navigation Tabs -->
-      <div class="flex items-center space-x-2 text-xs">
-        <button onclick="setNavMode('surah')" id="tabSurah" class="px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold transition">Surah</button>
-        <button onclick="setNavMode('juz')" id="tabJuz" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Juz</button>
-        <button onclick="setNavMode('page')" id="tabPage" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Page</button>
-        <button onclick="setNavMode('range')" id="tabRange" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Range</button>
-        <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition">Single Ayah</button>
-      </div>
-
-      <div class="flex items-center space-x-2">
-        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none">
+      <div class="flex items-center space-x-1.5">
+        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-2xs sm:text-xs font-semibold border rounded-lg px-2 py-1 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
           <option value="sepia">📜 Sepia</option>
           <option value="oled">🖤 OLED</option>
         </select>
 
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-xs font-semibold border rounded-lg px-2.5 py-1.5 focus:outline-none">
-          <option value="verse">🔢 Verse-by-Verse</option>
-          <option value="reading-arabic">📜 Reading (Arabic)</option>
-          <option value="reading-translation">🌐 Reading (Translation)</option>
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-2xs sm:text-xs font-semibold border rounded-lg px-2 py-1 focus:outline-none">
+          <option value="verse">🔢 Verse</option>
+          <option value="reading-arabic">📜 Arabic</option>
+          <option value="reading-translation">🌐 Translation</option>
         </select>
       </div>
     </div>
 
-    <div class="w-full theme-card border rounded-xl p-2.5 flex flex-wrap items-center justify-center gap-3 text-sm">
-      <div id="controlsSurah" class="flex items-center space-x-2">
-        <span class="text-xs theme-text-muted">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+    <!-- Scrollable Navigation Tabs for Mobile -->
+    <div class="flex items-center space-x-1.5 text-2xs sm:text-xs overflow-x-auto pb-1 scrollbar-none">
+      <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition">Surah</button>
+      <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Juz</button>
+      <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Page</button>
+      <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Range</button>
+      <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Single</button>
+    </div>
+
+    <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs">
+      <div id="controlsSurah" class="flex items-center space-x-2 w-full justify-center">
+        <span class="text-2xs theme-text-muted">Surah:</span>
+        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
           <option value="">Select Surah...</option>
         </select>
       </div>
 
-      <div id="controlsJuz" class="hidden items-center space-x-2">
-        <span class="text-xs theme-text-muted">Juz (Para):</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+      <div id="controlsJuz" class="hidden items-center space-x-2 w-full justify-center">
+        <span class="text-2xs theme-text-muted">Juz:</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
 
-      <div id="controlsPage" class="hidden items-center space-x-2">
-        <span class="text-xs theme-text-muted">Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-sm border rounded-lg px-3 py-1.5">
+      <div id="controlsPage" class="hidden items-center space-x-2 w-full justify-center">
+        <span class="text-2xs theme-text-muted">Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
           <option value="">Select Page (1-610)...</option>
         </select>
       </div>
 
-      <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-2">
-        <div class="flex items-center space-x-1.5">
-          <span class="text-xs theme-text-muted">From:</span>
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
+      <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
+        <div class="flex items-center space-x-1">
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
             <option value="">Start Surah</option>
           </select>
-          <span class="text-xs theme-text-muted">:</span>
-          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
         </div>
-
-        <span class="theme-accent-text font-bold px-1">➔</span>
-
-        <div class="flex items-center space-x-1.5">
-          <span class="text-xs theme-text-muted">To:</span>
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
+        <span class="theme-accent-text font-bold text-xs">➔</span>
+        <div class="flex items-center space-x-1">
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
             <option value="">End Surah</option>
           </select>
-          <span class="text-xs theme-text-muted">:</span>
-          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
         </div>
-
-        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
-          Read Range
+        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-2xs px-2.5 py-1 rounded font-bold transition">
+          Go
         </button>
       </div>
 
-      <div id="controlsSingleAyah" class="hidden flex-wrap items-center justify-center gap-2">
-        <div class="flex items-center space-x-1.5">
-          <span class="text-xs theme-text-muted">Ayah:</span>
-          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1.5">
-            <option value="">Select Surah</option>
+      <div id="controlsSingleAyah" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
+        <div class="flex items-center space-x-1">
+          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
+            <option value="">Surah</option>
           </select>
-          <span class="text-xs theme-text-muted">:</span>
-          <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-16 theme-inner theme-text-muted text-xs border rounded-lg px-2 py-1.5 text-center" />
+          <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-14 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
         </div>
-
-        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition ml-1">
-          Read Ayah
+        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-2xs px-2.5 py-1 rounded font-bold transition">
+          Go
         </button>
       </div>
     </div>
   </header>
 
-  <main id="app" class="flex-1 w-full px-4 md:px-8 lg:px-16 py-6 max-w-7xl mx-auto">
-    <div class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-      <p class="theme-text-muted text-sm">Initializing Quran Reader...</p>
+  <main id="app" class="flex-1 w-full px-3 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto">
+    <div class="flex flex-col items-center justify-center py-20 space-y-3">
+      <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+      <p class="theme-text-muted text-xs">Initializing Quran Reader...</p>
     </div>
   </main>
 
-  <!-- Sticky Audio Player Bar -->
-  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-4 py-2.5 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
-    <div class="flex items-center space-x-2">
-      <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 hover:bg-blue-500 text-white p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Play">
-        ▶
-      </button>
-      <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border hover:border-yellow-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Pause">
-        ⏸
-      </button>
-      <button onclick="stopAudioPlayback()" class="theme-inner border hover:border-red-500 theme-text-muted p-2 rounded-full font-bold transition flex items-center justify-center w-8 h-8" title="Stop">
-        ⏹
-      </button>
-      <div class="flex flex-col ml-2">
-        <span id="playerStatus" class="font-bold theme-accent-text">Ready</span>
-        <span id="playerDetail" class="theme-text-muted text-2xs">Select range or play an ayah</span>
+  <!-- Sticky Mobile-Optimized Audio Player Bar -->
+  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-3 py-2 shadow-2xl flex flex-col gap-2 text-2xs sm:text-xs">
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center space-x-2">
+        <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 text-white p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Play">▶</button>
+        <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border theme-text-muted p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Pause">⏸</button>
+        <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Stop">⏹</button>
+        <div class="flex flex-col truncate">
+          <span id="playerStatus" class="font-bold theme-accent-text truncate">Ready</span>
+          <span id="playerDetail" class="theme-text-muted text-2xs truncate">Select track</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-1.5">
+        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1.5 py-1 text-2xs">
+          <option value="ar.alafasy">Alafasy</option>
+          <option value="ar.husary">Husary</option>
+          <option value="ar.minshawi">Minshawi</option>
+          <option value="ar.ayyoub">Ayyoub</option>
+        </select>
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center space-x-1">
-        <span class="theme-text-muted hidden sm:inline">Qari:</span>
-        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1 focus:outline-none">
-          <option value="ar.alafasy">Mishary Rashid Alafasy</option>
-          <option value="ar.husary">Mahmoud Khalil Al-Husary</option>
-          <option value="ar.minshawi">Mohamed Siddiq Al-Minshawi</option>
-          <option value="ar.ayyoub">Sheikh Muhammad Ayyub</option>
-        </select>
-      </div>
-
-      <div class="flex items-center space-x-1.5">
-        <span class="theme-text-muted hidden sm:inline">Repeat Ayah:</span>
-        <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">Infinite</button>
+    <!-- Secondary Audio Controls & Custom Ranges (Scrollable horizontally on mobile) -->
+    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 border-t border-gray-700 border-opacity-30 pt-1.5 scrollbar-none">
+      <div class="flex items-center space-x-1 whitespace-nowrap">
+        <span class="theme-text-muted">Ayah Rep:</span>
+        <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">∞</button>
         <div id="ayahCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded px-1 py-0.5 text-center" />
-          <span class="theme-text-muted text-2xs">x</span>
+          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
         </div>
       </div>
 
-      <div class="flex items-center space-x-1.5">
-        <span class="theme-text-muted hidden sm:inline">Repeat Range:</span>
-        <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">Infinite</button>
+      <div class="flex items-center space-x-1 whitespace-nowrap">
+        <span class="theme-text-muted">Range Rep:</span>
+        <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">∞</button>
         <div id="rangeCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded px-1 py-0.5 text-center" />
-          <span class="theme-text-muted text-2xs">x</span>
+          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
         </div>
       </div>
 
-      <div class="flex items-center space-x-1.5 border-l border-gray-600 pl-2">
-        <span class="text-xs theme-text-muted">Audio Range:</span>
-        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
-          <option value="">Start Surah</option>
+      <div class="flex items-center space-x-1 whitespace-nowrap pl-1 border-l border-gray-600">
+        <span class="theme-text-muted">Audio Range:</span>
+        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-2xs border rounded px-1 py-0.5">
+          <option value="">Start S.</option>
         </select>
-        <span class="text-xs theme-text-muted">:</span>
-        <input type="number" id="audioStartAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
-        
-        <span class="theme-accent-text font-bold">➔</span>
-        
-        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
-          <option value="">End Surah</option>
+        <input type="number" id="audioStartAyahInput" placeholder="A." min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
+        <span>➔</span>
+        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-2xs border rounded px-1 py-0.5">
+          <option value="">End S.</option>
         </select>
-        <span class="text-xs theme-text-muted">:</span>
-        <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
-
-        <button onclick="playSelectedAudioRange()" class="bg-blue-400 hover:bg-blue-500 text-white font-semibold px-3 py-1 rounded-lg transition ml-1">
-          ▶ Play
-        </button>
+        <input type="number" id="audioEndAyahInput" placeholder="A." min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
+        <button onclick="playSelectedAudioRange()" class="bg-blue-400 text-white font-semibold px-2 py-0.5 rounded transition">▶</button>
       </div>
     </div>
   </div>
@@ -562,7 +543,6 @@
 
     function updateDiscordEmbed({ title, description, path = "" }) {
       document.title = title;
-
       const fullUrl = `${SITE_BASE_URL}#/${path}`;
       const ogTitle = document.getElementById("ogTitle");
       const ogDescription = document.getElementById("ogDescription");
@@ -575,31 +555,21 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-
-      // 1. Remove invisible formatting characters
       let cleaned = text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
-
-      // 2. Remove U+E022 so it doesn't render in the main text line
       cleaned = cleaned.replace(/\uE022/g, '');
-
-      // 3. Replace all missing PUA glyph ranges/unsupported characters with a standalone Waqf sign
       cleaned = cleaned.replace(/[\uE000-\uF8FF\uFD3E\uFD3F\uFB50-\uFDFF\uFFFD\u25A0-\u25FF]+/g, ' ۬ ');
-
-      // 4. DEDICATED PASS: Merge multiple consecutive dots/signs into a single separate token
       cleaned = cleaned.replace(/(?:\s*[۬\.\u06D6-\u06DC\u06E2\u06E8\u06ED]\s*){2,}/g, ' ۬ ');
-
       return cleaned.trim();
     }
 
     function toggleMode(type) {
       const settings = repeatSettings[type];
       settings.isInfinite = !settings.isInfinite;
-
       const btn = document.getElementById(`${type}ToggleBtn`);
       const wrapper = document.getElementById(`${type}CountWrapper`);
 
       if (settings.isInfinite) {
-        btn.textContent = 'Infinite';
+        btn.textContent = '∞';
         btn.classList.remove('finite');
         wrapper.classList.add('hidden');
       } else {
@@ -611,12 +581,8 @@
 
     function getRepeatConfig() {
       return {
-        ayahRepeat: repeatSettings.ayah.isInfinite 
-          ? Infinity 
-          : Math.max(1, parseInt(document.getElementById('ayahRepeatCount').value, 10) || 1),
-        rangeRepeat: repeatSettings.range.isInfinite 
-          ? Infinity 
-          : Math.max(1, parseInt(document.getElementById('rangeRepeatCount').value, 10) || 1)
+        ayahRepeat: repeatSettings.ayah.isInfinite ? Infinity : Math.max(1, parseInt(document.getElementById('ayahRepeatCount').value, 10) || 1),
+        rangeRepeat: repeatSettings.range.isInfinite ? Infinity : Math.max(1, parseInt(document.getElementById('rangeRepeatCount').value, 10) || 1)
       };
     }
 
@@ -628,10 +594,7 @@
       if (sel) sel.value = theme;
     }
 
-    function changeTheme(newTheme) {
-      applyTheme(newTheme);
-    }
-
+    function changeTheme(newTheme) { applyTheme(newTheme); }
     function changeQari(newQari) {
       audioSettings.qari = newQari;
       localStorage.setItem("quran_qari", newQari);
@@ -654,22 +617,19 @@
 
     function copyVerseText(text) {
       navigator.clipboard.writeText(text).then(() => {
-        showToast("Verse copied to clipboard!", "📋");
-      }).catch(err => {
-        console.error("Copy failed: ", err);
-      });
+        showToast("Verse copied!", "📋");
+      }).catch(err => console.error("Copy failed: ", err));
     }
 
     function setAudioStartVerse(verseKey) {
       const [surah, ayah] = verseKey.split(":").map(Number);
       const startSurahSel = document.getElementById("audioStartSurahSelect");
       const startAyahInp = document.getElementById("audioStartAyahInput");
-
       if (startSurahSel && startAyahInp) {
         startSurahSel.value = surah;
         updateAudioStartAyahMax();
         startAyahInp.value = ayah;
-        showToast(`Set Start Range: ${verseKey}`, "📍");
+        showToast(`Start: ${verseKey}`, "📍");
       }
     }
 
@@ -677,12 +637,11 @@
       const [surah, ayah] = verseKey.split(":").map(Number);
       const endSurahSel = document.getElementById("audioEndSurahSelect");
       const endAyahInp = document.getElementById("audioEndAyahInput");
-
       if (endSurahSel && endAyahInp) {
         endSurahSel.value = surah;
         updateAudioEndAyahMax();
         endAyahInp.value = ayah;
-        showToast(`Set End Range: ${verseKey}`, "🏁");
+        showToast(`End: ${verseKey}`, "🏁");
       }
     }
 
@@ -717,7 +676,7 @@
       const toA = parseInt(document.getElementById("audioEndAyahInput").value) || 1;
 
       if (!fromS) {
-        alert("Please select a starting Surah for audio playback.");
+        alert("Please select a starting Surah.");
         return;
       }
 
@@ -725,7 +684,6 @@
       for (let sId = fromS; sId <= toS; sId++) {
         const meta = chaptersData.find(c => c.id === sId);
         if (!meta) continue;
-        
         let startFilter = (sId === fromS) ? fromA : 1;
         let endFilter = (sId === toS) ? toA : meta.verses_count;
 
@@ -735,7 +693,6 @@
       }
 
       if (audioRangeList.length === 0) return;
-
       stopAudioPlayback();
       currentLoadedVerses = audioRangeList;
       currentAudioIndex = 0;
@@ -753,7 +710,6 @@
       currentAudioIndex = index;
       const verseKey = currentLoadedVerses[index].verse_key;
       const url = getAudioUrl(verseKey, audioSettings.qari);
-
       highlightPlayingAyah(verseKey);
 
       const config = getRepeatConfig();
@@ -764,8 +720,8 @@
         isPlayingAudio = true;
         updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${repeatLabel}`);
       }).catch(err => {
-        console.error("Audio playback error:", err);
-        updatePlayerUI(false, "Audio Error", "Could not play track");
+        console.error("Audio error:", err);
+        updatePlayerUI(false, "Error", "Playback failed");
       });
     }
 
@@ -788,7 +744,6 @@
     function handleRangeEnd() {
       const config = getRepeatConfig();
       currentRangeRepeatCount++;
-
       if (currentRangeRepeatCount < config.rangeRepeat) {
         currentAudioIndex = 0;
         currentAyahRepeatCount = 0;
@@ -799,10 +754,7 @@
     }
 
     function resumeAudioPlayback() {
-      if (!audioObject.src) {
-        playSelectedAudioRange();
-        return;
-      }
+      if (!audioObject.src) { playSelectedAudioRange(); return; }
       if (!isPlayingAudio) {
         audioObject.play();
         isPlayingAudio = true;
@@ -829,16 +781,12 @@
     function updatePlayerUI(playing, statusText, detailText) {
       const status = document.getElementById("playerStatus");
       if (status) status.innerText = statusText;
-
       const detail = document.getElementById("playerDetail");
       if (detail) detail.innerText = detailText;
     }
 
     function highlightPlayingAyah(verseKey) {
-      document.querySelectorAll(".active-ayah-playing").forEach(el => {
-        el.classList.remove("active-ayah-playing");
-      });
-
+      document.querySelectorAll(".active-ayah-playing").forEach(el => el.classList.remove("active-ayah-playing"));
       if (verseKey) {
         const el = document.getElementById(`verse-${verseKey}`);
         if (el) {
@@ -850,7 +798,6 @@
 
     function initScrollObserver() {
       if (scrollObserver) scrollObserver.disconnect();
-
       scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -870,7 +817,6 @@
     function restoreScrollPosition() {
       const currentPath = window.location.hash.replace('#', '').split('?')[0];
       const targetVerseKey = lastActiveVerseKey || localStorage.getItem(`last_verse_${currentPath}`);
-
       if (targetVerseKey) {
         setTimeout(() => {
           const targetEl = document.querySelector(`[data-verse-key="${targetVerseKey}"]`);
@@ -929,7 +875,6 @@
 
     function getAyahMarkerSvg(ayahNum, isLastOfRukoo = false) {
       const rukooSymbolHtml = isLastOfRukoo ? `<span class="rukoo-top-mark">ع</span>` : '';
-
       return `&nbsp;<span class="ayah-container" contenteditable="false">
           ${rukooSymbolHtml}
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
@@ -960,8 +905,7 @@
     function markRukooEndings(verses) {
       for (let i = 0; i < verses.length; i++) {
         const rawWords = verses[i].words || [];
-        const hasRukooChar = rawWords.some(w => (w.text_indopak || w.text || "").includes('\uE022'));
-        verses[i].isLastOfRukoo = hasRukooChar;
+        verses[i].isLastOfRukoo = rawWords.some(w => (w.text_indopak || w.text || "").includes('\uE022'));
       }
       return verses;
     }
@@ -1011,18 +955,14 @@
           if (juzId >= 1 && juzId <= 30) {
             document.getElementById("juzSelect").value = juzId;
             await renderJuz(juzId);
-          } else {
-            render404();
-          }
+          } else { render404(); }
         } else if (hash.startsWith("/page/")) {
           setNavMode('page');
           const pageNum = parseInt(hash.split("/")[2]);
           if (pageNum >= 1 && pageNum <= MAX_PAGES) {
             document.getElementById("pageSelect").value = pageNum;
             await renderPage(pageNum);
-          } else {
-            render404();
-          }
+          } else { render404(); }
         } else if (hash.startsWith("/range")) {
           setNavMode('range');
           const fromS = parseInt(urlParams.get("fromSurah")) || 1;
@@ -1043,18 +983,11 @@
             setNavMode('surah');
             document.getElementById("surahSelect").value = id;
             await renderSurah(id);
-          } else {
-            renderHome();
-          }
+          } else { renderHome(); }
         }
       } catch (err) {
         console.error("Routing execution error:", err);
-        app.innerHTML = `
-          <div class="text-center py-20 text-red-400">
-            <h2 class="text-xl font-bold mb-2">Error Loading Page</h2>
-            <p class="text-sm theme-text-muted">${err.message}</p>
-          </div>
-        `;
+        app.innerHTML = `<div class="text-center py-20 text-red-400"><h2 class="text-xl font-bold mb-2">Error Loading Page</h2><p class="text-sm theme-text-muted">${err.message}</p></div>`;
       }
     }
 
@@ -1063,10 +996,10 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          if (tab) tab.className = "px-3 py-1.5 rounded-lg border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold transition";
+          if (tab) tab.className = "px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition";
           if (ctrl) { ctrl.classList.remove("hidden"); ctrl.classList.add("flex"); }
         } else {
-          if (tab) tab.className = "px-3 py-1.5 rounded-lg border theme-card theme-text-muted hover:border-blue-400 transition";
+          if (tab) tab.className = "px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition";
           if (ctrl) { ctrl.classList.add("hidden"); ctrl.classList.remove("flex"); }
         }
       });
@@ -1082,7 +1015,6 @@
       try {
         const res = await fetch(`${API_BASE}/chapters?language=en`);
         const data = await res.json();
-        
         chaptersData = data.chapters.map(c => ({
           id: c.id,
           name_simple: c.name_simple,
@@ -1105,7 +1037,6 @@
       document.getElementById("startSurahSelect").innerHTML = options;
       document.getElementById("endSurahSelect").innerHTML = options;
       document.getElementById("singleSurahSelect").innerHTML = options;
-
       document.getElementById("audioStartSurahSelect").innerHTML = options;
       document.getElementById("audioEndSurahSelect").innerHTML = options;
 
@@ -1166,35 +1097,23 @@
       const fromA = parseInt(document.getElementById("startAyahInput").value) || 1;
       const toS = parseInt(document.getElementById("endSurahSelect").value) || fromS;
       const toA = parseInt(document.getElementById("endAyahInput").value) || 1;
-
-      if (!fromS) {
-        alert("Please select a starting Surah.");
-        return;
-      }
-
+      if (!fromS) { alert("Please select a starting Surah."); return; }
       navigate(`range?fromSurah=${fromS}&fromAyah=${fromA}&toSurah=${toS}&toAyah=${toA}`);
     }
 
     function applySingleAyahNavigate() {
       const sId = parseInt(document.getElementById("singleSurahSelect").value);
       const aNum = parseInt(document.getElementById("singleAyahInput").value) || 1;
-
-      if (!sId) {
-        alert("Please select a Surah.");
-        return;
-      }
-
+      if (!sId) { alert("Please select a Surah."); return; }
       navigate(`range?fromSurah=${sId}&fromAyah=${aNum}&toSurah=${sId}&toAyah=${aNum}`);
     }
 
     async function fetchSurahTranslation(surahId) {
       if (translationCache[surahId]) return translationCache[surahId];
-
       try {
         const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
         if (!res.ok) throw new Error(`Failed to load translation`);
         const data = await res.json();
-        
         const map = {};
         if (Array.isArray(data)) {
           data.forEach(item => {
@@ -1209,18 +1128,14 @@
         } else if (typeof data === 'object' && data !== null) {
           Object.keys(data).forEach(key => map[key] = String(data[key]));
         }
-
         translationCache[surahId] = map;
         return map;
-      } catch (err) {
-        return {};
-      }
+      } catch (err) { return {}; }
     }
 
     async function fetchChapterVerses(surahId) {
       const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
       const data = await res.json();
-      
       return data.verses.map(v => ({
         verse_key: v.verse_key,
         words: v.words,
@@ -1231,7 +1146,6 @@
     async function fetchPageVerses(pageNum) {
       const start = INDOPAK_15_LINE_PAGE_STARTS[pageNum] || [1, 1];
       const nextStart = INDOPAK_15_LINE_PAGE_STARTS[pageNum + 1];
-
       let fromS = start[0], fromA = start[1];
       let toS, toA;
 
@@ -1245,8 +1159,7 @@
           toA = prevSurahMeta ? prevSurahMeta.verses_count : 1;
         }
       } else {
-        toS = 114;
-        toA = 6;
+        toS = 114; toA = 6;
       }
 
       const requests = [];
@@ -1260,13 +1173,10 @@
 
       const results = await Promise.all(requests);
       let pageVerses = [];
-
       results.sort((a, b) => a.sId - b.sId).forEach(({ sId, data }) => {
         if (!data || !data.verses) return;
-
         let startFilter = (sId === fromS) ? fromA : 1;
         let endFilter = (sId === toS) ? toA : data.verses.length;
-
         const filtered = data.verses
           .filter(v => {
             const num = parseInt(v.verse_key.split(":")[1]);
@@ -1279,45 +1189,39 @@
             words: v.words,
             rukoo: v.rub_el_hizb_number
           }));
-
         pageVerses.push(...filtered);
       });
-
       return pageVerses;
     }
 
     function renderHome() {
       const app = document.getElementById("app");
-
       updateDiscordEmbed({
         title: "The Noble Quran - Indo-Pak Reader",
         description: "Browse and read the Noble Quran in 15-line Indo-Pak script with translations and recitations.",
         path: ""
       });
-
       currentLoadedVerses = [];
-
       app.innerHTML = `
-        <div class="mb-8 text-center max-w-2xl mx-auto py-4 space-y-2">
-          <h1 class="text-3xl font-extrabold">The Noble Quran</h1>
-          <p class="theme-accent-text font-medium text-xs">15-Line Indo-Pakistani Layout</p>
+        <div class="mb-6 text-center max-w-2xl mx-auto py-2 space-y-1">
+          <h1 class="text-2xl sm:text-3xl font-extrabold">The Noble Quran</h1>
+          <p class="theme-accent-text font-medium text-2xs sm:text-xs">15-Line Indo-Pakistani Layout</p>
         </div>
-
-        <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 w-full">
+        <div id="surahGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2.5 w-full">
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
                title="${c.name_simple}"
-               class="theme-card border p-3.5 rounded-xl transition flex items-center justify-between gap-2 group hover:border-blue-400">
-              <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-9 h-9 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-xs font-bold theme-accent-text group-hover:bg-blue-400 group-hover:text-white transition">
+               class="theme-card border p-3 rounded-xl transition flex items-center justify-between gap-2 group hover:border-blue-400">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-2xs font-bold theme-accent-text group-hover:bg-blue-400 group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div class="min-w-0">
-                  <div class="font-semibold text-sm group-hover:text-blue-400 transition truncate" title="${c.name_simple}">${c.name_simple}</div>
-                  <div class="text-xs theme-text-muted">${c.verses_count} Verses</div>
+                  <div class="font-semibold text-xs sm:text-sm group-hover:text-blue-400 transition truncate" title="${c.name_simple}">${c.name_simple}</div>
+                  <div class="text-3xs theme-text-muted">${c.verses_count} Verses</div>
                 </div>
               </div>
-              <div class="font-indopak text-lg shrink-0 text-right leading-normal" dir="rtl">${c.name_arabic}</div>
+              <div class="font-indopak text-base sm:text-lg shrink-0 text-right leading-normal" dir="rtl">${c.name_arabic}</div>
             </a>
           `).join("")}
         </div>
@@ -1327,40 +1231,32 @@
     async function renderSurah(surahId) {
       const app = document.getElementById("app");
       const surahMeta = chaptersData.find(c => c.id === surahId);
-
       updateDiscordEmbed({
         title: `Surah ${surahMeta.name_simple} (${surahMeta.name_arabic})`,
         description: `Reading Surah ${surahMeta.name_simple} • ${surahMeta.translated_name.name} (${surahMeta.verses_count} Verses)`,
         path: `${surahId}`
       });
-
       showLoading(`Loading Surah ${surahMeta.name_simple}...`);
-
       const [verses, translations] = await Promise.all([
         fetchChapterVerses(surahId),
         fetchSurahTranslation(surahId)
       ]);
-
       currentLoadedVerses = verses;
-
       let html = `
-        <div class="w-full theme-card border rounded-2xl p-6 mb-8 text-center relative overflow-hidden">
-          <div class="space-y-2 relative z-10">
-            <h1 class="text-3xl md:text-4xl font-extrabold">${surahMeta.name_simple}</h1>
-            <p class="theme-accent-text font-medium text-sm">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
-            <div class="text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center relative overflow-hidden">
+          <div class="space-y-1.5 relative z-10">
+            <h1 class="text-2xl sm:text-3xl font-extrabold">${surahMeta.name_simple}</h1>
+            <p class="theme-accent-text font-medium text-2xs sm:text-xs">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <div class="text-2xl sm:text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           </div>
-
           ${surahId !== 1 && surahId !== 9 ? `
-            <div class="mt-6 font-indopak text-2xl md:text-3xl theme-accent-text border-t theme-inner pt-4 w-full max-w-md mx-auto" dir="rtl">
+            <div class="mt-4 font-indopak text-xl sm:text-2xl theme-accent-text border-t theme-inner pt-3 w-full max-w-sm mx-auto" dir="rtl">
               ${BISMILLAH_ARABIC}
             </div>
           ` : ''}
         </div>
-
         ${renderContent(verses, translations, false, surahId)}
       `;
-
       app.innerHTML = html;
       initScrollObserver();
       restoreScrollPosition();
@@ -1368,21 +1264,17 @@
 
     async function renderPage(pageNum) {
       const app = document.getElementById("app");
-
       updateDiscordEmbed({
         title: `Quran Page ${pageNum} - 15-Line Indo-Pak`,
         description: `Currently reading Page ${pageNum} of ${MAX_PAGES} in the Noble Quran.`,
         path: `page/${pageNum}`
       });
-
       showLoading(`Loading Page ${pageNum}...`);
-
       const pageVerses = await fetchPageVerses(pageNum);
       currentLoadedVerses = pageVerses;
 
       const surahGroups = {};
       const surahIds = [];
-
       pageVerses.forEach(v => {
         if (!surahGroups[v.surah_id]) {
           surahGroups[v.surah_id] = [];
@@ -1393,22 +1285,19 @@
 
       const translationPromises = surahIds.map(sId => fetchSurahTranslation(sId));
       const translationResults = await Promise.all(translationPromises);
-
       const pageTranslations = {};
       surahIds.forEach((sId, index) => pageTranslations[sId] = translationResults[index]);
 
       let html = `
-        <div class="w-full theme-card border border-blue-400 rounded-2xl p-6 mb-8 text-center flex items-center justify-between">
-          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
-            ⬅ Previous
+        <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between">
+          <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+            ⬅ Prev
           </button>
-          
           <div>
-            <h1 class="text-2xl md:text-3xl font-extrabold">Page ${pageNum}</h1>
-            <p class="theme-accent-text font-medium text-xs mt-1">Page ${pageNum} of ${MAX_PAGES} (15-Line Indo-Pak Layout)</p>
+            <h1 class="text-xl sm:text-2xl font-extrabold">Page ${pageNum}</h1>
+            <p class="theme-accent-text font-medium text-3xs sm:text-2xs mt-0.5">Page ${pageNum} of ${MAX_PAGES}</p>
           </div>
-
-          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-3 py-1.5 theme-inner border rounded-lg text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+          <button ${pageNum < MAX_PAGES ? `onclick="navigate('page/${pageNum + 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${pageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
             Next ➡
           </button>
         </div>
@@ -1418,26 +1307,23 @@
         const surahMeta = chaptersData.find(c => c.id === sId);
         const verses = surahGroups[sId];
         const translations = pageTranslations[sId];
-
         const isStartOfSurah = verses[0].ayah_num === 1;
         const shouldShowBismillah = (sId !== 1 && sId !== 9) && isStartOfSurah;
 
         html += `
-          <div class="mb-10">
-            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div class="mb-8">
+            <div class="theme-card border rounded-xl p-3 sm:p-4 mb-4 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-bold">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
-                <span class="text-xs theme-text-muted">${surahMeta.translated_name.name}</span>
+                <h2 class="text-sm sm:text-base font-bold">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
+                <span class="text-3xs theme-text-muted">${surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
+              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
             </div>
-
             ${shouldShowBismillah ? `
-              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
+              <div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">
                 ${BISMILLAH_ARABIC}
               </div>
             ` : ''}
-
             ${renderContent(verses, translations, false, sId)}
           </div>
         `;
@@ -1460,7 +1346,6 @@
       });
 
       showLoading(`Fetching verses...`);
-
       let compiledSections = [];
       let allVerses = [];
 
@@ -1480,7 +1365,6 @@
         });
 
         allVerses.push(...filtered);
-
         const isStartOfSurah = (startFilter === 1);
         const showBismillah = (sId !== 1 && sId !== 9) && isStartOfSurah;
 
@@ -1494,11 +1378,10 @@
       }
 
       currentLoadedVerses = allVerses;
-
       let html = `
-        <div class="w-full theme-card border border-blue-400 rounded-2xl p-6 mb-8 text-center">
-          <h1 class="text-2xl md:text-3xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-          <p class="theme-accent-text font-medium text-sm mt-1">
+        <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center">
+          <h1 class="text-xl sm:text-2xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+          <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">
             ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
           </p>
         </div>
@@ -1506,21 +1389,19 @@
 
       compiledSections.forEach(section => {
         html += `
-          <div class="mb-10">
-            <div class="theme-card border rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div class="mb-8">
+            <div class="theme-card border rounded-xl p-3 sm:p-4 mb-4 flex items-center justify-between">
               <div>
-                <h2 class="text-lg font-bold">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
-                <span class="text-xs theme-text-muted">${section.surahMeta.translated_name.name}</span>
+                <h2 class="text-sm sm:text-base font-bold">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
+                <span class="text-3xs theme-text-muted">${section.surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-2xl theme-accent-text" dir="rtl">${section.surahMeta.name_arabic}</div>
+              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${section.surahMeta.name_arabic}</div>
             </div>
-
             ${section.showBismillah ? `
-              <div class="text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">
+              <div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">
                 ${BISMILLAH_ARABIC}
               </div>
             ` : ''}
-
             ${renderContent(section.verses, section.translations, false, section.surahId)}
           </div>
         `;
@@ -1547,13 +1428,13 @@
 
     function renderVerseByVerse(verses, translations, surahId) {
       return `
-        <div class="w-full space-y-4">
+        <div class="w-full space-y-3.5">
           ${verses.map((v) => {
             const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
             const pageMarkerHtml = pageNum ? `
-              <div class="w-full flex items-center my-6">
+              <div class="w-full flex items-center my-4">
                 <div class="flex-1 border-t border-blue-400 opacity-30"></div>
-                <span class="px-4 py-1.5 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase">
+                <span class="px-3 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase">
                   📄 Page ${pageNum}
                 </span>
                 <div class="flex-1 border-t border-blue-400 opacity-30"></div>
@@ -1561,11 +1442,9 @@
             ` : '';
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
-            
             const wordByWordHtml = renderWordByWord(v.words);
             const plainArabicText = getPlainVerseArabic(v.words);
             const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
-
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
             const fullVerseToCopy = `${plainArabicText} (${toArabicNumeral(ayahNum)})\n\n${translatedText}`;
@@ -1573,34 +1452,20 @@
 
             return `
               ${pageMarkerHtml}
-              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-5 md:p-8 flex flex-col space-y-4">
-                <div class="flex items-center justify-between border-b theme-inner pb-3">
-                  <div class="flex items-center gap-2">
-                    <span class="px-3 py-1 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-xs font-semibold rounded-full">${v.verse_key}</span>
-                  </div>
-                  <div class="flex flex-wrap items-center space-x-2">
-                    <button onclick="playSingleVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">
-                      <span>▶</span>
-                      <span>Play</span>
-                    </button>
-                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio Start">
-                      <span>📍</span>
-                      <span>Set Start</span>
-                    </button>
-                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="flex items-center space-x-1 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Set Audio End">
-                      <span>🏁</span>
-                      <span>Set End</span>
-                    </button>
-                    <button onclick="copyVerseText('${escapedCopyText}')" class="flex items-center space-x-1.5 text-xs theme-card hover:bg-blue-400 hover:text-white px-3 py-1.5 rounded-lg border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">
-                      <span>📋</span>
-                      <span>Copy</span>
-                    </button>
+              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-4 sm:p-6 flex flex-col space-y-3">
+                <div class="flex items-center justify-between border-b theme-inner pb-2.5">
+                  <span class="px-2.5 py-0.5 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full">${v.verse_key}</span>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <button onclick="playSingleVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">▶ Play</button>
+                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Start">📍 Start</button>
+                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="End">🏁 End</button>
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">📋 Copy</button>
                   </div>
                 </div>
-                <div class="text-right indopak-text text-3xl md:text-4xl px-2 pt-2 leading-relaxed">
+                <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
                   ${wordByWordHtml} ${ayahMarkerSvg}
                 </div>
-                ${translatedText ? `<div class="text-left text-sm md:text-base border-t theme-inner pt-3 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+                ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
           }).join("")}
@@ -1610,18 +1475,17 @@
 
     function renderReadingArabicMode(verses, renderBismillahHeader = false, surahId = 1) {
       let arabicParagraph = "";
-
       if (renderBismillahHeader) {
-        arabicParagraph += `<div class="w-full text-center font-indopak text-2xl theme-accent-text py-3 mb-6 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>`;
+        arabicParagraph += `<div class="w-full text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>`;
       }
 
       verses.forEach((v) => {
         const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
         if (pageNum) {
           arabicParagraph += `
-            <span class="w-full flex items-center my-8 block" contenteditable="false" dir="ltr">
+            <span class="w-full flex items-center my-6 block" contenteditable="false" dir="ltr">
               <span class="flex-1 border-t border-blue-400 opacity-30"></span>
-              <span class="px-4 py-1 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+              <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
               <span class="flex-1 border-t border-blue-400 opacity-30"></span>
@@ -1632,30 +1496,28 @@
         const [, ayahNum] = v.verse_key.split(":").map(Number);
         const wordByWordHtml = renderWordByWord(v.words);
         const ayahMarkerSvg = getAyahMarkerSvg(ayahNum, v.isLastOfRukoo);
-
         arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${wordByWordHtml} ${ayahMarkerSvg}</span> `;
       });
 
       return `
-        <div class="w-full theme-card border rounded-2xl p-4 md:p-8 my-4">
-          <div class="reading-wrapper indopak-text text-3xl md:text-4xl leading-relaxed">${arabicParagraph}</div>
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 my-2">
+          <div class="reading-wrapper indopak-text text-2xl sm:text-3xl leading-relaxed">${arabicParagraph}</div>
         </div>
       `;
     }
 
     function renderReadingTranslationMode(verses, translations) {
       let items = [];
-
       verses.forEach(v => {
         const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
         if (pageNum) {
           items.push(`
-            <div class="w-full flex items-center my-8">
+            <div class="w-full flex items-center my-6">
               <div class="flex-1 border-t border-blue-400 opacity-30"></div>
-              <span class="px-4 py-1 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-2">
+              <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
-              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
+              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
             </div>
           `);
         }
@@ -1668,8 +1530,8 @@
       });
 
       return `
-        <div class="w-full theme-card border rounded-2xl p-6 md:p-8">
-          <div class="text-left text-sm md:text-base leading-relaxed space-y-3">
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6">
+          <div class="text-left text-xs sm:text-sm leading-relaxed space-y-2.5">
             ${items.join("")}
           </div>
         </div>
@@ -1678,9 +1540,9 @@
 
     function showLoading(msg) {
       document.getElementById("app").innerHTML = `
-        <div class="flex flex-col items-center justify-center py-20 space-y-4">
-          <div class="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-          <p class="theme-text-muted text-sm animate-pulse">${msg}</p>
+        <div class="flex flex-col items-center justify-center py-20 space-y-3">
+          <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          <p class="theme-text-muted text-xs animate-pulse">${msg}</p>
         </div>
       `;
     }
@@ -1688,8 +1550,8 @@
     function render404() {
       document.getElementById("app").innerHTML = `
         <div class="text-center py-20">
-          <h1 class="text-2xl font-bold text-red-500">View Not Found</h1>
-          <a href="#/" onclick="navigate(''); return false;" class="mt-4 inline-block text-blue-400 hover:underline">Back to Home</a>
+          <h1 class="text-xl font-bold text-red-500">View Not Found</h1>
+          <a href="#/" onclick="navigate(''); return false;" class="mt-3 inline-block text-blue-400 hover:underline text-xs">Back to Home</a>
         </div>
       `;
     }
