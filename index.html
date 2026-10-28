@@ -192,7 +192,7 @@
 
     /* Fallback Font Stacks */
     .indopak-text {
-      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
       font-synthesis: none;
       text-rendering: optimizeLegibility;
       direction: rtl;
@@ -203,7 +203,7 @@
     }
 
     .font-indopak {
-      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', 'Noto Sans Arabic', 'Traditional Arabic', serif;
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Noto Naskh Arabic', 'Amiri', serif;
       font-synthesis: none;
       font-kerning: normal;
       font-variant-ligatures: common-ligatures contextual;
@@ -516,7 +516,7 @@
         <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-xs border rounded-lg px-2 py-1">
           <option value="">End Surah</option>
         </select>
-        <span class="text-xs theme-text-muted">:</span>
+        <span class="theme-text-muted">:</span>
         <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted text-xs border rounded-lg px-1 py-1 text-center" />
 
         <button onclick="playSelectedAudioRange()" class="bg-blue-400 hover:bg-blue-500 text-white font-semibold px-3 py-1 rounded-lg transition ml-1">
@@ -575,13 +575,20 @@
 
     function sanitizeArabicText(text) {
       if (!text) return "";
-      // Remove invisible formatting characters[cite: 1]
+
+      // 1. Remove invisible formatting characters
       let cleaned = text.replace(/[\u200B\u200E\u200F\uFEFF]/g, '').trim();
-      
-      // Collapse one or more consecutive missing PUA characters / glyph boxes into a single Waqf sign
-      cleaned = cleaned.replace(/[\uE000-\uF8FF\uFD3E\uFD3F\uFB50-\uFDFF\uFFFD\u25A0-\u25FF]+/g, ' ۬ ');
-      
-      return cleaned;
+
+      // 2. Remove U+E022 so it doesn't render in the main text line
+      cleaned = cleaned.replace(/\uE022/g, '');
+
+      // 3. Replace all missing PUA glyph ranges/unsupported characters with a Waqf sign
+      cleaned = cleaned.replace(/[\uE000-\uF8FF\uFD3E\uFD3F\uFB50-\uFDFF\uFFFD\u25A0-\u25FF]+/g, '۬');
+
+      // 4. DEDICATED PASS: Merge any multiple consecutive dots or Waqf signs into a SINGLE Waqf sign
+      cleaned = cleaned.replace(/(?:\s*[۬\.\u06D6-\u06DC\u06E2\u06E8\u06ED]\s*){2,}/g, ' ۬ ');
+
+      return cleaned.trim();
     }
 
     function toggleMode(type) {
@@ -952,15 +959,10 @@
 
     function markRukooEndings(verses) {
       for (let i = 0; i < verses.length; i++) {
-        const currentRukoo = verses[i].rukoo;
-        const nextRukoo = (i + 1 < verses.length) ? verses[i + 1].rukoo : null;
-        const isEndByRukooNum = (currentRukoo && nextRukoo && currentRukoo !== nextRukoo);
-        
-        const [sId, aNum] = verses[i].verse_key.split(":").map(Number);
-        const meta = chaptersData.find(c => c.id === sId);
-        const isActualEndOfSurah = meta && (aNum === meta.verses_count);
-
-        verses[i].isLastOfRukoo = isEndByRukooNum || isActualEndOfSurah;
+        const rawWords = verses[i].words || [];
+        // Check if raw text contains U+E022 anywhere in the ayah words
+        const hasRukooChar = rawWords.some(w => (w.text_indopak || w.text || "").includes('\uE022'));
+        verses[i].isLastOfRukoo = hasRukooChar;
       }
       return verses;
     }
