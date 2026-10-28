@@ -119,8 +119,8 @@
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
       --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
-      /* In OLED: invert text to white, then tint/colorize the blues cleanly to #40bfff */
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.25) sepia(1) hue-rotate(150deg) saturate(5);
+      /* Deep cyan/blue colorization filter for OLED mode */
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) sepia(1) hue-rotate(170deg) saturate(8);
       --mushaf-blend: screen;
     }
 
@@ -1627,7 +1627,7 @@
               <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-3xs sm:text-2xs tracking-wider uppercase mx-2">
                 📄 Page ${pageNum}
               </span>
-              <span class="flex-1 border-t border-blue-400 opacity-30"></span>
+              <div class="flex-1 border-t border-blue-400 opacity-30"></div>
             </div>
           `);
         }
