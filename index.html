@@ -65,6 +65,8 @@
       --rukoo-color: #fbbf24;
       --scrollbar-thumb: #475569;
       --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --mushaf-filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(1.1);
+      --mushaf-blend: normal;
     }
 
     :root[data-theme="light"] {
@@ -81,6 +83,8 @@
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
       --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      --mushaf-filter: none;
+      --mushaf-blend: multiply;
     }
 
     :root[data-theme="sepia"] {
@@ -97,6 +101,8 @@
       --rukoo-color: #b45309;
       --scrollbar-thumb: #c4b396;
       --neon-glow: 0 10px 25px -5px rgba(67, 52, 34, 0.08);
+      --mushaf-filter: sepia(0.2) contrast(1.05);
+      --mushaf-blend: multiply;
     }
 
     :root[data-theme="oled"] {
@@ -113,6 +119,8 @@
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
       --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
+      --mushaf-filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(1.25);
+      --mushaf-blend: normal;
     }
 
     body {
@@ -147,6 +155,25 @@
 
     .theme-text-muted { color: var(--text-muted); }
     .theme-accent-text { color: var(--accent); }
+
+    /* Mushaf Image Styling for Theme Blending */
+    .mushaf-img {
+      filter: var(--mushaf-filter);
+      mix-blend-mode: var(--mushaf-blend);
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+
+    .mushaf-container {
+      background-color: var(--bg-card);
+      border-color: var(--border-color);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: var(--neon-glow);
+    }
 
     /* Word Tooltips */
     .word-tooltip {
@@ -375,6 +402,7 @@
           <option value="verse">🔢 Verse</option>
           <option value="reading-arabic">📜 Arabic</option>
           <option value="reading-translation">🌐 Translation</option>
+          <option value="mushaf">📖 Mushaf (NEW)</option>
         </select>
       </div>
     </div>
@@ -910,6 +938,25 @@
       return verses;
     }
 
+    function getPagesForVerseRange(verses) {
+      const pages = new Set();
+      verses.forEach(v => {
+        const pNum = REVERSE_PAGE_LOOKUP[v.verse_key];
+        if (pNum) pages.add(pNum);
+      });
+      if (pages.size === 0 && verses.length > 0) {
+        const [sId, aNum] = verses[0].verse_key.split(':').map(Number);
+        for (let p = 1; p <= MAX_PAGES; p++) {
+          const start = INDOPAK_15_LINE_PAGE_STARTS[p];
+          if (start && (start[0] < sId || (start[0] === sId && start[1] <= aNum))) {
+            pages.clear();
+            pages.add(p);
+          }
+        }
+      }
+      return Array.from(pages).sort((a, b) => a - b);
+    }
+
     function changeDisplayMode(newMode) {
       displayMode = newMode;
       const rawHash = window.location.hash.replace('#', '') || '/';
@@ -1273,6 +1320,13 @@
       const pageVerses = await fetchPageVerses(pageNum);
       currentLoadedVerses = pageVerses;
 
+      if (displayMode === "mushaf") {
+        app.innerHTML = renderMushafModeForPages([pageNum], pageNum);
+        initScrollObserver();
+        restoreScrollPosition();
+        return;
+      }
+
       const surahGroups = {};
       const surahIds = [];
       pageVerses.forEach(v => {
@@ -1378,6 +1432,15 @@
       }
 
       currentLoadedVerses = allVerses;
+
+      if (displayMode === "mushaf") {
+        const pageNumbers = getPagesForVerseRange(allVerses);
+        app.innerHTML = renderMushafModeForPages(pageNumbers, null, customHeaderTitle || `${startMeta.name_simple}:${fromAyah} ➔ ${endMeta.name_simple}:${toAyah}`);
+        initScrollObserver();
+        restoreScrollPosition();
+        return;
+      }
+
       let html = `
         <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center">
           <h1 class="text-xl sm:text-2xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
@@ -1421,9 +1484,60 @@
 
     function renderContent(verses, translations, renderBismillahHeader = false, surahId = 1) {
       const versesWithRukoo = markRukooEndings(verses);
+      if (displayMode === "mushaf") return renderMushafModeForVerses(versesWithRukoo);
       if (displayMode === "reading-arabic") return renderReadingArabicMode(versesWithRukoo, renderBismillahHeader, surahId);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(versesWithRukoo, translations);
       return renderVerseByVerse(versesWithRukoo, translations, surahId);
+    }
+
+    function renderMushafModeForVerses(verses) {
+      const pageNumbers = getPagesForVerseRange(verses);
+      return renderMushafModeForPages(pageNumbers);
+    }
+
+    function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null) {
+      let navHeader = '';
+      if (currentPageNum) {
+        navHeader = `
+          <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between">
+            <button ${currentPageNum > 1 ? `onclick="navigate('page/${currentPageNum - 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${currentPageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+              ⬅ Prev
+            </button>
+            <div>
+              <h1 class="text-xl sm:text-2xl font-extrabold">Page ${currentPageNum}</h1>
+              <p class="theme-accent-text font-medium text-3xs sm:text-2xs mt-0.5">Mushaf Page ${currentPageNum} of ${MAX_PAGES}</p>
+            </div>
+            <button ${currentPageNum < MAX_PAGES ? `onclick="navigate('page/${currentPageNum + 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${currentPageNum >= MAX_PAGES ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
+              Next ➡
+            </button>
+          </div>
+        `;
+      } else if (title) {
+        navHeader = `
+          <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center">
+            <h1 class="text-xl sm:text-2xl font-extrabold">${title}</h1>
+            <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
+          </div>
+        `;
+      }
+
+      const imagesHtml = pageNumbers.map(p => `
+        <div class="mushaf-container mb-6 text-center" id="page-mushaf-${p}">
+          <div class="flex items-center justify-between border-b theme-inner pb-2 mb-3">
+            <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs">📄 Page ${p}</span>
+            <span class="text-xs theme-text-muted">15-Line Indo-Pak</span>
+          </div>
+          <img 
+            src="${p}.png" 
+            alt="Quran Page ${p}" 
+            class="mushaf-img shadow-lg"
+            loading="lazy"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-8 text-center text-red-400 text-xs\\'>Failed to load page ${p}.png image.</div>';"
+          />
+        </div>
+      `).join("");
+
+      return `${navHeader}<div class="w-full space-y-4 max-w-3xl mx-auto">${imagesHtml}</div>`;
     }
 
     function renderVerseByVerse(verses, translations, surahId) {
