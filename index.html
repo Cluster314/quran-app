@@ -109,9 +109,9 @@
       --bg-body: #000000;
       --bg-header: rgba(0, 0, 0, 0.9);
       --bg-card: #080808;
-      --bg-inner: #121212;
-      --border-color: #222222;
-      --text-main: #e2e8f0;
+      --bg-inner: #000000;
+      --border-color: #1a1a1a;
+      --text-main: #40bfff;
       --text-muted: #8b949e;
       --text-arabic: #40bfff;
       --accent: #40bfff;
@@ -119,8 +119,9 @@
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
       --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
-      --mushaf-filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(1.25);
-      --mushaf-blend: normal;
+      /* In OLED: invert to make black text white/blue, and keep blue numbers blue without inversion clash using sepia/hue rotation */
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.2);
+      --mushaf-blend: screen;
     }
 
     body {
@@ -156,23 +157,22 @@
     .theme-text-muted { color: var(--text-muted); }
     .theme-accent-text { color: var(--accent); }
 
-    /* Mushaf Image Styling for Theme Blending */
+    /* Mushaf Image Styling for Seamless Page Embedding */
     .mushaf-img {
       filter: var(--mushaf-filter);
       mix-blend-mode: var(--mushaf-blend);
-      max-width: 100%;
+      width: 100%;
       height: auto;
       display: block;
       margin: 0 auto;
-      border-radius: 8px;
     }
 
     .mushaf-container {
-      background-color: var(--bg-card);
-      border-color: var(--border-color);
-      border-radius: 1rem;
-      padding: 1rem;
-      box-shadow: var(--neon-glow);
+      background-color: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      margin-bottom: 2rem;
     }
 
     /* Word Tooltips */
@@ -1523,21 +1523,17 @@
 
       const imagesHtml = pageNumbers.map(p => `
         <div class="mushaf-container mb-6 text-center" id="page-mushaf-${p}">
-          <div class="flex items-center justify-between border-b theme-inner pb-2 mb-3">
-            <span class="px-3 py-0.5 theme-inner border border-blue-400 rounded-full theme-accent-text font-bold text-xs">📄 Page ${p}</span>
-            <span class="text-xs theme-text-muted">15-Line Indo-Pak</span>
-          </div>
           <img 
             src="${p}.png" 
             alt="Quran Page ${p}" 
-            class="mushaf-img shadow-lg"
+            class="mushaf-img"
             loading="lazy"
             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-8 text-center text-red-400 text-xs\\'>Failed to load page ${p}.png image.</div>';"
           />
         </div>
       `).join("");
 
-      return `${navHeader}<div class="w-full space-y-4 max-w-3xl mx-auto">${imagesHtml}</div>`;
+      return `${navHeader}<div class="w-full space-y-2 max-w-3xl mx-auto">${imagesHtml}</div>`;
     }
 
     function renderVerseByVerse(verses, translations, surahId) {
