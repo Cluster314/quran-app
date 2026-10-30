@@ -236,49 +236,6 @@
       font-variant-ligatures: common-ligatures contextual;
     }
 
-    /* Custom Ayah Marker Styling */
-    .ayah-container {
-      display: inline-flex !important;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      width: 2.3rem;
-      height: 2.3rem;
-      margin: 0 0.35rem;
-      vertical-align: middle;
-      direction: ltr;
-      unicode-bidi: isolate;
-      white-space: nowrap;
-      transition: transform 0.2s ease;
-    }
-
-    .ayah-container:hover { transform: scale(1.1); }
-
-    .ayah-number {
-      position: absolute;
-      font-family: 'Noto Naskh Arabic', 'Inter', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-arabic);
-      line-height: 1;
-    }
-
-    :root[data-theme="oled"] .ayah-number {
-      color: #40bfff !important;
-    }
-
-    .waqf-top-mark {
-      position: absolute;
-      top: -1.3rem;
-      font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: var(--rukoo-color);
-      line-height: 1;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
     /* Scrollbars */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
@@ -890,27 +847,9 @@
       26: [46, 1, 51, 30], 27: [51, 31, 57, 29], 28: [58, 1, 66, 12], 29: [67, 1, 77, 50], 30: [78, 1, 114, 6]
     };
 
-    function toArabicNumeral(num) {
-      if (num === undefined || num === null) return "";
-      const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-      return num.toString().split('').map(d => arabicDigits[d] || d).join('');
-    }
-
-    function getAyahMarkerSvg(ayahNum, topMark = '') {
-      const waqfHtml = topMark ? `<span class="waqf-top-mark">${topMark}</span>` : '';
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
-          ${waqfHtml}
-          <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
-          </svg>
-          <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
-    }
-
     function renderWordByWord(words) {
       if (!words || !words.length) return "";
       return words.map(w => {
-        if (w.char_type_name === "end") return "";
         const arabic = w.text_indopak || w.text || "";
         const translation = (w.translation && w.translation.text) ? w.translation.text : "";
         return `<span class="word-tooltip" data-translation="${translation}">${arabic}</span>`;
@@ -919,36 +858,7 @@
 
     function getPlainVerseArabic(words) {
       if (!words || !words.length) return "";
-      return words.filter(w => w.char_type_name !== "end").map(w => w.text_indopak || w.text || "").join(" ");
-    }
-
-    function processVerseWords(words, ayahNum) {
-      if (!words || words.length === 0) return { arabicHtml: "", topMark: "" };
-      
-      let normalWords = [];
-      let topMark = "";
-
-      for (let i = 0; i < words.length; i++) {
-        const w = words[i];
-        if (w.char_type_name === "end") continue;
-        
-        let text = w.text_indopak || w.text || "";
-        const translation = (w.translation && w.translation.text) ? w.translation.text : "";
-
-        // Check if the word ends with a small/high waqf sign (Unicode range 06D6 to 06ED)
-        const waqfMatch = text.match(/[\u06D6-\u06ED]+$/);
-        if (waqfMatch) {
-          topMark = waqfMatch[0];
-          text = text.replace(/[\u06D6-\u06ED]+$/, "").trim();
-        }
-
-        normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
-      }
-
-      return {
-        arabicHtml: normalWords.join(" ") + getAyahMarkerSvg(ayahNum, topMark),
-        plainText: normalWords.map(el => el.replace(/<[^>]*>?/gm, '')).join(" ")
-      };
+      return words.map(w => w.text_indopak || w.text || "").join(" ");
     }
 
     function getPagesForVerseRange(verses) {
@@ -1593,10 +1503,11 @@
             ` : '';
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
-            const processed = processVerseWords(v.words, ayahNum);
+            const wordByWordHtml = renderWordByWord(v.words);
+            const plainArabicText = getPlainVerseArabic(v.words);
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
 
-            const fullVerseToCopy = `${processed.plainText}\n\n${translatedText}`;
+            const fullVerseToCopy = `${plainArabicText}\n\n${translatedText}`;
             const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
             return `
@@ -1612,7 +1523,7 @@
                   </div>
                 </div>
                 <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
-                  ${processed.arabicHtml}
+                  ${wordByWordHtml}
                 </div>
                 ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
@@ -1642,9 +1553,8 @@
           `;
         }
 
-        const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const processed = processVerseWords(v.words, ayahNum);
-        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${processed.arabicHtml}</span> `;
+        const wordByWordHtml = renderWordByWord(v.words);
+        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${wordByWordHtml}</span> `;
       });
 
       return `
