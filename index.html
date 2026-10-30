@@ -267,18 +267,6 @@
       color: #40bfff !important;
     }
 
-    .waqf-top-mark {
-      position: absolute;
-      top: -1.2rem;
-      font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: var(--rukoo-color);
-      line-height: 1;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
     /* Scrollbars */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
@@ -406,7 +394,7 @@
           <option value="verse">🔢 Verse</option>
           <option value="reading-arabic">📜 Arabic</option>
           <option value="reading-translation">🌐 Translation</option>
-          <option id="mushafOption" value="mushaf" class="hidden">📖 Mushaf (NEW)</option>
+          <option value="mushaf">📖 Mushaf</option>
         </select>
       </div>
     </div>
@@ -896,10 +884,8 @@
       return num.toString().split('').map(d => arabicDigits[d] || d).join('');
     }
 
-    function getAyahMarkerSvg(ayahNum, topMark = '') {
-      const waqfHtml = topMark ? `<span class="waqf-top-mark">${topMark}</span>` : '';
+    function getAyahMarkerSvg(ayahNum) {
       return `&nbsp;<span class="ayah-container" contenteditable="false">
-          ${waqfHtml}
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
@@ -911,7 +897,6 @@
       if (!words || !words.length) return { arabicHtml: "", plainText: "" };
       
       let normalWords = [];
-      let topMark = "";
 
       for (let i = 0; i < words.length; i++) {
         const w = words[i];
@@ -920,18 +905,11 @@
         let text = w.text_indopak || w.text || "";
         const translation = (w.translation && w.translation.text) ? w.translation.text : "";
 
-        // Check if the word ends with a small/high waqf sign (Unicode range 06D6 to 06ED)
-        const waqfMatch = text.match(/[\u06D6-\u06ED]+$/);
-        if (waqfMatch) {
-          topMark = waqfMatch[0];
-          text = text.replace(/[\u06D6-\u06ED]+$/, "").trim();
-        }
-
         normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
       }
 
       return {
-        arabicHtml: normalWords.join(" ") + getAyahMarkerSvg(ayahNum, topMark),
+        arabicHtml: normalWords.join(" ") + getAyahMarkerSvg(ayahNum),
         plainText: normalWords.map(el => el.replace(/<[^>]*>?/gm, '')).join(" ")
       };
     }
@@ -966,23 +944,6 @@
       return pages;
     }
 
-    function updateDisplayModeAvailability(hash) {
-      const mushafOption = document.getElementById("mushafOption");
-      const isMushafCompatible = hash.startsWith("/page/") || hash.startsWith("/juz/") || hash.startsWith("/range");
-      
-      if (mushafOption) {
-        if (isMushafCompatible) {
-          mushafOption.classList.remove("hidden");
-        } else {
-          mushafOption.classList.add("hidden");
-          if (displayMode === "mushaf") {
-            displayMode = "verse";
-            document.getElementById("displayModeSelect").value = "verse";
-          }
-        }
-      }
-    }
-
     function changeDisplayMode(newMode) {
       displayMode = newMode;
       const rawHash = window.location.hash.replace('#', '') || '/';
@@ -1010,14 +971,9 @@
         const rawHash = window.location.hash.replace('#', '') || '/';
         const [hash, queryPart] = rawHash.split('?');
         const urlParams = new URLSearchParams(queryPart || '');
-        
-        updateDisplayModeAvailability(hash);
 
         if (urlParams.has('mode')) {
-          const requestedMode = urlParams.get('mode');
-          if (requestedMode !== 'mushaf' || hash.startsWith("/page/") || hash.startsWith("/juz/") || hash.startsWith("/range")) {
-            displayMode = requestedMode;
-          }
+          displayMode = urlParams.get('mode');
         }
         document.getElementById("displayModeSelect").value = displayMode;
 
@@ -1320,6 +1276,14 @@
         fetchSurahTranslation(surahId)
       ]);
       currentLoadedVerses = verses;
+
+      if (displayMode === "mushaf") {
+        app.innerHTML = renderMushafModeForVerses(verses);
+        initScrollObserver();
+        restoreScrollPosition();
+        return;
+      }
+
       let html = `
         <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center relative overflow-hidden">
           <div class="space-y-1.5 relative z-10">
