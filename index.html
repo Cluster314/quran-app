@@ -53,7 +53,7 @@
     /* Dynamic Theme CSS Variables */
     :root[data-theme="dark"] {
       --bg-body: #0f172a;
-      --bg-header: rgba(15, 23, 42, 0.9);
+      --bg-header: rgba(15, 23, 42, 0.95);
       --bg-card: #1e293b;
       --bg-inner: #0f172a;
       --border-color: #334155;
@@ -64,14 +64,14 @@
       --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #fbbf24;
       --scrollbar-thumb: #475569;
-      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       --mushaf-filter: invert(1) brightness(0.95) contrast(1.1);
       --mushaf-blend: normal;
     }
 
     :root[data-theme="light"] {
       --bg-body: #f1f5f9;
-      --bg-header: rgba(255, 255, 255, 0.9);
+      --bg-header: rgba(255, 255, 255, 0.95);
       --bg-card: #ffffff;
       --bg-inner: #f8fafc;
       --border-color: #e2e8f0;
@@ -82,14 +82,14 @@
       --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
-      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       --mushaf-filter: none;
       --mushaf-blend: multiply;
     }
 
     :root[data-theme="sepia"] {
       --bg-body: #f4ebd9;
-      --bg-header: rgba(237, 224, 203, 0.9);
+      --bg-header: rgba(237, 224, 203, 0.95);
       --bg-card: #eadeca;
       --bg-inner: #e2d4be;
       --border-color: #d3c4a8;
@@ -107,7 +107,7 @@
 
     :root[data-theme="oled"] {
       --bg-body: #000000;
-      --bg-header: rgba(0, 0, 0, 0.9);
+      --bg-header: rgba(0, 0, 0, 0.95);
       --bg-card: #080808;
       --bg-inner: #000000;
       --border-color: #1a1a1a;
@@ -131,6 +131,7 @@
       background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
       background-attachment: fixed;
       -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
 
     .theme-header {
@@ -161,6 +162,7 @@
       filter: var(--mushaf-filter);
       mix-blend-mode: var(--mushaf-blend);
       width: 100%;
+      max-width: 800px;
       height: auto;
       display: block;
       margin: 0 auto;
@@ -268,10 +270,11 @@
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
     ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
     .toggle-btn {
       padding: 3px 8px;
@@ -300,17 +303,17 @@
     #quranComLink {
       position: fixed;
       right: 0.75rem;
-      bottom: 5.5rem;
+      bottom: 6rem;
       z-index: 60;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.55rem 0.85rem;
+      padding: 0.5rem 0.8rem;
       border: 1px solid var(--accent);
       border-radius: 9999px;
       background: var(--bg-card);
       color: var(--text-main);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-decoration: none;
       box-shadow: var(--neon-glow);
@@ -320,11 +323,11 @@
 
     @media (max-width: 640px) {
       .indopak-text { font-size: 1.75rem !important; line-height: 3.5 !important; }
-      #quranComLink { bottom: 6.2rem; right: 0.5rem; font-size: 0.7rem; padding: 0.45rem 0.65rem; }
+      #quranComLink { bottom: 6.8rem; right: 0.5rem; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
     }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col pb-36 sm:pb-28">
+<body class="font-sans min-h-screen flex flex-col pb-40 sm:pb-32">
 
   <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
     <span aria-hidden="true">↗</span><span>quran.com</span>
@@ -370,27 +373,27 @@
   </script>
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-28 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all">
+  <div id="copyToast" class="fixed bottom-32 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all">
     <span class="text-lg" id="toastIcon">📋</span>
     <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
 
-  <header class="sticky top-0 z-40 theme-header border-b px-3 sm:px-6 py-2.5 flex flex-col gap-2.5 w-full">
+  <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1.5 theme-accent-text font-bold text-base sm:text-lg tracking-wide">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide">
         <span>📖</span>
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <div class="flex items-center space-x-1.5">
-        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-2xs sm:text-xs font-semibold border rounded-lg px-2 py-1 focus:outline-none">
+      <div class="flex items-center space-x-1">
+        <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
           <option value="sepia">📜 Sepia</option>
           <option value="oled">🖤 OLED</option>
         </select>
 
-        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-2xs sm:text-xs font-semibold border rounded-lg px-2 py-1 focus:outline-none">
+        <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="verse">🔢 Verse</option>
           <option value="reading-arabic">📜 Arabic</option>
           <option value="reading-translation">🌐 Translation</option>
@@ -400,7 +403,7 @@
     </div>
 
     <!-- Scrollable Navigation Tabs for Mobile -->
-    <div class="flex items-center space-x-1.5 text-2xs sm:text-xs overflow-x-auto pb-1 scrollbar-none">
+    <div class="flex items-center space-x-1.5 text-3xs sm:text-xs overflow-x-auto pb-1 scrollbar-none w-full">
       <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition">Surah</button>
       <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Juz</button>
       <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Page</button>
@@ -410,60 +413,60 @@
 
     <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs">
       <div id="controlsSurah" class="flex items-center space-x-2 w-full justify-center">
-        <span class="text-2xs theme-text-muted">Surah:</span>
-        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
+        <span class="text-3xs sm:text-2xs theme-text-muted whitespace-nowrap">Surah:</span>
+        <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-2xs sm:text-xs border rounded-lg px-2 py-1 w-full max-w-sm">
           <option value="">Select Surah...</option>
         </select>
       </div>
 
       <div id="controlsJuz" class="hidden items-center space-x-2 w-full justify-center">
-        <span class="text-2xs theme-text-muted">Juz:</span>
-        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
+        <span class="text-3xs sm:text-2xs theme-text-muted whitespace-nowrap">Juz:</span>
+        <select id="juzSelect" onchange="if(this.value) navigate('juz/' + this.value)" class="theme-inner theme-text-muted text-2xs sm:text-xs border rounded-lg px-2 py-1 w-full max-w-sm">
           <option value="">Select Juz (1-30)...</option>
         </select>
       </div>
 
       <div id="controlsPage" class="hidden items-center space-x-2 w-full justify-center">
-        <span class="text-2xs theme-text-muted">Page:</span>
-        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-xs border rounded-lg px-2.5 py-1 w-full max-w-xs">
+        <span class="text-3xs sm:text-2xs theme-text-muted whitespace-nowrap">Page:</span>
+        <select id="pageSelect" onchange="if(this.value) navigate('page/' + this.value)" class="theme-inner theme-text-muted text-2xs sm:text-xs border rounded-lg px-2 py-1 w-full max-w-sm">
           <option value="">Select Page (1-610)...</option>
         </select>
       </div>
 
       <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
         <div class="flex items-center space-x-1">
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
             <option value="">Start Surah</option>
           </select>
-          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
+          <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 sm:w-12 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
         <span class="theme-accent-text font-bold text-xs">➔</span>
         <div class="flex items-center space-x-1">
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
             <option value="">End Surah</option>
           </select>
-          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
+          <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 sm:w-12 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
-        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-2xs px-2.5 py-1 rounded font-bold transition">
+        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
           Go
         </button>
       </div>
 
       <div id="controlsSingleAyah" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
         <div class="flex items-center space-x-1">
-          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-2xs border rounded px-1.5 py-1">
+          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
             <option value="">Surah</option>
           </select>
-          <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-14 theme-inner theme-text-muted text-2xs border rounded px-1 py-1 text-center" />
+          <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 sm:w-14 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
-        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-2xs px-2.5 py-1 rounded font-bold transition">
+        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
           Go
         </button>
       </div>
     </div>
   </header>
 
-  <main id="app" class="flex-1 w-full px-3 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto">
+  <main id="app" class="flex-1 w-full px-2 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto">
     <div class="flex flex-col items-center justify-center py-20 space-y-3">
       <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
       <p class="theme-text-muted text-xs">Initializing Quran Reader...</p>
@@ -471,20 +474,20 @@
   </main>
 
   <!-- Sticky Mobile-Optimized Audio Player Bar -->
-  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-3 py-2 shadow-2xl flex flex-col gap-2 text-2xs sm:text-xs">
-    <div class="flex items-center justify-between w-full">
-      <div class="flex items-center space-x-2">
-        <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 text-white p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Play">▶</button>
-        <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border theme-text-muted p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Pause">⏸</button>
-        <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1.5 rounded-full font-bold flex items-center justify-center w-7 h-7" title="Stop">⏹</button>
-        <div class="flex flex-col truncate">
-          <span id="playerStatus" class="font-bold theme-accent-text truncate">Ready</span>
-          <span id="playerDetail" class="theme-text-muted text-2xs truncate">Select track</span>
+  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-2 sm:px-4 py-2 shadow-2xl flex flex-col gap-1.5 text-3xs sm:text-xs">
+    <div class="flex items-center justify-between w-full gap-1">
+      <div class="flex items-center space-x-1.5 min-w-0">
+        <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 text-white p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Play">▶</button>
+        <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Pause">⏸</button>
+        <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Stop">⏹</button>
+        <div class="flex flex-col min-w-0">
+          <span id="playerStatus" class="font-bold theme-accent-text truncate text-3xs sm:text-2xs">Ready</span>
+          <span id="playerDetail" class="theme-text-muted text-3xs truncate">Select track</span>
         </div>
       </div>
 
-      <div class="flex items-center space-x-1.5">
-        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1.5 py-1 text-2xs">
+      <div class="flex items-center space-x-1 shrink-0">
+        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1 py-0.5 text-3xs sm:text-2xs">
           <option value="ar.alafasy">Alafasy</option>
           <option value="ar.husary">Husary</option>
           <option value="ar.minshawi">Minshawi</option>
@@ -494,35 +497,35 @@
     </div>
 
     <!-- Secondary Audio Controls & Custom Ranges (Scrollable horizontally on mobile) -->
-    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 border-t border-gray-700 border-opacity-30 pt-1.5 scrollbar-none">
-      <div class="flex items-center space-x-1 whitespace-nowrap">
-        <span class="theme-text-muted">Ayah Rep:</span>
-        <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">∞</button>
+    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 border-t border-gray-700 border-opacity-30 pt-1 scrollbar-none w-full">
+      <div class="flex items-center space-x-1 whitespace-nowrap shrink-0">
+        <span class="theme-text-muted text-3xs">Ayah Rep:</span>
+        <button type="button" id="ayahToggleBtn" class="toggle-btn text-3xs" onclick="toggleMode('ayah')">∞</button>
         <div id="ayahCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
+          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
         </div>
       </div>
 
-      <div class="flex items-center space-x-1 whitespace-nowrap">
-        <span class="theme-text-muted">Range Rep:</span>
-        <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">∞</button>
+      <div class="flex items-center space-x-1 whitespace-nowrap shrink-0">
+        <span class="theme-text-muted text-3xs">Range Rep:</span>
+        <button type="button" id="rangeToggleBtn" class="toggle-btn text-3xs" onclick="toggleMode('range')">∞</button>
         <div id="rangeCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
+          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
         </div>
       </div>
 
-      <div class="flex items-center space-x-1 whitespace-nowrap pl-1 border-l border-gray-600">
-        <span class="theme-text-muted">Audio Range:</span>
-        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-2xs border rounded px-1 py-0.5">
+      <div class="flex items-center space-x-1 whitespace-nowrap pl-1 border-l border-gray-600 shrink-0">
+        <span class="theme-text-muted text-3xs">Range:</span>
+        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5">
           <option value="">Start S.</option>
         </select>
-        <input type="number" id="audioStartAyahInput" placeholder="A." min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
+        <input type="number" id="audioStartAyahInput" placeholder="A." min="1" value="1" class="w-7 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
         <span>➔</span>
-        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-2xs border rounded px-1 py-0.5">
+        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5">
           <option value="">End S.</option>
         </select>
-        <input type="number" id="audioEndAyahInput" placeholder="A." min="1" value="1" class="w-9 theme-card theme-text-muted text-2xs border rounded px-1 py-0.5 text-center" />
-        <button onclick="playSelectedAudioRange()" class="bg-blue-400 text-white font-semibold px-2 py-0.5 rounded transition">▶</button>
+        <input type="number" id="audioEndAyahInput" placeholder="A." min="1" value="1" class="w-7 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
+        <button onclick="playSelectedAudioRange()" class="bg-blue-400 text-white font-semibold px-1.5 py-0.5 rounded text-3xs transition">▶</button>
       </div>
     </div>
   </div>
@@ -1561,14 +1564,14 @@
 
             return `
               ${pageMarkerHtml}
-              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-4 sm:p-6 flex flex-col space-y-3">
-                <div class="flex items-center justify-between border-b theme-inner pb-2.5">
-                  <span class="px-2.5 py-0.5 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full">${v.verse_key}</span>
-                  <div class="flex flex-wrap items-center gap-1.5">
+              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3">
+                <div class="flex items-center justify-between border-b theme-inner pb-2">
+                  <span class="px-2 py-0.5 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full">${v.verse_key}</span>
+                  <div class="flex flex-wrap items-center gap-1">
                     <button onclick="playSingleVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">▶ Play</button>
-                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Start">📍 Start</button>
-                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="End">🏁 End</button>
-                    <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">📋 Copy</button>
+                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-1.5 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Start">📍</button>
+                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-1.5 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="End">🏁</button>
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">📋</button>
                   </div>
                 </div>
                 <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
