@@ -111,16 +111,22 @@
       --bg-card: #080808;
       --bg-inner: #000000;
       --border-color: #1a1a1a;
-      --text-main: #40bfff;
+      --text-main: #ffffff;
       --text-muted: #8b949e;
-      --text-arabic: #40bfff;
+      --text-arabic: #ffffff;
       --accent: #40bfff;
       --accent-glow: rgba(64, 191, 255, 0.25);
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
       --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) sepia(1) hue-rotate(170deg) saturate(8);
-      --mushaf-blend: screen;
+      /* Pure Black & White for OLED Mushaf Mode */
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) contrast(1.2);
+      --mushaf-blend: normal;
+    }
+
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
     }
 
     body {
@@ -131,7 +137,6 @@
       background-image: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 70%);
       background-attachment: fixed;
       -webkit-tap-highlight-color: transparent;
-      overflow-x: hidden;
     }
 
     .theme-header {
@@ -174,6 +179,8 @@
       box-shadow: none;
       padding: 0;
       margin-bottom: 0rem;
+      width: 100%;
+      overflow-x: hidden;
     }
 
     /* Word Tooltips */
@@ -266,7 +273,7 @@
     }
 
     :root[data-theme="oled"] .ayah-number {
-      color: #40bfff !important;
+      color: #ffffff !important;
     }
 
     /* Scrollbars */
@@ -327,7 +334,7 @@
     }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col pb-40 sm:pb-32">
+<body class="font-sans min-h-screen flex flex-col pb-40 sm:pb-32 max-w-full overflow-x-hidden">
 
   <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
     <span aria-hidden="true">↗</span><span>quran.com</span>
@@ -378,14 +385,14 @@
     <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
 
-  <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full">
+  <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full max-w-full overflow-x-hidden">
     <div class="flex items-center justify-between w-full">
-      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide">
+      <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide shrink-0">
         <span>📖</span>
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <div class="flex items-center space-x-1">
+      <div class="flex items-center space-x-1 shrink-0">
         <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
@@ -403,15 +410,15 @@
     </div>
 
     <!-- Scrollable Navigation Tabs for Mobile -->
-    <div class="flex items-center space-x-1.5 text-3xs sm:text-xs overflow-x-auto pb-1 scrollbar-none w-full">
-      <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition">Surah</button>
-      <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Juz</button>
-      <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Page</button>
-      <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Range</button>
-      <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition">Single</button>
+    <div class="flex items-center space-x-1.5 text-3xs sm:text-xs overflow-x-auto pb-1 scrollbar-none w-full max-w-full">
+      <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition shrink-0">Surah</button>
+      <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Juz</button>
+      <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Page</button>
+      <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Range</button>
+      <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Single</button>
     </div>
 
-    <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs">
+    <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs max-w-full">
       <div id="controlsSurah" class="flex items-center space-x-2 w-full justify-center">
         <span class="text-3xs sm:text-2xs theme-text-muted whitespace-nowrap">Surah:</span>
         <select id="surahSelect" onchange="if(this.value) navigate(this.value)" class="theme-inner theme-text-muted text-2xs sm:text-xs border rounded-lg px-2 py-1 w-full max-w-sm">
@@ -435,14 +442,14 @@
 
       <div id="controlsRange" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
         <div class="flex items-center space-x-1">
-          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
+          <select id="startSurahSelect" onchange="updateStartAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 max-w-xs">
             <option value="">Start Surah</option>
           </select>
           <input type="number" id="startAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 sm:w-12 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
         <span class="theme-accent-text font-bold text-xs">➔</span>
         <div class="flex items-center space-x-1">
-          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
+          <select id="endSurahSelect" onchange="updateEndAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 max-w-xs">
             <option value="">End Surah</option>
           </select>
           <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 sm:w-12 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
@@ -454,7 +461,7 @@
 
       <div id="controlsSingleAyah" class="hidden flex-wrap items-center justify-center gap-1.5 w-full">
         <div class="flex items-center space-x-1">
-          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1">
+          <select id="singleSurahSelect" onchange="updateSingleAyahMax()" class="theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 max-w-xs">
             <option value="">Surah</option>
           </select>
           <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 sm:w-14 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
@@ -466,7 +473,7 @@
     </div>
   </header>
 
-  <main id="app" class="flex-1 w-full px-2 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto">
+  <main id="app" class="flex-1 w-full px-2 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto overflow-x-hidden">
     <div class="flex flex-col items-center justify-center py-20 space-y-3">
       <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
       <p class="theme-text-muted text-xs">Initializing Quran Reader...</p>
@@ -474,7 +481,7 @@
   </main>
 
   <!-- Sticky Mobile-Optimized Audio Player Bar -->
-  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-2 sm:px-4 py-2 shadow-2xl flex flex-col gap-1.5 text-3xs sm:text-xs">
+  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-2 sm:px-4 py-2 shadow-2xl flex flex-col gap-1.5 text-3xs sm:text-xs max-w-full overflow-x-hidden">
     <div class="flex items-center justify-between w-full gap-1">
       <div class="flex items-center space-x-1.5 min-w-0">
         <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 text-white p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Play">▶</button>
@@ -497,7 +504,7 @@
     </div>
 
     <!-- Secondary Audio Controls & Custom Ranges (Scrollable horizontally on mobile) -->
-    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 border-t border-gray-700 border-opacity-30 pt-1 scrollbar-none w-full">
+    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 border-t border-gray-700 border-opacity-30 pt-1 scrollbar-none w-full max-w-full">
       <div class="flex items-center space-x-1 whitespace-nowrap shrink-0">
         <span class="theme-text-muted text-3xs">Ayah Rep:</span>
         <button type="button" id="ayahToggleBtn" class="toggle-btn text-3xs" onclick="toggleMode('ayah')">∞</button>
@@ -1035,10 +1042,10 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          if (tab) tab.className = "px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition";
+          if (tab) tab.className = "px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition shrink-0";
           if (ctrl) { ctrl.classList.remove("hidden"); ctrl.classList.add("flex"); }
         } else {
-          if (tab) tab.className = "px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition";
+          if (tab) tab.className = "px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0";
           if (ctrl) { ctrl.classList.add("hidden"); ctrl.classList.remove("flex"); }
         }
       });
