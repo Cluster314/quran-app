@@ -656,7 +656,7 @@
       }
     }
 
-    // Dynamic audio URL fetching from quran.com API endpoint
+    // Dynamic audio URL fetching from the API endpoint matching the selected Qari ID
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -670,9 +670,10 @@
         console.error("Failed to fetch reciter audio file:", err);
       }
       
-      // Fallback standard CDN construction if API lookup fails
+      // Fallback fallback URL mapped dynamically to the chosen Qari ID
       const [s, a] = verseKey.split(":");
-      return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${getAbsoluteAyahNumber(parseInt(s), parseInt(a))}.mp3`;
+      const absNum = getAbsoluteAyahNumber(parseInt(s), parseInt(a));
+      return `https://verses.quran.com/AyaAudioFiles/${recitationId}/${s}_${a}.mp3`;
     }
 
     function getAbsoluteAyahNumber(surahNum, ayahNum) {
