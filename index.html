@@ -487,11 +487,8 @@
       </div>
 
       <div class="flex items-center space-x-1 shrink-0">
-        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1 py-0.5 text-3xs sm:text-2xs">
-          <option value="ar.alafasy">Alafasy</option>
-          <option value="ar.husary">Husary</option>
-          <option value="ar.minshawi">Minshawi</option>
-          <option value="ar.ayyoub">Ayyoub</option>
+        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1 py-0.5 text-3xs sm:text-2xs max-w-xs truncate">
+          <option value="7">Mishari Rashid al-Afasy (Default)</option>
         </select>
       </div>
     </div>
@@ -561,7 +558,7 @@
     };
 
     let audioSettings = {
-      qari: localStorage.getItem("quran_qari") || "ar.alafasy"
+      recitationId: localStorage.getItem("quran_recitation_id") || "7"
     };
 
     function updateDiscordEmbed({ title, description, path = "" }) {
@@ -609,9 +606,9 @@
     }
 
     function changeTheme(newTheme) { applyTheme(newTheme); }
-    function changeQari(newQari) {
-      audioSettings.qari = newQari;
-      localStorage.setItem("quran_qari", newQari);
+    function changeQari(newRecitationId) {
+      audioSettings.recitationId = newRecitationId;
+      localStorage.setItem("quran_recitation_id", newRecitationId);
       if (isPlayingAudio) playAudioIndex(currentAudioIndex);
     }
 
@@ -659,9 +656,23 @@
       }
     }
 
-    function getAudioUrl(verseKey, qari) {
+    // Dynamic audio URL fetching from quran.com API endpoint
+    async function getAudioUrl(verseKey, recitationId) {
+      try {
+        const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
+        const data = await res.json();
+        if (data && data.audio_file && data.audio_file.url) {
+          let audioUrl = data.audio_file.url;
+          if (audioUrl.startsWith("//")) audioUrl = "https:" + audioUrl;
+          return audioUrl;
+        }
+      } catch (err) {
+        console.error("Failed to fetch reciter audio file:", err);
+      }
+      
+      // Fallback standard CDN construction if API lookup fails
       const [s, a] = verseKey.split(":");
-      return `https://cdn.islamic.network/quran/audio/128/${qari}/${getAbsoluteAyahNumber(parseInt(s), parseInt(a))}.mp3`;
+      return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${getAbsoluteAyahNumber(parseInt(s), parseInt(a))}.mp3`;
     }
 
     function getAbsoluteAyahNumber(surahNum, ayahNum) {
@@ -715,7 +726,7 @@
       playAudioIndex(0);
     }
 
-    function playAudioIndex(index) {
+    async function playAudioIndex(index) {
       if (!currentLoadedVerses || index < 0 || index >= currentLoadedVerses.length) {
         handleRangeEnd();
         return;
@@ -723,11 +734,13 @@
 
       currentAudioIndex = index;
       const verseKey = currentLoadedVerses[index].verse_key;
-      const url = getAudioUrl(verseKey, audioSettings.qari);
       highlightPlayingAyah(verseKey);
 
       const config = getRepeatConfig();
       const repeatLabel = config.ayahRepeat === Infinity ? "∞" : `${currentAyahRepeatCount + 1}/${config.ayahRepeat}`;
+
+      updatePlayerUI(true, `Loading ${verseKey}...`, `Ayah ${repeatLabel}`);
+      const url = await getAudioUrl(verseKey, audioSettings.recitationId);
 
       audioObject.src = url;
       audioObject.play().then(() => {
@@ -1062,9 +1075,29 @@
           translated_name: { name: c.translated_name.name }
         }));
         populateDropdowns();
+        loadReciters();
       } catch (err) {
         console.error("Failed to fetch chapters:", err);
         throw err;
+      }
+    }
+
+    // Automatically fetch and populate all available reciters from Quran.com API
+    async function loadReciters() {
+      try {
+        const res = await fetch(`${API_BASE}/resources/recitations?language=en`);
+        const data = await res.json();
+        if (data && data.recitations) {
+          const qariSelect = document.getElementById("qariSelect");
+          if (qariSelect) {
+            qariSelect.innerHTML = data.recitations.map(r => 
+              `<option value="${r.id}">${r.reciter_name} (${r.style || 'Standard'})</option>`
+            ).join("");
+            qariSelect.value = audioSettings.recitationId;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load reciters list:", err);
       }
     }
 
@@ -1084,9 +1117,6 @@
       let juzOpts = `<option value="">Select Juz...</option>`;
       for (let i = 1; i <= 30; i++) juzOpts += `<option value="${i}">Juz (Para) ${i}</option>`;
       document.getElementById("juzSelect").innerHTML = juzOpts;
-
-      const qariSel = document.getElementById("qariSelect");
-      if (qariSel) qariSel.value = audioSettings.qari;
     }
 
     function populatePageDropdown() {
