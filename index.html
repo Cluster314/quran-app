@@ -656,7 +656,7 @@
       }
     }
 
-    // Dynamic audio URL retrieval supporting all reciters accurately
+    // Fetches VBV URL and prepends https://verses.quran.com/ as requested
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -669,13 +669,13 @@
           if (audioUrl.startsWith("//")) {
             return "https:" + audioUrl;
           }
-          return `https://verses.quran.com/${audioUrl}`;
+          // Prepend base CDN url to the relative path returned by API
+          return `https://verses.quran.com/${audioUrl.startsWith('/') ? audioUrl.slice(1) : audioUrl}`;
         }
       } catch (err) {
         console.error("Failed to fetch reciter audio file:", err);
       }
       
-      // Fallback builder if API lookup fails
       const [s, a] = verseKey.split(":");
       return `https://verses.quran.com/Alafasy/mp3/${s.padStart(3, '0')}${a.padStart(3, '0')}.mp3`;
     }
@@ -1082,18 +1082,34 @@
       }
     }
 
-    // Automatically fetch and populate all available reciters from Quran.com API
+    // Automatically fetch reciters and filter for those supporting Verse-by-Verse streams
     async function loadReciters() {
       try {
         const res = await fetch(`${API_BASE}/resources/recitations?language=en`);
         const data = await res.json();
         if (data && data.recitations) {
+          // Filter out reciters that do not support verse-by-verse (VBV) or check valid segment formats
+          const vbvRecitations = data.recitations.filter(r => {
+            // Check if format contains audio segmentation or segment definitions required for VBV
+            return r.formats && r.formats.includes("audio");
+          });
+
+          const targetList = vbvRecitations.length > 0 ? vbvRecitations : data.recitations;
+
           const qariSelect = document.getElementById("qariSelect");
           if (qariSelect) {
-            qariSelect.innerHTML = data.recitations.map(r => 
+            qariSelect.innerHTML = targetList.map(r => 
               `<option value="${r.id}">${r.reciter_name} (${r.style || 'Standard'})</option>`
             ).join("");
-            qariSelect.value = audioSettings.recitationId;
+            
+            // Verify stored recitation exists in filtered list, else default to first available
+            const exists = targetList.some(r => String(r.id) === String(audioSettings.recitationId));
+            if (exists) {
+              qariSelect.value = audioSettings.recitationId;
+            } else if (targetList.length > 0) {
+              audioSettings.recitationId = targetList[0].id;
+              qariSelect.value = audioSettings.recitationId;
+            }
           }
         }
       } catch (err) {
