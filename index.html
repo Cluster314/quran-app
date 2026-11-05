@@ -656,39 +656,34 @@
       }
     }
 
-    // Dynamic audio URL retrieval with safe fallback support
+    // Dynamic audio URL retrieval supporting all reciters accurately
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
         const data = await res.json();
         if (data && data.audio_file && data.audio_file.url) {
           let audioUrl = data.audio_file.url;
-          if (audioUrl.startsWith("//")) audioUrl = "https:" + audioUrl;
-          return audioUrl;
+          if (audioUrl.startsWith("http://") || audioUrl.startsWith("https://")) {
+            return audioUrl;
+          }
+          if (audioUrl.startsWith("//")) {
+            return "https:" + audioUrl;
+          }
+          return `https://verses.quran.com/${audioUrl}`;
         }
       } catch (err) {
         console.error("Failed to fetch reciter audio file:", err);
       }
       
-      // Fallback fallback URL mapped dynamically to the chosen Qari ID
+      // Fallback builder if API lookup fails
       const [s, a] = verseKey.split(":");
-      return `https://verses.quran.com/AyaAudioFiles/${recitationId}/${s}_${a}.mp3`;
+      return `https://verses.quran.com/Alafasy/mp3/${s.padStart(3, '0')}${a.padStart(3, '0')}.mp3`;
     }
 
     audioObject.onerror = () => {
       console.error("Audio playback error encountered for URL:", audioObject.src);
       updatePlayerUI(false, "Audio Error", "Format or network not supported");
     };
-
-    function getAbsoluteAyahNumber(surahNum, ayahNum) {
-      if (chaptersData.length === 0) return 1;
-      let total = 0;
-      for (let i = 1; i < surahNum; i++) {
-        const meta = chaptersData.find(c => c.id === i);
-        if (meta) total += meta.verses_count;
-      }
-      return total + ayahNum;
-    }
 
     function playSingleVerse(verseKey) {
       stopAudioPlayback();
