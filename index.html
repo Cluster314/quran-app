@@ -656,7 +656,7 @@
       }
     }
 
-    // Dynamic audio URL fetching from the API endpoint matching the selected Qari ID
+    // Dynamic audio URL retrieval with safe fallback support
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -672,9 +672,13 @@
       
       // Fallback fallback URL mapped dynamically to the chosen Qari ID
       const [s, a] = verseKey.split(":");
-      const absNum = getAbsoluteAyahNumber(parseInt(s), parseInt(a));
       return `https://verses.quran.com/AyaAudioFiles/${recitationId}/${s}_${a}.mp3`;
     }
+
+    audioObject.onerror = () => {
+      console.error("Audio playback error encountered for URL:", audioObject.src);
+      updatePlayerUI(false, "Audio Error", "Format or network not supported");
+    };
 
     function getAbsoluteAyahNumber(surahNum, ayahNum) {
       if (chaptersData.length === 0) return 1;
