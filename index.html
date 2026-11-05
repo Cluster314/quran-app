@@ -15,7 +15,7 @@
   <!-- Discord & Open Graph Meta Tags -->
   <meta property="og:type" content="website" />
   <meta id="ogTitle" property="og:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta id="ogDescription" property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta id="ogDescription" property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations, word-by-word tooltips, and Tajweed color-coding." />
   <meta id="ogImage" property="og:image" content="https://cluster314.github.io/quran-app/og-banner.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -26,7 +26,7 @@
   <!-- Twitter / Discord Large Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta name="twitter:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta name="twitter:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations, word-by-word tooltips, and Tajweed color-coding." />
   <meta name="twitter:image" content="https://cluster314.github.io/quran-app/og-banner.png" />
 
   <!-- Web App Manifest & Theme -->
@@ -241,6 +241,12 @@
       font-variant-ligatures: common-ligatures contextual;
     }
 
+    /* Tajweed Rule Highlighting Classes */
+    .tj-ghunnah { color: #ec4899 !important; font-weight: bold; } /* Pink */
+    .tj-qalqalah { color: #3b82f6 !important; font-weight: bold; } /* Blue */
+    .tj-madd { color: #10b981 !important; font-weight: bold; }     /* Emerald Green */
+    .tj-heavy { color: #f59e0b !important; font-weight: bold; }    /* Amber */
+
     .ayah-container {
       display: inline-flex !important;
       align-items: center;
@@ -386,6 +392,11 @@
       </a>
 
       <div class="flex items-center space-x-1 shrink-0">
+        <button id="tajweedToggleBtn" onclick="toggleTajweed()" class="theme-card text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 theme-text-muted hover:border-blue-400 transition flex items-center gap-1" title="Toggle Tajweed Color-Coding">
+          <span>🎨</span>
+          <span id="tajweedBtnLabel">Tajweed: Off</span>
+        </button>
+
         <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
@@ -540,6 +551,7 @@
     const translationCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
+    let isTajweedEnabled = localStorage.getItem("quran_tajweed") === "true";
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
@@ -574,6 +586,45 @@
       if (ogTitle) ogTitle.setAttribute("content", title);
       if (ogDescription) ogDescription.setAttribute("content", description);
       if (ogUrl) ogUrl.setAttribute("content", fullUrl);
+    }
+
+    function toggleTajweed() {
+      isTajweedEnabled = !isTajweedEnabled;
+      localStorage.setItem("quran_tajweed", isTajweedEnabled);
+      updateTajweedUI();
+      router();
+    }
+
+    function updateTajweedUI() {
+      const btn = document.getElementById("tajweedToggleBtn");
+      const label = document.getElementById("tajweedBtnLabel");
+      if (btn && label) {
+        if (isTajweedEnabled) {
+          btn.className = "theme-card text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text transition flex items-center gap-1";
+          label.innerText = "Tajweed: On";
+        } else {
+          btn.className = "theme-card text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 theme-text-muted hover:border-blue-400 transition flex items-center gap-1";
+          label.innerText = "Tajweed: Off";
+        }
+      }
+    }
+
+    function applyTajweedFormatting(text) {
+      if (!text || !isTajweedEnabled) return text;
+
+      // 1. Ghunnah & Shaddah (Pink)
+      text = text.replace(/([نم][ّ])|([نم][ًًٌٍّ]*)/g, '<span class="tj-ghunnah">$1$2</span>');
+      
+      // 2. Qalqalah (Blue) - Qaf, Tta, Ba, Jeem, Dal
+      text = text.replace(/([قطبجد][ْق-غً-ّ]*)/g, '<span class="tj-qalqalah">$1</span>');
+      
+      // 3. Madd (Green) - Elongations
+      text = text.replace(/([آۥۦٰٓ]|آ|[اوي]ٓ)/g, '<span class="tj-madd">$1</span>');
+
+      // 4. Heavy / Full-Mouth Consonated Letters (Amber Gold)
+      text = text.replace(/([خصضظغ]|([ر][َُّ]))/g, '<span class="tj-heavy">$1</span>');
+
+      return text;
     }
 
     function toggleMode(type) {
@@ -907,8 +958,9 @@
         
         let text = w.text_indopak || w.text || "";
         const translation = (w.translation && w.translation.text) ? w.translation.text : "";
-
-        normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
+        
+        const formattedText = applyTajweedFormatting(text);
+        normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${formattedText}</span>`);
       }
 
       return {
@@ -979,6 +1031,7 @@
           displayMode = urlParams.get('mode');
         }
         document.getElementById("displayModeSelect").value = displayMode;
+        updateTajweedUI();
 
         if (chaptersData.length === 0) await loadChapters();
         if (Object.keys(INDOPAK_15_LINE_PAGE_STARTS).length === 0) await loadPageMap();
@@ -1258,7 +1311,7 @@
                   <div class="text-3xs theme-text-muted">${c.verses_count} Verses</div>
                 </div>
               </div>
-              <div class="font-indopak text-base sm:text-lg shrink-0 text-right leading-normal" dir="rtl">${c.name_arabic}</div>
+              <div class="font-indopak text-base sm:text-lg shrink-0 text-right leading-normal" dir="rtl">${applyTajweedFormatting(c.name_arabic)}</div>
             </a>
           `).join("")}
         </div>
@@ -1292,11 +1345,11 @@
           <div class="space-y-1.5 relative z-10">
             <h1 class="text-2xl sm:text-3xl font-extrabold">${surahMeta.name_simple}</h1>
             <p class="theme-accent-text font-medium text-2xs sm:text-xs">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
-            <div class="text-2xl sm:text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+            <div class="text-2xl sm:text-3xl font-indopak pt-1" dir="rtl">${applyTajweedFormatting(surahMeta.name_arabic)}</div>
           </div>
           ${surahId !== 1 && surahId !== 9 ? `
             <div class="mt-4 font-indopak text-xl sm:text-2xl theme-accent-text border-t theme-inner pt-3 w-full max-w-sm mx-auto" dir="rtl">
-              ${BISMILLAH_ARABIC}
+              ${applyTajweedFormatting(BISMILLAH_ARABIC)}
             </div>
           ` : ''}
         </div>
@@ -1369,11 +1422,11 @@
                 <h2 class="text-sm sm:text-base font-bold">${surahMeta.id}. Surah ${surahMeta.name_simple}</h2>
                 <span class="text-3xs theme-text-muted">${surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${surahMeta.name_arabic}</div>
+              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${applyTajweedFormatting(surahMeta.name_arabic)}</div>
             </div>
             ${shouldShowBismillah ? `
               <div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">
-                ${BISMILLAH_ARABIC}
+                ${applyTajweedFormatting(BISMILLAH_ARABIC)}
               </div>
             ` : ''}
             ${renderContent(verses, translations, false, sId)}
@@ -1456,11 +1509,11 @@
                 <h2 class="text-sm sm:text-base font-bold">${section.surahMeta.id}. Surah ${section.surahMeta.name_simple}</h2>
                 <span class="text-3xs theme-text-muted">${section.surahMeta.translated_name.name}</span>
               </div>
-              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${section.surahMeta.name_arabic}</div>
+              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${applyTajweedFormatting(section.surahMeta.name_arabic)}</div>
             </div>
             ${section.showBismillah ? `
               <div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">
-                ${BISMILLAH_ARABIC}
+                ${applyTajweedFormatting(BISMILLAH_ARABIC)}
               </div>
             ` : ''}
             ${renderContent(section.verses, section.translations, false, section.surahId)}
@@ -1588,7 +1641,7 @@
     function renderReadingArabicMode(verses, renderBismillahHeader = false, surahId = 1) {
       let arabicParagraph = "";
       if (renderBismillahHeader) {
-        arabicParagraph += `<div class="w-full text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>`;
+        arabicParagraph += `<div class="w-full text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">${applyTajweedFormatting(BISMILLAH_ARABIC)}</div>`;
       }
 
       verses.forEach((v) => {
@@ -1670,6 +1723,7 @@
     window.addEventListener("load", () => {
       applyTheme(currentTheme);
       document.getElementById("displayModeSelect").value = displayMode;
+      updateTajweedUI();
       if (!window.location.hash) {
         window.location.hash = "#/";
       } else {
