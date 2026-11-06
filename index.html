@@ -482,13 +482,18 @@
         <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Stop">⏹</button>
         <div class="flex flex-col min-w-0">
           <span id="playerStatus" class="font-bold theme-accent-text truncate text-3xs sm:text-2xs">Ready</span>
-          <span id="playerDetail" class="theme-text-muted text-3xs truncate">Select track</span>
+          <span id="playerDetail" class="theme-text-muted text-3xs truncate">Mishari Rashid al-Afasy</span>
         </div>
       </div>
 
+      <!-- Recitation Speed Dropdown (Replacing Qari Select) -->
       <div class="flex items-center space-x-1 shrink-0">
-        <select id="qariSelect" onchange="changeQari(this.value)" class="theme-card theme-text-muted border rounded px-1 py-0.5 text-3xs sm:text-2xs max-w-xs truncate">
-          <option value="7">Mishari Rashid al-Afasy (Default)</option>
+        <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="theme-card theme-text-muted border rounded px-1.5 py-1 text-3xs sm:text-2xs font-semibold">
+          <option value="0.75">0.75x Speed</option>
+          <option value="1.0" selected>1.0x Normal</option>
+          <option value="1.25">1.25x Speed</option>
+          <option value="1.5">1.5x Speed</option>
+          <option value="2.0">2.0x Speed</option>
         </select>
       </div>
     </div>
@@ -557,8 +562,9 @@
       range: { isInfinite: true }
     };
 
+    // Locked exclusively to Alafasy (ID 7)
     let audioSettings = {
-      recitationId: localStorage.getItem("quran_recitation_id") || "7"
+      recitationId: "7"
     };
 
     function updateDiscordEmbed({ title, description, path = "" }) {
@@ -606,10 +612,12 @@
     }
 
     function changeTheme(newTheme) { applyTheme(newTheme); }
-    function changeQari(newRecitationId) {
-      audioSettings.recitationId = newRecitationId;
-      localStorage.setItem("quran_recitation_id", newRecitationId);
-      if (isPlayingAudio) playAudioIndex(currentAudioIndex);
+    
+    // Change audio playback speed dynamically
+    function changePlaybackSpeed(speedValue) {
+      const speed = parseFloat(speedValue);
+      audioObject.playbackRate = speed;
+      localStorage.setItem("quran_playback_speed", speed);
     }
 
     function showToast(text, icon = "📋") {
@@ -656,7 +664,7 @@
       }
     }
 
-    // Dynamic audio URL retrieval with proper CDN formatting
+    // Dynamic audio URL retrieval for Alafasy
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -742,6 +750,12 @@
       const url = await getAudioUrl(verseKey, audioSettings.recitationId);
 
       audioObject.src = url;
+      // Apply selected speed before playing
+      const speedSelect = document.getElementById("playbackSpeedSelect");
+      if (speedSelect) {
+        audioObject.playbackRate = parseFloat(speedSelect.value) || 1.0;
+      }
+
       audioObject.play().then(() => {
         isPlayingAudio = true;
         updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${repeatLabel}`);
@@ -1074,41 +1088,9 @@
           translated_name: { name: c.translated_name.name }
         }));
         populateDropdowns();
-        loadReciters();
       } catch (err) {
         console.error("Failed to fetch chapters:", err);
         throw err;
-      }
-    }
-
-    // Whitelist of valid Verse-by-Verse recitation IDs
-    const SUPPORTED_VBV_IDS = [7, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12];
-
-    async function loadReciters() {
-      try {
-        const res = await fetch(`${API_BASE}/resources/recitations?language=en`);
-        const data = await res.json();
-        if (data && data.recitations) {
-          const vbvRecitations = data.recitations.filter(r => SUPPORTED_VBV_IDS.includes(Number(r.id)));
-          const targetList = vbvRecitations.length > 0 ? vbvRecitations : data.recitations;
-
-          const qariSelect = document.getElementById("qariSelect");
-          if (qariSelect) {
-            qariSelect.innerHTML = targetList.map(r => 
-              `<option value="${r.id}">${r.reciter_name} (${r.style || 'Standard'})</option>`
-            ).join("");
-            
-            const exists = targetList.some(r => String(r.id) === String(audioSettings.recitationId));
-            if (exists) {
-              qariSelect.value = audioSettings.recitationId;
-            } else if (targetList.length > 0) {
-              audioSettings.recitationId = targetList[0].id;
-              qariSelect.value = audioSettings.recitationId;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load reciters list:", err);
       }
     }
 
