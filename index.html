@@ -656,7 +656,7 @@
       }
     }
 
-    // Fetches VBV URL and prepends https://verses.quran.com/ as requested
+    // Dynamic audio URL retrieval with proper CDN formatting
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -669,7 +669,6 @@
           if (audioUrl.startsWith("//")) {
             return "https:" + audioUrl;
           }
-          // Prepend base CDN url to the relative path returned by API
           return `https://verses.quran.com/${audioUrl.startsWith('/') ? audioUrl.slice(1) : audioUrl}`;
         }
       } catch (err) {
@@ -1082,18 +1081,15 @@
       }
     }
 
-    // Automatically fetch reciters and filter for those supporting Verse-by-Verse streams
+    // Whitelist of valid Verse-by-Verse recitation IDs
+    const SUPPORTED_VBV_IDS = [7, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12];
+
     async function loadReciters() {
       try {
         const res = await fetch(`${API_BASE}/resources/recitations?language=en`);
         const data = await res.json();
         if (data && data.recitations) {
-          // Filter out reciters that do not support verse-by-verse (VBV) or check valid segment formats
-          const vbvRecitations = data.recitations.filter(r => {
-            // Check if format contains audio segmentation or segment definitions required for VBV
-            return r.formats && r.formats.includes("audio");
-          });
-
+          const vbvRecitations = data.recitations.filter(r => SUPPORTED_VBV_IDS.includes(Number(r.id)));
           const targetList = vbvRecitations.length > 0 ? vbvRecitations : data.recitations;
 
           const qariSelect = document.getElementById("qariSelect");
@@ -1102,7 +1098,6 @@
               `<option value="${r.id}">${r.reciter_name} (${r.style || 'Standard'})</option>`
             ).join("");
             
-            // Verify stored recitation exists in filtered list, else default to first available
             const exists = targetList.some(r => String(r.id) === String(audioSettings.recitationId));
             if (exists) {
               qariSelect.value = audioSettings.recitationId;
