@@ -21,7 +21,7 @@
   <meta property="og:image:height" content="630" />
   <meta id="ogUrl" property="og:url" content="https://cluster314.github.io/quran-app/" />
   <meta id="ogSiteName" property="og:site_name" content="Noble Quran Reader" />
-  <meta name="theme-color" content="#40bfff" />
+  <meta name="theme-color" content="#40bfff" id="metaThemeColor" />
 
   <!-- Twitter / Discord Large Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -60,11 +60,8 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
-      --accent: #40bfff;
-      --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #fbbf24;
       --scrollbar-thumb: #475569;
-      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       --mushaf-filter: invert(1) brightness(0.95) contrast(1.1);
       --mushaf-blend: normal;
     }
@@ -78,11 +75,8 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --text-arabic: #0f172a;
-      --accent: #40bfff;
-      --accent-glow: rgba(64, 191, 255, 0.15);
       --rukoo-color: #d97706;
       --scrollbar-thumb: #cbd5e1;
-      --neon-glow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       --mushaf-filter: none;
       --mushaf-blend: multiply;
     }
@@ -96,11 +90,8 @@
       --text-main: #433422;
       --text-muted: #78644c;
       --text-arabic: #2d2013;
-      --accent: #0284c7;
-      --accent-glow: rgba(2, 132, 199, 0.15);
       --rukoo-color: #b45309;
       --scrollbar-thumb: #c4b396;
-      --neon-glow: 0 10px 25px -5px rgba(67, 52, 34, 0.08);
       --mushaf-filter: sepia(0.2) contrast(1.05);
       --mushaf-blend: multiply;
     }
@@ -114,11 +105,8 @@
       --text-main: #ffffff;
       --text-muted: #8b949e;
       --text-arabic: #ffffff;
-      --accent: #40bfff;
-      --accent-glow: rgba(64, 191, 255, 0.25);
       --rukoo-color: #ff3366;
       --scrollbar-thumb: #222222;
-      --neon-glow: 0 0 20px rgba(64, 191, 255, 0.2);
       --mushaf-filter: invert(1) grayscale(1) brightness(1.1) contrast(1.2);
       --mushaf-blend: normal;
     }
@@ -289,9 +277,9 @@
     }
 
     .toggle-btn.finite {
-      background-color: #40bfff;
+      background-color: var(--accent);
       color: #ffffff;
-      border-color: #0284c7;
+      border-color: var(--accent);
     }
 
     .active-ayah-playing {
@@ -320,6 +308,32 @@
       transition: background-color 0.2s ease, transform 0.2s ease;
     }
     #quranComLink:hover { background: var(--accent-glow); transform: translateY(-2px); }
+
+    /* Custom Color Picker Button Styling */
+    .color-picker-wrapper {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+    }
+    .color-picker-wrapper input[type="color"] {
+      position: absolute;
+      -webkit-appearance: none;
+      border: none;
+      width: 150%;
+      height: 150%;
+      cursor: pointer;
+      background: transparent;
+      left: -25%;
+      top: -25%;
+    }
 
     @media (max-width: 640px) {
       .indopak-text { font-size: 1.75rem !important; line-height: 3.5 !important; }
@@ -373,7 +387,7 @@
   </script>
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-36 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border border-blue-400 px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all">
+  <div id="copyToast" class="fixed bottom-36 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all" style="border-color: var(--accent);">
     <span class="text-lg" id="toastIcon">📋</span>
     <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
@@ -385,7 +399,12 @@
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <div class="flex items-center space-x-1 shrink-0">
+      <!-- Theme Controls & Custom Accent Color Picker -->
+      <div class="flex items-center space-x-1.5 shrink-0">
+        <div class="color-picker-wrapper" title="Change Accent Color">
+          <input type="color" id="accentColorPicker" value="#40bfff" onchange="changeAccentColor(this.value)" title="Choose Theme Color" />
+        </div>
+
         <select id="themeSelect" onchange="changeTheme(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="dark">🌙 Dark</option>
           <option value="light">☀️ Light</option>
@@ -404,11 +423,11 @@
 
     <!-- Scrollable Navigation Tabs for Mobile -->
     <div class="flex items-center space-x-1.5 text-3xs sm:text-xs overflow-x-auto pb-1 scrollbar-none w-full max-w-full">
-      <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition shrink-0">Surah</button>
-      <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Juz</button>
-      <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Page</button>
-      <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Range</button>
-      <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0">Single</button>
+      <button onclick="setNavMode('surah')" id="tabSurah" class="px-2.5 py-1 rounded-md border active-tab-btn font-semibold whitespace-nowrap transition shrink-0">Surah</button>
+      <button onclick="setNavMode('juz')" id="tabJuz" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Juz</button>
+      <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Page</button>
+      <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Range</button>
+      <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Single</button>
     </div>
 
     <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs max-w-full">
@@ -447,7 +466,7 @@
           </select>
           <input type="number" id="endAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 sm:w-12 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
-        <button onclick="applyCrossSurahRange()" class="bg-blue-400 hover:bg-blue-500 text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
+        <button onclick="applyCrossSurahRange()" class="custom-btn-primary text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
           Go
         </button>
       </div>
@@ -459,7 +478,7 @@
           </select>
           <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 sm:w-14 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
-        <button onclick="applySingleAyahNavigate()" class="bg-blue-400 hover:bg-blue-500 text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
+        <button onclick="applySingleAyahNavigate()" class="custom-btn-primary text-white text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">
           Go
         </button>
       </div>
@@ -468,7 +487,7 @@
 
   <main id="app" class="flex-1 w-full px-2 sm:px-6 md:px-12 py-4 max-w-7xl mx-auto overflow-x-hidden">
     <div class="flex flex-col items-center justify-center py-20 space-y-3">
-      <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style="border-color: var(--accent); border-top-color: transparent;"></div>
       <p class="theme-text-muted text-xs">Initializing Quran Reader...</p>
     </div>
   </main>
@@ -477,7 +496,7 @@
   <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-2 sm:px-4 py-2.5 shadow-2xl flex flex-col gap-2 text-3xs sm:text-xs max-w-full overflow-x-hidden">
     <div class="flex items-center justify-between w-full gap-1">
       <div class="flex items-center space-x-1.5 min-w-0">
-        <button id="playBtn" onclick="resumeAudioPlayback()" class="bg-blue-400 text-white p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Play">▶</button>
+        <button id="playBtn" onclick="resumeAudioPlayback()" class="custom-btn-primary text-white p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Play">▶</button>
         <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Pause">⏸</button>
         <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Stop">⏹</button>
         <div class="flex flex-col min-w-0">
@@ -486,7 +505,7 @@
         </div>
       </div>
 
-      <!-- Recitation Speed Dropdown (Replacing Qari Select) -->
+      <!-- Recitation Speed Dropdown -->
       <div class="flex items-center space-x-1 shrink-0">
         <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="theme-card theme-text-muted border rounded px-1.5 py-1 text-3xs sm:text-2xs font-semibold">
           <option value="0.75">0.75x Speed</option>
@@ -527,10 +546,20 @@
           <option value="">End S.</option>
         </select>
         <input type="number" id="audioEndAyahInput" placeholder="A." min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
-        <button onclick="playSelectedAudioRange()" class="bg-blue-400 text-white font-semibold px-2 py-0.5 rounded text-3xs transition">▶</button>
+        <button onclick="playSelectedAudioRange()" class="custom-btn-primary text-white font-semibold px-2 py-0.5 rounded text-3xs transition">▶</button>
       </div>
     </div>
   </div>
+
+  <style>
+    .custom-btn-primary { background-color: var(--accent); }
+    .custom-btn-primary:hover { opacity: 0.9; }
+    .active-tab-btn {
+      border-color: var(--accent) !important;
+      background-color: var(--accent);
+      color: #ffffff !important;
+    }
+  </style>
 
   <script>
     const SITE_BASE_URL = "https://cluster314.github.io/quran-app/";
@@ -542,6 +571,7 @@
     const translationCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
+    let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
@@ -562,7 +592,6 @@
       range: { isInfinite: true }
     };
 
-    // Locked exclusively to Alafasy (ID 7)
     let audioSettings = {
       recitationId: "7"
     };
@@ -612,8 +641,29 @@
     }
 
     function changeTheme(newTheme) { applyTheme(newTheme); }
-    
-    // Change audio playback speed dynamically
+
+    // Apply custom accent color dynamically to CSS variables & meta tags
+    function applyAccentColor(hexColor) {
+      currentAccent = hexColor;
+      document.documentElement.style.setProperty('--accent', hexColor);
+      
+      // Calculate a soft translucent RGBA glow from hex
+      let r = parseInt(hexColor.slice(1, 3), 16) || 64;
+      let g = parseInt(hexColor.slice(3, 5), 16) || 191;
+      let b = parseInt(hexColor.slice(5, 7), 16) || 255;
+      document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.18)`);
+      
+      localStorage.setItem("quran_accent", hexColor);
+      const picker = document.getElementById("accentColorPicker");
+      if (picker) picker.value = hexColor;
+      const metaTheme = document.getElementById("metaThemeColor");
+      if (metaTheme) metaTheme.setAttribute("content", hexColor);
+    }
+
+    function changeAccentColor(newColor) {
+      applyAccentColor(newColor);
+    }
+
     function changePlaybackSpeed(speedValue) {
       const speed = parseFloat(speedValue);
       audioObject.playbackRate = speed;
@@ -664,7 +714,6 @@
       }
     }
 
-    // Dynamic audio URL retrieval for Alafasy
     async function getAudioUrl(verseKey, recitationId) {
       try {
         const res = await fetch(`${API_BASE}/recitations/${recitationId}/by_ayah/${verseKey}`);
@@ -750,7 +799,6 @@
       const url = await getAudioUrl(verseKey, audioSettings.recitationId);
 
       audioObject.src = url;
-      // Apply selected speed before playing
       const speedSelect = document.getElementById("playbackSpeedSelect");
       if (speedSelect) {
         audioObject.playbackRate = parseFloat(speedSelect.value) || 1.0;
@@ -1061,7 +1109,7 @@
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
-          if (tab) tab.className = "px-2.5 py-1 rounded-md border border-blue-400 bg-blue-400 bg-opacity-20 theme-accent-text font-semibold whitespace-nowrap transition shrink-0";
+          if (tab) tab.className = "px-2.5 py-1 rounded-md border active-tab-btn font-semibold whitespace-nowrap transition shrink-0";
           if (ctrl) { ctrl.classList.remove("hidden"); ctrl.classList.add("flex"); }
         } else {
           if (tab) tab.className = "px-2.5 py-1 rounded-md border theme-card theme-text-muted hover:border-blue-400 whitespace-nowrap transition shrink-0";
@@ -1271,13 +1319,13 @@
           ${chaptersData.map(c => `
             <a href="#/${c.id}" onclick="navigate('${c.id}'); return false;" 
                title="${c.name_simple}"
-               class="theme-card border p-3 rounded-xl transition flex items-center justify-between gap-2 group hover:border-blue-400">
+               class="theme-card border p-3 rounded-xl transition flex items-center justify-between gap-2 group hover:border-[var(--accent)]">
               <div class="flex items-center space-x-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-2xs font-bold theme-accent-text group-hover:bg-blue-400 group-hover:text-white transition">
+                <div class="w-8 h-8 rounded-lg theme-inner border flex-shrink-0 flex items-center justify-center text-2xs font-bold theme-accent-text group-hover:bg-[var(--accent)] group-hover:text-white transition">
                   ${c.id}
                 </div>
                 <div class="min-w-0">
-                  <div class="font-semibold text-xs sm:text-sm group-hover:text-blue-400 transition truncate" title="${c.name_simple}">${c.name_simple}</div>
+                  <div class="font-semibold text-xs sm:text-sm group-hover:text-[var(--accent)] transition truncate" title="${c.name_simple}">${c.name_simple}</div>
                   <div class="text-3xs theme-text-muted">${c.verses_count} Verses</div>
                 </div>
               </div>
@@ -1364,7 +1412,7 @@
       surahIds.forEach((sId, index) => pageTranslations[sId] = translationResults[index]);
 
       let html = `
-        <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between">
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between" style="border-color: var(--accent);">
           <button ${pageNum > 1 ? `onclick="navigate('page/${pageNum - 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${pageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
             ⬅ Prev
           </button>
@@ -1463,7 +1511,7 @@
       }
 
       let html = `
-        <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center">
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
           <h1 class="text-xl sm:text-2xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
           <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">
             ${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]
@@ -1519,7 +1567,7 @@
       let navHeader = '';
       if (currentPageNum) {
         navHeader = `
-          <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between">
+          <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center flex items-center justify-between" style="border-color: var(--accent);">
             <button ${currentPageNum > 1 ? `onclick="navigate('page/${currentPageNum - 1}')"` : 'disabled'} class="px-2.5 py-1 theme-inner border rounded-lg text-2xs sm:text-xs font-semibold ${currentPageNum <= 1 ? 'opacity-40 cursor-not-allowed' : 'theme-accent-text'}">
               ⬅ Prev
             </button>
@@ -1534,7 +1582,7 @@
         `;
       } else if (title) {
         navHeader = `
-          <div class="w-full theme-card border border-blue-400 rounded-2xl p-4 sm:p-6 mb-6 text-center">
+          <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
             <h1 class="text-xl sm:text-2xl font-extrabold">${title}</h1>
             <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
           </div>
@@ -1544,11 +1592,11 @@
       const imagesHtml = pageNumbers.map(p => `
         <div class="mushaf-container mb-2 text-center" id="page-mushaf-${p}">
           <div class="w-full flex items-center my-6">
-            <div class="flex-1 border-t border-blue-400 opacity-40"></div>
-            <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+            <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
+            <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
               Page ${p}
             </span>
-            <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+            <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
           </div>
           <img 
             src="${p}.png" 
@@ -1570,11 +1618,11 @@
             const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
             const pageMarkerHtml = pageNum ? `
               <div class="w-full flex items-center my-6">
-                <div class="flex-1 border-t border-blue-400 opacity-40"></div>
-                <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+                <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
+                <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
                   Page ${pageNum}
                 </span>
-                <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+                <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
               </div>
             ` : '';
 
@@ -1589,12 +1637,12 @@
               ${pageMarkerHtml}
               <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3">
                 <div class="flex items-center justify-between border-b theme-inner pb-2">
-                  <span class="px-2 py-0.5 theme-inner border border-blue-400 border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full">${v.verse_key}</span>
+                  <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">%v${v.verse_key}</span>
                   <div class="flex flex-wrap items-center gap-1">
-                    <button onclick="playSingleVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">▶ Play</button>
-                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-1.5 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="Start">📍</button>
-                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-1.5 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition" title="End">🏁</button>
-                    <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-blue-400 hover:text-white px-2 py-1 rounded border border-blue-400 border-opacity-40 theme-accent-text font-semibold transition">📋</button>
+                    <button onclick="playSingleVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-white px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
+                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-white px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
+                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-white px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
+                    <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-white px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
                   </div>
                 </div>
                 <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
@@ -1619,11 +1667,11 @@
         if (pageNum) {
           arabicParagraph += `
             <span class="w-full flex items-center my-6 block" contenteditable="false" dir="ltr">
-              <span class="flex-1 border-t border-blue-400 opacity-40"></span>
-              <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
+              <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
                 Page ${pageNum}
               </span>
-              <span class="flex-1 border-t border-blue-400 opacity-40"></span>
+              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
             </span>
           `;
         }
@@ -1647,11 +1695,11 @@
         if (pageNum) {
           items.push(`
             <div class="w-full flex items-center my-6">
-              <div class="flex-1 border-t border-blue-400 opacity-40"></div>
-              <span class="px-4 py-1 theme-card border border-blue-400 rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md">
+              <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
+              <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
                 Page ${pageNum}
               </span>
-              <div class="flex-1 border-t border-blue-400 opacity-40"></div>
+              <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
             </div>
           `);
         }
@@ -1675,7 +1723,7 @@
     function showLoading(msg) {
       document.getElementById("app").innerHTML = `
         <div class="flex flex-col items-center justify-center py-20 space-y-3">
-          <div class="w-8 h-8 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin" style="border-color: var(--accent); border-top-color: transparent;"></div>
           <p class="theme-text-muted text-xs animate-pulse">${msg}</p>
         </div>
       `;
@@ -1685,13 +1733,14 @@
       document.getElementById("app").innerHTML = `
         <div class="text-center py-20">
           <h1 class="text-xl font-bold text-red-500">View Not Found</h1>
-          <a href="#/" onclick="navigate(''); return false;" class="mt-3 inline-block text-blue-400 hover:underline text-xs">Back to Home</a>
+          <a href="#/" onclick="navigate(''); return false;" class="mt-3 inline-block text-[var(--accent)] hover:underline text-xs">Back to Home</a>
         </div>
       `;
     }
 
     window.addEventListener("load", () => {
       applyTheme(currentTheme);
+      applyAccentColor(currentAccent);
       document.getElementById("displayModeSelect").value = displayMode;
       if (!window.location.hash) {
         window.location.hash = "#/";
