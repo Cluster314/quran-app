@@ -373,8 +373,13 @@
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Preset Accent Theme Dropdown -->
+      <!-- Preset Accent Theme Dropdown & Total Time Tracker -->
       <div class="flex items-center space-x-1.5 shrink-0">
+        <div id="timeTrackerBadge" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 flex items-center space-x-1" title="Total Time Spent on App">
+          <span>⏳</span>
+          <span id="timeTrackerText">0m 0s</span>
+        </div>
+
         <select id="accentSelect" onchange="changeAccentColor(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="#40bfff">💎 Diamond Blue</option>
           <option value="#fbbf24">🪙 Gold</option>
@@ -553,6 +558,33 @@
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
+
+    // Total Time Tracker Logic
+    let totalSecondsOnApp = parseInt(localStorage.getItem("quran_total_time_seconds") || "0", 10);
+
+    function initTotalTimeTracker() {
+      setInterval(() => {
+        totalSecondsOnApp++;
+        localStorage.setItem("quran_total_time_seconds", totalSecondsOnApp);
+        updateTimeTrackerDisplay();
+      }, 1000);
+      updateTimeTrackerDisplay();
+    }
+
+    function updateTimeTrackerDisplay() {
+      const textEl = document.getElementById("timeTrackerText");
+      if (!textEl) return;
+      
+      const hours = Math.floor(totalSecondsOnApp / 3600);
+      const minutes = Math.floor((totalSecondsOnApp % 3600) / 60);
+      const seconds = totalSecondsOnApp % 60;
+
+      if (hours > 0) {
+        textEl.innerText = `${hours}h ${minutes}m`;
+      } else {
+        textEl.innerText = `${minutes}m ${seconds}s`;
+      }
+    }
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
@@ -1731,6 +1763,7 @@
     window.addEventListener("load", () => {
       applyTheme(currentTheme);
       applyAccentColor(currentAccent);
+      initTotalTimeTracker();
       document.getElementById("displayModeSelect").value = displayMode;
       if (!window.location.hash) {
         window.location.hash = "#/";
