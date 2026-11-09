@@ -591,6 +591,7 @@
     let MAX_PAGES = 610;
 
     let audioObject = new Audio();
+    let nextAudioObject = new Audio(); // Preloaded next audio for seamless gapless playback
     let currentLoadedVerses = [];
     let currentAudioIndex = 0;
     let currentAyahRepeatCount = 0;
@@ -689,6 +690,7 @@
     function changePlaybackSpeed(speedValue) {
       const speed = parseFloat(speedValue);
       audioObject.playbackRate = speed;
+      nextAudioObject.playbackRate = speed;
       localStorage.setItem("quran_playback_speed", speed);
     }
 
@@ -783,7 +785,9 @@
         return;
       }
 
-      const audioRangeList = [];
+      let audioRangeList = [];
+      let previousSurah = null;
+
       for (let sId = fromS; sId <= toS; sId++) {
         const meta = chaptersData.find(c => c.id === sId);
         if (!meta) continue;
@@ -791,7 +795,13 @@
         let endFilter = (sId === toS) ? toA : meta.verses_count;
 
         for (let aNum = startFilter; aNum <= endFilter; aNum++) {
+          // If a new surah starts (and it's not Surah 1 or Surah 9, and not the absolute first item in the playlist),
+          // automatically insert Bismillah (1:1) first!
+          if (previousSurah !== null && sId !== previousSurah && sId !== 1 && sId !== 9) {
+            audioRangeList.push({ verse_key: "1:1", isBismillah: true });
+          }
           audioRangeList.push({ verse_key: `${sId}:${aNum}` });
+          previousSurah = sId;
         }
       }
 
@@ -811,24 +821,47 @@
       }
 
       currentAudioIndex = index;
-      const verseKey = currentLoadedVerses[index].verse_key;
-      highlightPlayingAyah(verseKey);
+      const item = currentLoadedVerses[index];
+      const verseKey = item.verse_key;
+      
+      if (!item.isBismillah) {
+        highlightPlayingAyah(verseKey);
+      } else {
+        highlightPlayingAyah(null);
+      }
 
       const config = getRepeatConfig();
-      const repeatLabel = config.ayahRepeat === Infinity ? "∞" : `${currentAyahRepeatCount + 1}/${config.ayahRepeat}`;
+      const repeatLabel = item.isBismillah ? "Bismillah" : (config.ayahRepeat === Infinity ? "∞" : `${currentAyahRepeatCount + 1}/${config.ayahRepeat}`);
 
-      updatePlayerUI(true, `Loading ${verseKey}...`, `Ayah ${repeatLabel}`);
-      const url = await getAudioUrl(verseKey, audioSettings.recitationId);
+      updatePlayerUI(true, item.isBismillah ? "Reciting Bismillah..." : `Loading ${verseKey}...`, `Ayah ${repeatLabel}`);
+      
+      let url = "";
+      if (item.isBismillah) {
+        url = await getAudioUrl("1:1", audioSettings.recitationId);
+      } else {
+        url = await getAudioUrl(verseKey, audioSettings.recitationId);
+      }
+
+      const speedSelect = document.getElementById("playbackSpeedSelect");
+      const currentSpeed = parseFloat(speedSelect ? speedSelect.value : 1.0) || 1.0;
+
+      // Preload next audio for seamless gapless playback
+      if (index + 1 < currentLoadedVerses.length) {
+        const nextItem = currentLoadedVerses[index + 1];
+        const nextVerseKey = nextItem.isBismillah ? "1:1" : nextItem.verse_key;
+        getAudioUrl(nextVerseKey, audioSettings.recitationId).then(nextUrl => {
+          nextAudioObject.src = nextUrl;
+          nextAudioObject.playbackRate = currentSpeed;
+          nextAudioObject.load();
+        });
+      }
 
       audioObject.src = url;
-      const speedSelect = document.getElementById("playbackSpeedSelect");
-      if (speedSelect) {
-        audioObject.playbackRate = parseFloat(speedSelect.value) || 1.0;
-      }
+      audioObject.playbackRate = currentSpeed;
 
       audioObject.play().then(() => {
         isPlayingAudio = true;
-        updatePlayerUI(true, `Playing ${verseKey}`, `Ayah ${repeatLabel}`);
+        updatePlayerUI(true, item.isBismillah ? "Reciting Bismillah" : `Playing ${verseKey}`, `Ayah ${repeatLabel}`);
       }).catch(err => {
         console.error("Audio error:", err);
         updatePlayerUI(false, "Error", "Playback failed");
@@ -836,6 +869,18 @@
     }
 
     audioObject.onended = () => {
+      const item = currentLoadedVerses[currentAudioIndex];
+      // Bismillah doesn't repeat per ayah repeat setting, move straight to next
+      if (item && item.isBismillah) {
+        currentAudioIndex++;
+        if (currentAudioIndex < currentLoadedVerses.length) {
+          playAudioIndex(currentAudioIndex);
+        } else {
+          handleRangeEnd();
+        }
+        return;
+      }
+
       const config = getRepeatConfig();
       currentAyahRepeatCount++;
       if (currentAyahRepeatCount < config.ayahRepeat) {
