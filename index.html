@@ -291,7 +291,7 @@
     #quranComLink {
       position: fixed;
       right: 0.75rem;
-      bottom: 8.5rem;
+      bottom: 5rem;
       z-index: 60;
       display: inline-flex;
       align-items: center;
@@ -311,11 +311,11 @@
 
     @media (max-width: 640px) {
       .indopak-text { font-size: 1.75rem !important; line-height: 3.5 !important; }
-      #quranComLink { bottom: 9.5rem; right: 0.5rem; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
+      #quranComLink { bottom: 5rem; right: 0.5rem; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
     }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col pb-48 sm:pb-36 max-w-full overflow-x-hidden">
+<body class="font-sans min-h-screen flex flex-col pb-16 max-w-full overflow-x-hidden">
 
   <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
     <span aria-hidden="true">↗</span><span>quran.com</span>
@@ -361,20 +361,21 @@
   </script>
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-36 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all" style="border-color: var(--accent);">
+  <div id="copyToast" class="fixed bottom-16 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all" style="border-color: var(--accent);">
     <span class="text-lg" id="toastIcon">📋</span>
     <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
 
   <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full max-w-full overflow-x-hidden">
-    <div class="flex items-center justify-between w-full">
+    <!-- Top Bar: Wrapped Flexbox to handle narrow screens gracefully -->
+    <div class="flex flex-wrap items-center justify-between gap-2 w-full">
       <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide shrink-0">
         <span>📖</span>
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Preset Accent Theme Dropdown & Total Time Tracker -->
-      <div class="flex items-center space-x-1.5 shrink-0">
+      <!-- Preset Accent Theme Dropdown & Total Time Tracker (Wraps automatically on narrow viewports) -->
+      <div class="flex flex-wrap items-center gap-1.5 shrink-0">
         <div id="timeTrackerBadge" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 flex items-center space-x-1" title="Total Time Spent on App">
           <span>⏳</span>
           <span id="timeTrackerText">0m 0s</span>
@@ -475,62 +476,89 @@
     </div>
   </main>
 
-  <!-- Sticky Mobile-Optimized Audio Player Bar -->
-  <div id="audioPlayerBar" class="fixed bottom-0 left-0 right-0 z-50 theme-header border-t px-2 sm:px-4 py-2.5 shadow-2xl flex flex-col gap-2 text-3xs sm:text-xs max-w-full overflow-x-hidden">
-    <div class="flex items-center justify-between w-full gap-1">
-      <div class="flex items-center space-x-1.5 min-w-0">
-        <button id="playBtn" onclick="resumeAudioPlayback()" class="custom-btn-primary p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Play">▶</button>
-        <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Pause">⏸</button>
-        <button onclick="stopAudioPlayback()" class="theme-inner border theme-text-muted p-1 rounded-full font-bold flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0" title="Stop">⏹</button>
-        <div class="flex flex-col min-w-0">
-          <span id="playerStatus" class="font-bold theme-accent-text truncate text-3xs sm:text-2xs">Ready</span>
-          <span id="playerDetail" class="theme-text-muted text-3xs truncate">Mishari Rashid al-Afasy</span>
-        </div>
-      </div>
-
-      <!-- Recitation Speed Dropdown -->
-      <div class="flex items-center space-x-1 shrink-0">
-        <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="theme-card theme-text-muted border rounded px-1.5 py-1 text-3xs sm:text-2xs font-semibold">
-          <option value="0.75">0.75x Speed</option>
-          <option value="1.0" selected>1.0x Normal</option>
-          <option value="1.25">1.25x Speed</option>
-          <option value="1.5">1.5x Speed</option>
-          <option value="2.0">2.0x Speed</option>
-        </select>
-      </div>
+  <!-- Floating Audio Controller Button -->
+  <button onclick="toggleAudioModal(true)" id="floatingAudioBtn" class="fixed right-4 bottom-4 z-50 theme-card border px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 transition-all hover:scale-105" style="border-color: var(--accent); background: var(--bg-card);">
+    <span class="text-lg animate-pulse" id="floatingAudioIcon">🎧</span>
+    <div class="flex flex-col text-left">
+      <span class="text-3xs sm:text-2xs font-bold theme-accent-text" id="floatingAudioStatus">Audio Player</span>
+      <span class="text-3xs theme-text-muted truncate max-w-[100px]" id="floatingAudioDetail">Tap to open</span>
     </div>
+  </button>
 
-    <!-- Secondary Audio Controls & Custom Ranges Wrapped for Mobile -->
-    <div class="flex flex-wrap items-center justify-between gap-1.5 border-t border-gray-700 border-opacity-30 pt-1.5 w-full">
-      <div class="flex items-center space-x-1">
-        <span class="theme-text-muted text-3xs">Ayah Rep:</span>
-        <button type="button" id="ayahToggleBtn" class="toggle-btn text-3xs" onclick="toggleMode('ayah')">∞</button>
-        <div id="ayahCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
+  <!-- Popup Audio Modal / Drawer -->
+  <div id="audioModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
+    <div id="audioModalContent" class="theme-card border-t sm:border rounded-t-3xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-lg shadow-2xl flex flex-col gap-4 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 duration-300">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b theme-inner pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🎧</span>
+          <h3 class="font-extrabold text-sm sm:text-base">Audio Recitation Controller</h3>
+        </div>
+        <button onclick="toggleAudioModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold">✕ Close</button>
+      </div>
+
+      <!-- Player Main Status & Controls -->
+      <div class="flex items-center justify-between w-full gap-2 theme-inner border p-3 rounded-xl">
+        <div class="flex items-center space-x-2 min-w-0">
+          <button id="playBtn" onclick="resumeAudioPlayback()" class="custom-btn-primary p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0 shadow-md" title="Play">▶</button>
+          <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-card border theme-text-muted p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0" title="Pause">⏸</button>
+          <button onclick="stopAudioPlayback()" class="theme-card border theme-text-muted p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0" title="Stop">⏹</button>
+          <div class="flex flex-col min-w-0">
+            <span id="playerStatus" class="font-bold theme-accent-text truncate text-xs sm:text-sm">Ready</span>
+            <span id="playerDetail" class="theme-text-muted text-3xs truncate">Mishari Rashid al-Afasy</span>
+          </div>
+        </div>
+
+        <!-- Recitation Speed Dropdown -->
+        <div class="flex items-center space-x-1 shrink-0">
+          <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1.5 text-3xs sm:text-2xs font-semibold">
+            <option value="0.75">0.75x</option>
+            <option value="1.0" selected>1.0x Normal</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2.0">2.0x</option>
+          </select>
         </div>
       </div>
 
-      <div class="flex items-center space-x-1">
-        <span class="theme-text-muted text-3xs">Range Rep:</span>
-        <button type="button" id="rangeToggleBtn" class="toggle-btn text-3xs" onclick="toggleMode('range')">∞</button>
-        <div id="rangeCountWrapper" class="hidden flex items-center space-x-1">
-          <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
+      <!-- Secondary Audio Settings & Ranges -->
+      <div class="flex flex-col gap-3 pt-1 text-3xs sm:text-xs">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="theme-text-muted">Ayah Rep:</span>
+            <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">∞</button>
+            <div id="ayahCountWrapper" class="hidden flex items-center space-x-1">
+              <input type="number" id="ayahRepeatCount" min="1" value="1" class="w-10 theme-card theme-text-muted border rounded px-1 py-0.5 text-center" />
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-1.5">
+            <span class="theme-text-muted">Range Rep:</span>
+            <button type="button" id="rangeToggleBtn" class="toggle-btn" onclick="toggleMode('range')">∞</button>
+            <div id="rangeCountWrapper" class="hidden flex items-center space-x-1">
+              <input type="number" id="rangeRepeatCount" min="1" value="1" class="w-10 theme-card theme-text-muted border rounded px-1 py-0.5 text-center" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5 border-t theme-inner pt-3">
+          <span class="theme-text-muted font-semibold">Custom Audio Range:</span>
+          <div class="flex items-center justify-between gap-1">
+            <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 max-w-[110px]">
+              <option value="">Start Surah</option>
+            </select>
+            <input type="number" id="audioStartAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted border rounded px-1 py-1 text-center" />
+            <span class="theme-accent-text font-bold">➔</span>
+            <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 max-w-[110px]">
+              <option value="">End Surah</option>
+            </select>
+            <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted border rounded px-1 py-1 text-center" />
+            <button onclick="playSelectedAudioRange()" class="custom-btn-primary font-bold px-3 py-1 rounded transition shrink-0">Play</button>
+          </div>
         </div>
       </div>
 
-      <div class="flex items-center space-x-1 w-full sm:w-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-gray-700 border-opacity-30 justify-between sm:justify-start">
-        <span class="theme-text-muted text-3xs">Range:</span>
-        <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted text-3xs border rounded px-1 py-0.5 max-w-xs">
-          <option value="">Start S.</option>
-        </select>
-        <input type="number" id="audioStartAyahInput" placeholder="A." min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
-        <span>➔</span>
-        <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted text-3xs border rounded px-1 py-0.5 max-w-xs">
-          <option value="">End S.</option>
-        </select>
-        <input type="number" id="audioEndAyahInput" placeholder="A." min="1" value="1" class="w-8 theme-card theme-text-muted text-3xs border rounded px-0.5 py-0.5 text-center" />
-        <button onclick="playSelectedAudioRange()" class="custom-btn-primary font-semibold px-2 py-0.5 rounded text-3xs transition">▶</button>
-      </div>
     </div>
   </div>
 
@@ -591,7 +619,7 @@
     let MAX_PAGES = 610;
 
     let audioObject = new Audio();
-    let nextAudioObject = new Audio(); // Preloaded next audio for seamless gapless playback
+    let nextAudioObject = new Audio();
     let currentLoadedVerses = [];
     let currentAudioIndex = 0;
     let currentAyahRepeatCount = 0;
@@ -609,6 +637,26 @@
     let audioSettings = {
       recitationId: "7"
     };
+
+    function toggleAudioModal(show) {
+      const overlay = document.getElementById("audioModalOverlay");
+      const content = document.getElementById("audioModalContent");
+      if (!overlay || !content) return;
+
+      if (show) {
+        overlay.classList.remove("hidden");
+        setTimeout(() => {
+          content.classList.remove("translate-y-full", "sm:scale-95");
+          content.classList.add("translate-y-0", "sm:scale-100");
+        }, 10);
+      } else {
+        content.classList.add("translate-y-full", "sm:scale-95");
+        content.classList.remove("translate-y-0", "sm:scale-100");
+        setTimeout(() => {
+          overlay.classList.add("hidden");
+        }, 300);
+      }
+    }
 
     function updateDiscordEmbed({ title, description, path = "" }) {
       document.title = title;
@@ -772,6 +820,7 @@
       currentAyahRepeatCount = 0;
       currentRangeRepeatCount = 0;
       playAudioIndex(0);
+      toggleAudioModal(true);
     }
 
     function playSelectedAudioRange() {
@@ -795,8 +844,6 @@
         let endFilter = (sId === toS) ? toA : meta.verses_count;
 
         for (let aNum = startFilter; aNum <= endFilter; aNum++) {
-          // If a new surah starts (and it's not Surah 1 or Surah 9, and not the absolute first item in the playlist),
-          // automatically insert Bismillah (1:1) first!
           if (previousSurah !== null && sId !== previousSurah && sId !== 1 && sId !== 9) {
             audioRangeList.push({ verse_key: "1:1", isBismillah: true });
           }
@@ -812,6 +859,7 @@
       currentAyahRepeatCount = 0;
       currentRangeRepeatCount = 0;
       playAudioIndex(0);
+      toggleAudioModal(true);
     }
 
     async function playAudioIndex(index) {
@@ -845,7 +893,6 @@
       const speedSelect = document.getElementById("playbackSpeedSelect");
       const currentSpeed = parseFloat(speedSelect ? speedSelect.value : 1.0) || 1.0;
 
-      // Preload next audio for seamless gapless playback
       if (index + 1 < currentLoadedVerses.length) {
         const nextItem = currentLoadedVerses[index + 1];
         const nextVerseKey = nextItem.isBismillah ? "1:1" : nextItem.verse_key;
@@ -870,7 +917,6 @@
 
     audioObject.onended = () => {
       const item = currentLoadedVerses[currentAudioIndex];
-      // Bismillah doesn't repeat per ayah repeat setting, move straight to next
       if (item && item.isBismillah) {
         currentAudioIndex++;
         if (currentAudioIndex < currentLoadedVerses.length) {
@@ -938,6 +984,17 @@
       if (status) status.innerText = statusText;
       const detail = document.getElementById("playerDetail");
       if (detail) detail.innerText = detailText;
+
+      const floatingStatus = document.getElementById("floatingAudioStatus");
+      const floatingDetail = document.getElementById("floatingAudioDetail");
+      const floatingIcon = document.getElementById("floatingAudioIcon");
+
+      if (floatingStatus) floatingStatus.innerText = playing ? "Playing" : "Audio Player";
+      if (floatingDetail) floatingDetail.innerText = detailText || "Tap to open";
+      if (floatingIcon) {
+        if (playing) floatingIcon.classList.add("animate-spin");
+        else floatingIcon.classList.remove("animate-spin");
+      }
     }
 
     function highlightPlayingAyah(verseKey) {
@@ -1651,7 +1708,7 @@
         navHeader = `
           <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
             <h1 class="text-xl sm:text-2xl font-extrabold">${title}</h1>
-            <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
+            <p class="theme-accent-text font-medium text-3xs sm:text-2xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
           </div>
         `;
       }
