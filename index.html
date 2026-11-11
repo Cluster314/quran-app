@@ -309,9 +309,9 @@
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Controls & Link -->
+      <!-- Controls & Link moved out of bottom-right corner to un-crowd the screen -->
       <div class="flex flex-wrap items-center gap-1.5 shrink-0">
-        <a id="quranComLink" href="https://cluster314.github.io/quran-app/" target="_blank" rel="noopener noreferrer" title="Open app page" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
+        <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" title="Open this location on Quran.com" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
           <span aria-hidden="true">↗</span><span>quran.com</span>
         </a>
 
@@ -415,7 +415,7 @@
     </div>
   </main>
 
-  <!-- Floating Audio Controller Button -->
+  <!-- Clean Floating Audio Controller Button (Solves corner crowding) -->
   <button onclick="toggleAudioModal(true)" id="floatingAudioBtn" class="fixed right-4 bottom-4 z-50 theme-card border px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 transition-all hover:scale-105" style="border-color: var(--accent); background: var(--bg-card);">
     <span class="text-lg animate-pulse" id="floatingAudioIcon">🎧</span>
     <div class="flex flex-col text-left">
@@ -424,7 +424,7 @@
     </div>
   </button>
 
-  <!-- Popup Audio Modal / Drawer -->
+  <!-- Popup Audio Modal / Drawer with Auto-Wrapping Elements for Narrow Screens -->
   <div id="audioModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
     <div id="audioModalContent" class="theme-card border-t sm:border rounded-t-3xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-lg shadow-2xl flex flex-col gap-4 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 duration-300 max-h-[90vh] overflow-y-auto">
       
@@ -437,7 +437,7 @@
         <button onclick="toggleAudioModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold">✕ Close</button>
       </div>
 
-      <!-- Player Main Status & Controls -->
+      <!-- Player Main Status & Controls (Flex Wrapped for Narrow Screens) -->
       <div class="flex flex-wrap items-center justify-between w-full gap-2 theme-inner border p-3 rounded-xl">
         <div class="flex items-center space-x-2 min-w-0">
           <button id="playBtn" onclick="resumeAudioPlayback()" class="custom-btn-primary p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0 shadow-md" title="Play">▶</button>
@@ -461,7 +461,7 @@
         </div>
       </div>
 
-      <!-- Secondary Audio Settings & Custom Ranges -->
+      <!-- Secondary Audio Settings & Custom Ranges (Fully Wrapped) -->
       <div class="flex flex-col gap-3 pt-1 text-3xs sm:text-xs">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center space-x-1.5">
@@ -483,6 +483,7 @@
 
         <div class="flex flex-col gap-1.5 border-t theme-inner pt-3">
           <span class="theme-text-muted font-semibold">Custom Audio Range:</span>
+          <!-- Flex-wrap ensures inputs never overflow horizontally -->
           <div class="flex flex-wrap items-center justify-between gap-1.5">
             <div class="flex items-center space-x-1 flex-1 min-w-[120px]">
               <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 text-3xs sm:text-2xs">
@@ -505,40 +506,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Share & Copy Verse Modal -->
-  <div id="shareModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
-    <div id="shareModalContent" class="theme-card border rounded-2xl p-4 sm:p-6 w-full max-w-md shadow-2xl flex flex-col gap-4">
-      <div class="flex items-center justify-between border-b theme-inner pb-3">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">📤</span>
-          <h3 class="font-extrabold text-sm sm:text-base">Share Verse Card</h3>
-        </div>
-        <button onclick="toggleShareModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold">✕ Close</button>
-      </div>
-
-      <!-- Preview Card Box -->
-      <div id="shareCardPreview" class="theme-inner border rounded-xl p-4 flex flex-col space-y-3 text-center">
-        <div class="flex items-center justify-between text-3xs theme-accent-text font-bold border-b theme-card pb-2 px-1">
-          <span id="shareCardReference">Surah Al-Baqarah 2:255</span>
-          <span>Noble Quran</span>
-        </div>
-        <div id="shareCardArabic" class="font-indopak text-xl sm:text-2xl leading-relaxed py-2" dir="rtl"></div>
-        <div id="shareCardTranslation" class="text-left text-xs text-muted border-t theme-card pt-2 leading-relaxed"></div>
-        <div class="text-3xs theme-text-muted pt-1">cluster314.github.io/quran-app</div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex flex-col gap-2 pt-2">
-        <button onclick="copyShareCardText()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
-          <span>📋</span><span>Copy Formatted Text</span>
-        </button>
-        <button onclick="nativeShareVerse()" class="theme-inner border hover:border-[var(--accent)] font-semibold py-2 rounded-xl text-xs flex items-center justify-center space-x-2 transition theme-accent-text">
-          <span>🔗</span><span>Share via Device Menu</span>
-        </button>
-      </div>
     </div>
   </div>
 
@@ -567,8 +534,6 @@
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
-    let activeShareData = { reference: "", arabic: "", translation: "", surahName: "" };
-
     // Total Time Tracker Logic
     let totalSecondsOnApp = parseInt(localStorage.getItem("quran_total_time_seconds") || "0", 10);
 
@@ -595,6 +560,42 @@
         textEl.innerText = `${minutes}m ${seconds}s`;
       }
     }
+
+    function updateQuranComLink() {
+      const link = document.getElementById("quranComLink");
+      if (!link) return;
+
+      const rawHash = window.location.hash.replace(/^#/, "") || "/";
+      const [rawPath, queryPart = ""] = rawHash.split("?");
+      const path = rawPath || "/";
+      const params = new URLSearchParams(queryPart);
+      let destination = "https://quran.com/";
+
+      if (path.startsWith("/juz/")) {
+        const juz = Number(path.split("/")[2]);
+        if (Number.isInteger(juz) && juz >= 1 && juz <= 30) destination += `juz/${juz}`;
+      } else if (path.startsWith("/page/")) {
+        const page = Number(path.split("/")[2]);
+        if (Number.isInteger(page) && page >= 1 && page <= 604) destination += `page/${page}`;
+      } else if (path.startsWith("/range")) {
+        const surah = Number(params.get("fromSurah")) || 1;
+        const ayah = Number(params.get("fromAyah")) || 1;
+        if (surah >= 1 && surah <= 114 && ayah >= 1) destination += `${surah}/${ayah}`;
+      } else {
+        const parts = path.split("/").filter(Boolean);
+        const surah = Number(parts[0]);
+        if (Number.isInteger(surah) && surah >= 1 && surah <= 114) {
+          const ayah = Number(parts[1]);
+          destination += surah;
+          if (Number.isInteger(ayah) && ayah >= 1) destination += `/${ayah}`;
+        }
+      }
+
+      link.href = destination;
+    }
+
+    window.addEventListener("hashchange", updateQuranComLink);
+    document.addEventListener("DOMContentLoaded", updateQuranComLink);
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
@@ -637,52 +638,6 @@
         setTimeout(() => {
           overlay.classList.add("hidden");
         }, 300);
-      }
-    }
-
-    function toggleShareModal(show, verseKey = "", arabicText = "", translationText = "") {
-      const overlay = document.getElementById("shareModalOverlay");
-      if (!overlay) return;
-
-      if (show) {
-        const [sId] = verseKey.split(":").map(Number);
-        const meta = chaptersData.find(c => c.id === sId);
-        const surahName = meta ? meta.name_simple : `Surah ${sId}`;
-
-        activeShareData = {
-          reference: `${surahName} (${verseKey})`,
-          arabic: arabicText,
-          translation: translationText,
-          surahName: surahName
-        };
-
-        document.getElementById("shareCardReference").innerText = activeShareData.reference;
-        document.getElementById("shareCardArabic").innerHTML = arabicText;
-        document.getElementById("shareCardTranslation").innerText = translationText;
-
-        overlay.classList.remove("hidden");
-      } else {
-        overlay.classList.add("hidden");
-      }
-    }
-
-    function copyShareCardText() {
-      const textToShare = `📖 ${activeShareData.reference}\n\n${activeShareData.arabic.replace(/<[^>]*>?/gm, '')}\n\n"${activeShareData.translation}"\n\nRead & listen on: ${SITE_BASE_URL}#/${activeShareData.reference.split('(')[1]?.replace(')', '') || ''}`;
-      navigator.clipboard.writeText(textToShare).then(() => {
-        showToast("Verse card text copied!", "📤");
-        toggleShareModal(false);
-      });
-    }
-
-    function nativeShareVerse() {
-      if (navigator.share) {
-        navigator.share({
-          title: `Quran - ${activeShareData.reference}`,
-          text: `${activeShareData.arabic.replace(/<[^>]*>?/gm, '')}\n\n"${activeShareData.translation}"`,
-          url: `${SITE_BASE_URL}`
-        }).catch(err => console.log("Share canceled", err));
-      } else {
-        copyShareCardText();
       }
     }
 
@@ -1114,12 +1069,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
+      return ` <span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum) {
@@ -1736,7 +1691,7 @@
         navHeader = `
           <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
             <h1 class="text-xl sm:text-2xl font-extrabold">${title}</h1>
-            <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
+            <p class="theme-accent-text font-medium text-3xs sm:text-2xs mt-1">Mushaf Page View (${pageNumbers.length} Pages)</p>
           </div>
         `;
       }
@@ -1784,8 +1739,6 @@
 
             const fullVerseToCopy = `${processed.plainText}\n\n${translatedText}`;
             const escapedCopyText = fullVerseToCopy.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-            const escapedArabicForShare = processed.arabicHtml.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-            const escapedTransForShare = translatedText.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
 
             return `
               ${pageMarkerHtml}
@@ -1797,7 +1750,6 @@
                     <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
                     <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
                     <button onclick="copyVerseText('${escapedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
-                    <button onclick="toggleShareModal(true, '${v.verse_key}', '${escapedArabicForShare}', '${escapedTransForShare}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📤 Share</button>
                   </div>
                 </div>
                 <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
