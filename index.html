@@ -288,94 +288,33 @@
       box-shadow: 0 0 20px var(--accent-glow) !important;
     }
 
-    #quranComLink {
-      position: fixed;
-      right: 0.75rem;
-      bottom: 5rem;
-      z-index: 60;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.5rem 0.8rem;
-      border: 1px solid var(--accent);
-      border-radius: 9999px;
-      background: var(--bg-card);
-      color: var(--text-main);
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-decoration: none;
-      box-shadow: var(--neon-glow);
-      transition: background-color 0.2s ease, transform 0.2s ease;
-    }
-    #quranComLink:hover { background: var(--accent-glow); transform: translateY(-2px); }
-
     @media (max-width: 640px) {
       .indopak-text { font-size: 1.75rem !important; line-height: 3.5 !important; }
-      #quranComLink { bottom: 5rem; right: 0.5rem; font-size: 0.65rem; padding: 0.4rem 0.6rem; }
     }
   </style>
 </head>
-<body class="font-sans min-h-screen flex flex-col pb-16 max-w-full overflow-x-hidden">
-
-  <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" aria-label="View this location on Quran.com" title="Open this location on Quran.com">
-    <span aria-hidden="true">↗</span><span>quran.com</span>
-  </a>
-
-  <script>
-    function updateQuranComLink() {
-      const link = document.getElementById("quranComLink");
-      if (!link) return;
-
-      const rawHash = window.location.hash.replace(/^#/, "") || "/";
-      const [rawPath, queryPart = ""] = rawHash.split("?");
-      const path = rawPath || "/";
-      const params = new URLSearchParams(queryPart);
-      let destination = "https://quran.com/";
-
-      if (path.startsWith("/juz/")) {
-        const juz = Number(path.split("/")[2]);
-        if (Number.isInteger(juz) && juz >= 1 && juz <= 30) destination += `juz/${juz}`;
-      } else if (path.startsWith("/page/")) {
-        const page = Number(path.split("/")[2]);
-        if (Number.isInteger(page) && page >= 1 && page <= 604) destination += `page/${page}`;
-      } else if (path.startsWith("/range")) {
-        const surah = Number(params.get("fromSurah")) || 1;
-        const ayah = Number(params.get("fromAyah")) || 1;
-        if (surah >= 1 && surah <= 114 && ayah >= 1) destination += `${surah}/${ayah}`;
-      } else {
-        const parts = path.split("/").filter(Boolean);
-        const surah = Number(parts[0]);
-        if (Number.isInteger(surah) && surah >= 1 && surah <= 114) {
-          const ayah = Number(parts[1]);
-          destination += surah;
-          if (Number.isInteger(ayah) && ayah >= 1) destination += `/${ayah}`;
-        }
-      }
-
-      link.href = destination;
-    }
-
-    window.addEventListener("hashchange", updateQuranComLink);
-    document.addEventListener("DOMContentLoaded", updateQuranComLink);
-    updateQuranComLink();
-  </script>
+<body class="font-sans min-h-screen flex flex-col pb-20 max-w-full overflow-x-hidden">
 
   <!-- Toast Notification -->
-  <div id="copyToast" class="fixed bottom-16 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all" style="border-color: var(--accent);">
+  <div id="copyToast" class="fixed bottom-20 right-4 z-50 transform translate-y-10 opacity-0 pointer-events-none theme-card border px-3.5 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 transition-all" style="border-color: var(--accent);">
     <span class="text-lg" id="toastIcon">📋</span>
     <span class="text-xs font-semibold" id="toastText">Copied!</span>
   </div>
 
   <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full max-w-full overflow-x-hidden">
-    <!-- Top Bar: Wrapped Flexbox to handle narrow screens gracefully -->
+    <!-- Top Bar: Fully responsive flexbox with wrapping -->
     <div class="flex flex-wrap items-center justify-between gap-2 w-full">
       <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide shrink-0">
         <span>📖</span>
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Preset Accent Theme Dropdown & Total Time Tracker (Wraps automatically on narrow viewports) -->
+      <!-- Controls & Link moved out of bottom-right corner to un-crowd the screen -->
       <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+        <a id="quranComLink" href="https://quran.com/" target="_blank" rel="noopener noreferrer" title="Open this location on Quran.com" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
+          <span aria-hidden="true">↗</span><span>quran.com</span>
+        </a>
+
         <div id="timeTrackerBadge" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-2 py-1 flex items-center space-x-1" title="Total Time Spent on App">
           <span>⏳</span>
           <span id="timeTrackerText">0m 0s</span>
@@ -476,18 +415,18 @@
     </div>
   </main>
 
-  <!-- Floating Audio Controller Button -->
+  <!-- Clean Floating Audio Controller Button (Solves corner crowding) -->
   <button onclick="toggleAudioModal(true)" id="floatingAudioBtn" class="fixed right-4 bottom-4 z-50 theme-card border px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 transition-all hover:scale-105" style="border-color: var(--accent); background: var(--bg-card);">
     <span class="text-lg animate-pulse" id="floatingAudioIcon">🎧</span>
     <div class="flex flex-col text-left">
       <span class="text-3xs sm:text-2xs font-bold theme-accent-text" id="floatingAudioStatus">Audio Player</span>
-      <span class="text-3xs theme-text-muted truncate max-w-[100px]" id="floatingAudioDetail">Tap to open</span>
+      <span class="text-3xs theme-text-muted truncate max-w-[90px]" id="floatingAudioDetail">Tap to open</span>
     </div>
   </button>
 
-  <!-- Popup Audio Modal / Drawer -->
+  <!-- Popup Audio Modal / Drawer with Auto-Wrapping Elements for Narrow Screens -->
   <div id="audioModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
-    <div id="audioModalContent" class="theme-card border-t sm:border rounded-t-3xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-lg shadow-2xl flex flex-col gap-4 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 duration-300">
+    <div id="audioModalContent" class="theme-card border-t sm:border rounded-t-3xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-lg shadow-2xl flex flex-col gap-4 transform transition-transform translate-y-full sm:translate-y-0 sm:scale-95 duration-300 max-h-[90vh] overflow-y-auto">
       
       <!-- Modal Header -->
       <div class="flex items-center justify-between border-b theme-inner pb-3">
@@ -498,8 +437,8 @@
         <button onclick="toggleAudioModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold">✕ Close</button>
       </div>
 
-      <!-- Player Main Status & Controls -->
-      <div class="flex items-center justify-between w-full gap-2 theme-inner border p-3 rounded-xl">
+      <!-- Player Main Status & Controls (Flex Wrapped for Narrow Screens) -->
+      <div class="flex flex-wrap items-center justify-between w-full gap-2 theme-inner border p-3 rounded-xl">
         <div class="flex items-center space-x-2 min-w-0">
           <button id="playBtn" onclick="resumeAudioPlayback()" class="custom-btn-primary p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0 shadow-md" title="Play">▶</button>
           <button id="pauseBtn" onclick="pauseAudioPlayback()" class="theme-card border theme-text-muted p-2 rounded-full font-bold flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0" title="Pause">⏸</button>
@@ -511,7 +450,7 @@
         </div>
 
         <!-- Recitation Speed Dropdown -->
-        <div class="flex items-center space-x-1 shrink-0">
+        <div class="flex items-center space-x-1 shrink-0 ml-auto sm:ml-0">
           <select id="playbackSpeedSelect" onchange="changePlaybackSpeed(this.value)" class="theme-card theme-text-muted border rounded-lg px-2 py-1.5 text-3xs sm:text-2xs font-semibold">
             <option value="0.75">0.75x</option>
             <option value="1.0" selected>1.0x Normal</option>
@@ -522,9 +461,9 @@
         </div>
       </div>
 
-      <!-- Secondary Audio Settings & Ranges -->
+      <!-- Secondary Audio Settings & Custom Ranges (Fully Wrapped) -->
       <div class="flex flex-col gap-3 pt-1 text-3xs sm:text-xs">
-        <div class="flex items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center space-x-1.5">
             <span class="theme-text-muted">Ayah Rep:</span>
             <button type="button" id="ayahToggleBtn" class="toggle-btn" onclick="toggleMode('ayah')">∞</button>
@@ -544,17 +483,25 @@
 
         <div class="flex flex-col gap-1.5 border-t theme-inner pt-3">
           <span class="theme-text-muted font-semibold">Custom Audio Range:</span>
-          <div class="flex items-center justify-between gap-1">
-            <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 max-w-[110px]">
-              <option value="">Start Surah</option>
-            </select>
-            <input type="number" id="audioStartAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted border rounded px-1 py-1 text-center" />
-            <span class="theme-accent-text font-bold">➔</span>
-            <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 max-w-[110px]">
-              <option value="">End Surah</option>
-            </select>
-            <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 theme-card theme-text-muted border rounded px-1 py-1 text-center" />
-            <button onclick="playSelectedAudioRange()" class="custom-btn-primary font-bold px-3 py-1 rounded transition shrink-0">Play</button>
+          <!-- Flex-wrap ensures inputs never overflow horizontally -->
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <div class="flex items-center space-x-1 flex-1 min-w-[120px]">
+              <select id="audioStartSurahSelect" onchange="updateAudioStartAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 text-3xs sm:text-2xs">
+                <option value="">Start Surah</option>
+              </select>
+              <input type="number" id="audioStartAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 theme-card theme-text-muted border rounded px-1 py-1 text-center text-3xs sm:text-2xs" />
+            </div>
+            
+            <span class="theme-accent-text font-bold text-xs shrink-0">➔</span>
+            
+            <div class="flex items-center space-x-1 flex-1 min-w-[120px]">
+              <select id="audioEndSurahSelect" onchange="updateAudioEndAyahMax()" class="theme-card theme-text-muted border rounded px-1.5 py-1 flex-1 text-3xs sm:text-2xs">
+                <option value="">End Surah</option>
+              </select>
+              <input type="number" id="audioEndAyahInput" placeholder="Ayah" min="1" value="1" class="w-10 theme-card theme-text-muted border rounded px-1 py-1 text-center text-3xs sm:text-2xs" />
+            </div>
+            
+            <button onclick="playSelectedAudioRange()" class="custom-btn-primary font-bold px-3 py-1 rounded transition shrink-0 text-3xs sm:text-2xs w-full sm:w-auto mt-1 sm:mt-0">Play Range</button>
           </div>
         </div>
       </div>
@@ -613,6 +560,42 @@
         textEl.innerText = `${minutes}m ${seconds}s`;
       }
     }
+
+    function updateQuranComLink() {
+      const link = document.getElementById("quranComLink");
+      if (!link) return;
+
+      const rawHash = window.location.hash.replace(/^#/, "") || "/";
+      const [rawPath, queryPart = ""] = rawHash.split("?");
+      const path = rawPath || "/";
+      const params = new URLSearchParams(queryPart);
+      let destination = "https://quran.com/";
+
+      if (path.startsWith("/juz/")) {
+        const juz = Number(path.split("/")[2]);
+        if (Number.isInteger(juz) && juz >= 1 && juz <= 30) destination += `juz/${juz}`;
+      } else if (path.startsWith("/page/")) {
+        const page = Number(path.split("/")[2]);
+        if (Number.isInteger(page) && page >= 1 && page <= 604) destination += `page/${page}`;
+      } else if (path.startsWith("/range")) {
+        const surah = Number(params.get("fromSurah")) || 1;
+        const ayah = Number(params.get("fromAyah")) || 1;
+        if (surah >= 1 && surah <= 114 && ayah >= 1) destination += `${surah}/${ayah}`;
+      } else {
+        const parts = path.split("/").filter(Boolean);
+        const surah = Number(parts[0]);
+        if (Number.isInteger(surah) && surah >= 1 && surah <= 114) {
+          const ayah = Number(parts[1]);
+          destination += surah;
+          if (Number.isInteger(ayah) && ayah >= 1) destination += `/${ayah}`;
+        }
+      }
+
+      link.href = destination;
+    }
+
+    window.addEventListener("hashchange", updateQuranComLink);
+    document.addEventListener("DOMContentLoaded", updateQuranComLink);
 
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
@@ -1086,12 +1069,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
+      return ` <span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum) {
