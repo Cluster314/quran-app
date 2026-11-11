@@ -612,10 +612,8 @@
       } else if (path.startsWith("/page/")) {
         const page = Number(path.split("/")[2]);
         if (Number.isInteger(page) && page >= 1 && page <= 604) destination += `#/page/${page}`;
-      } else if (path.startsWith("/range")) {
-        const surah = Number(params.get("fromSurah")) || 1;
-        const ayah = Number(params.get("fromAyah")) || 1;
-        if (surah >= 1 && surah <= 114 && ayah >= 1) destination += `#/range?fromSurah=${surah}&fromAyah=${ayah}`;
+      } else if (path.includes("-")) {
+        destination += `#/${path}`;
       } else {
         const parts = path.split("/").filter(Boolean);
         const surah = Number(parts[0]);
@@ -1265,12 +1263,20 @@
             document.getElementById("pageSelect").value = pageNum;
             await renderPage(pageNum);
           } else { render404(); }
-        } else if (hash.startsWith("/range")) {
+        } else if (hash.includes("-")) {
+          // Parse range format like /4:1-4:10
           setNavMode('range');
-          const fromS = parseInt(urlParams.get("fromSurah")) || 1;
-          const fromA = parseInt(urlParams.get("fromAyah")) || 1;
-          const toS = parseInt(urlParams.get("toSurah")) || fromS;
-          const toA = parseInt(urlParams.get("toAyah")) || 1;
+          const cleanHash = hash.startsWith('/') ? hash.slice(1) : hash;
+          const [startPart, endPart] = cleanHash.split("-");
+          const [fromS, fromA] = startPart.split(":").map(Number);
+          
+          let toS, toA;
+          if (endPart.includes(":")) {
+            [toS, toA] = endPart.split(":").map(Number);
+          } else {
+            toS = fromS;
+            toA = Number(endPart);
+          }
 
           document.getElementById("startSurahSelect").value = fromS;
           document.getElementById("startAyahInput").value = fromA;
@@ -1279,12 +1285,20 @@
 
           await renderCrossSurahRange(fromS, fromA, toS, toA);
         } else {
-          const parts = hash.split("/");
-          const id = parseInt(parts[1] || parts[0]);
+          const parts = hash.split("/").filter(Boolean);
+          const id = parseInt(parts[0]);
           if (!isNaN(id) && id >= 1 && id <= 114) {
-            setNavMode('surah');
-            document.getElementById("surahSelect").value = id;
-            await renderSurah(id);
+            const ayahNum = parts[1] ? parseInt(parts[1]) : null;
+            if (ayahNum) {
+              setNavMode('singleAyah');
+              document.getElementById("singleSurahSelect").value = id;
+              document.getElementById("singleAyahInput").value = ayahNum;
+              await renderCrossSurahRange(id, ayahNum, id, ayahNum, `Surah ${id}:${ayahNum}`);
+            } else {
+              setNavMode('surah');
+              document.getElementById("surahSelect").value = id;
+              await renderSurah(id);
+            }
           } else { renderHome(); }
         }
       } catch (err) {
@@ -1397,14 +1411,20 @@
       const toS = parseInt(document.getElementById("endSurahSelect").value) || fromS;
       const toA = parseInt(document.getElementById("endAyahInput").value) || 1;
       if (!fromS) { alert("Please select a starting Surah."); return; }
-      navigate(`range?fromSurah=${fromS}&fromAyah=${fromA}&toSurah=${toS}&toAyah=${toA}`);
+      
+      if (fromS === toS && fromA === toA) {
+        navigate(`${fromS}/${fromA}`);
+      } else {
+        const endPart = (fromS === toS) ? `${toA}` : `${toS}:${toA}`;
+        navigate(`${fromS}:${fromA}-${endPart}`);
+      }
     }
 
     function applySingleAyahNavigate() {
       const sId = parseInt(document.getElementById("singleSurahSelect").value);
       const aNum = parseInt(document.getElementById("singleAyahInput").value) || 1;
       if (!sId) { alert("Please select a Surah."); return; }
-      navigate(`range?fromSurah=${sId}&fromAyah=${aNum}&toSurah=${sId}&toAyah=${aNum}`);
+      navigate(`${sId}/${aNum}`);
     }
 
     async function fetchSurahTranslation(surahId) {
@@ -1651,10 +1671,12 @@
       const startMeta = chaptersData.find(c => c.id === fromSurah);
       const endMeta = chaptersData.find(c => c.id === toSurah);
 
+      const pathHash = (fromSurah === toSurah && fromAyah === toAyah) ? `${fromSurah}/${fromAyah}` : `${fromSurah}:${fromAyah}-${fromSurah === toSurah ? toAyah : toSurah + ':' + toAyah}`;
+
       updateDiscordEmbed({
         title: customHeaderTitle || `Ayah Range: ${startMeta.name_simple}:${fromAyah} - ${endMeta.name_simple}:${toAyah}`,
         description: `Reading range ${startMeta.name_simple} [${fromAyah}] to ${endMeta.name_simple} [${toAyah}]`,
-        path: isJuzView ? window.location.hash.replace('#/', '') : `range?fromSurah=${fromSurah}&fromAyah=${fromAyah}&toSurah=${toSurah}&toAyah=${toAyah}`
+        path: isJuzView ? window.location.hash.replace('#/', '') : pathHash
       });
 
       showLoading(`Fetching verses...`);
@@ -1821,7 +1843,6 @@
 
             const fullVerseToCopy = `${processed.plainText}\n\n${translatedText}`;
             
-            // Safe JSON stringification for HTML attributes
             const escapedCopyText = JSON.stringify(fullVerseToCopy);
             const escapedArabicForShare = JSON.stringify(processed.arabicHtml);
             const escapedTransForShare = JSON.stringify(translatedText);
