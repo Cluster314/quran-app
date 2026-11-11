@@ -1,6 +1,8 @@
 # My Quran App 
 ([See It Here](https://cluster314.github.io/quran-app)) 
+
 This is a Quran app that I made.
+
 Features:
 
 - **Quran Reading**
