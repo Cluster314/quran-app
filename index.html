@@ -1860,7 +1860,7 @@
                     <button onclick='toggleShareModal(true, "${v.verse_key}", ${escapedArabicForShare}, ${escapedTransForShare})' class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📤 Share</button>
                   </div>
                 </div>
-                <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed">
+                <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;">
                   ${processed.arabicHtml}
                 </div>
                 ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
@@ -1898,7 +1898,7 @@
 
       return `
         <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 my-2">
-          <div class="reading-wrapper indopak-text text-2xl sm:text-3xl leading-relaxed">${arabicParagraph}</div>
+          <div class="reading-wrapper indopak-text text-2xl sm:text-3xl leading-relaxed" style="display: block; unicode-bidi: isolate;">${arabicParagraph}</div>
         </div>
       `;
     }
