@@ -37,6 +37,9 @@
   <!-- Production-ready Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
+  <!-- html2canvas for Generating Verse Card Images -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <!-- Robust Arabic & English Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -508,7 +511,7 @@
     </div>
   </div>
 
-  <!-- Share & Copy Verse Modal -->
+  <!-- Share & Verse Card Modal -->
   <div id="shareModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
     <div id="shareModalContent" class="theme-card border rounded-2xl p-4 sm:p-6 w-full max-w-md shadow-2xl flex flex-col gap-4">
       <div class="flex items-center justify-between border-b theme-inner pb-3">
@@ -519,8 +522,8 @@
         <button onclick="toggleShareModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold">✕ Close</button>
       </div>
 
-      <!-- Preview Card Box -->
-      <div id="shareCardPreview" class="theme-inner border rounded-xl p-4 flex flex-col space-y-3 text-center">
+      <!-- Preview Card Box (Captured as Image) -->
+      <div id="shareCardPreview" class="theme-inner border rounded-xl p-4 flex flex-col space-y-3 text-center bg-white text-gray-900" style="background-color: var(--bg-card); color: var(--text-main);">
         <div class="flex items-center justify-between text-3xs theme-accent-text font-bold border-b theme-card pb-2 px-1">
           <span id="shareCardReference">Surah Al-Baqarah 2:255</span>
           <span>Noble Quran</span>
@@ -530,14 +533,9 @@
         <div class="text-3xs theme-text-muted pt-1">cluster314.github.io/quran-app</div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex flex-col gap-2 pt-2">
-        <button onclick="copyShareCardText()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
-          <span>📋</span><span>Copy Formatted Text</span>
-        </button>
-        <button onclick="nativeShareVerse()" class="theme-inner border hover:border-[var(--accent)] font-semibold py-2 rounded-xl text-xs flex items-center justify-center space-x-2 transition theme-accent-text">
-          <span>🔗</span><span>Share via Device Menu</span>
-        </button>
+      <!-- Dynamically Rendered PC vs Mobile Actions -->
+      <div id="shareModalActions" class="flex flex-col gap-2 pt-2">
+        <!-- Filled dynamically based on device type -->
       </div>
     </div>
   </div>
@@ -674,6 +672,11 @@
       }
     }
 
+    // Device Detection Helper
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
+    }
+
     function toggleShareModal(show, verseKey = "", arabicText = "", translationText = "") {
       const overlay = document.getElementById("shareModalOverlay");
       if (!overlay) return;
@@ -694,29 +697,85 @@
         document.getElementById("shareCardArabic").innerHTML = arabicText;
         document.getElementById("shareCardTranslation").innerText = translationText;
 
+        // Render PC vs Mobile buttons dynamically
+        const actionsContainer = document.getElementById("shareModalActions");
+        if (isMobileDevice()) {
+          actionsContainer.innerHTML = `
+            <button onclick="shareVerseImageMobile()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
+              <span>📤</span><span>Share Verse Image via Menu</span>
+            </button>
+          `;
+        } else {
+          actionsContainer.innerHTML = `
+            <button onclick="downloadVerseImagePC()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
+              <span>📥</span><span>Download Verse Image (PNG)</span>
+            </button>
+          `;
+        }
+
         overlay.classList.remove("hidden");
       } else {
         overlay.classList.add("hidden");
       }
     }
 
-    function copyShareCardText() {
-      const textToShare = `📖 ${activeShareData.reference}\n\n${activeShareData.arabic.replace(/<[^>]*>?/gm, '')}\n\n"${activeShareData.translation}"\n\nRead & listen on: ${SITE_BASE_URL}#/${activeShareData.reference.split('(')[1]?.replace(')', '') || ''}`;
-      navigator.clipboard.writeText(textToShare).then(() => {
-        showToast("Verse card text copied!", "📤");
+    async function downloadVerseImagePC() {
+      const previewCard = document.getElementById("shareCardPreview");
+      try {
+        showToast("Generating image...", "⏳");
+        const canvas = await html2canvas(previewCard, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null
+        });
+        const imageURL = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = imageURL;
+        link.download = `Quran-${activeShareData.reference.replace(/[\s()]/g, '_')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Image downloaded successfully!", "📥");
         toggleShareModal(false);
-      });
+      } catch (err) {
+        console.error("Failed to generate image:", err);
+        showToast("Failed to download image", "❌");
+      }
     }
 
-    function nativeShareVerse() {
-      if (navigator.share) {
-        navigator.share({
-          title: `Quran - ${activeShareData.reference}`,
-          text: `${activeShareData.arabic.replace(/<[^>]*>?/gm, '')}\n\n"${activeShareData.translation}"`,
-          url: `${SITE_BASE_URL}`
-        }).catch(err => console.log("Share canceled", err));
-      } else {
-        copyShareCardText();
+    async function shareVerseImageMobile() {
+      const previewCard = document.getElementById("shareCardPreview");
+      try {
+        showToast("Preparing image...", "⏳");
+        const canvas = await html2canvas(previewCard, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null
+        });
+        
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast("Failed to create image blob", "❌");
+            return;
+          }
+          const file = new File([blob], `Quran-${activeShareData.reference.replace(/[\s()]/g, '_')}.png`, { type: "image/png" });
+          const shareData = {
+            title: `Quran - ${activeShareData.reference}`,
+            text: `Read & listen to ${activeShareData.reference} on Noble Quran Reader`,
+            files: [file]
+          };
+
+          if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            toggleShareModal(false);
+          } else {
+            // Fallback if file sharing isn't supported directly by browser
+            downloadVerseImagePC();
+          }
+        }, "image/png");
+      } catch (err) {
+        console.error("Failed to share image:", err);
+        showToast("Sharing cancelled or unsupported", "❌");
       }
     }
 
