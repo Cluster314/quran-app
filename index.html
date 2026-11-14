@@ -1402,7 +1402,6 @@
         populateDropdowns();
       } catch (err) {
         console.warn("Using fallback chapters data:", err);
-        // Fallback static list so app works offline / via file://
         chaptersData = [
           {id: 1, name_simple: "Al-Fatihah", name_arabic: "الفاتحة", verses_count: 7, translated_name: {name: "The Opening"}},
           {id: 2, name_simple: "Al-Baqarah", name_arabic: "البقرة", verses_count: 286, translated_name: {name: "The Cow"}},
@@ -1415,7 +1414,6 @@
           {id: 9, name_simple: "At-Tawbah", name_arabic: "التوبة", verses_count: 129, translated_name: {name: "The Repentance"}},
           {id: 10, name_simple: "Yunus", name_arabic: "يونس", verses_count: 109, translated_name: {name: "Jonah"}}
         ];
-        // Fill rest up to 114 dynamically if needed
         for(let i=11; i<=114; i++) {
           chaptersData.push({id: i, name_simple: `Surah ${i}`, name_arabic: `سورة ${i}`, verses_count: 50, translated_name: {name: `Surah ${i}`}});
         }
