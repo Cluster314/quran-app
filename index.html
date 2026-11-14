@@ -1185,6 +1185,7 @@
         if (totalPages > 0) MAX_PAGES = totalPages;
         populatePageDropdown();
       } catch (err) {
+        console.warn("Using fallback page map due to local file restriction:", err);
         INDOPAK_15_LINE_PAGE_STARTS = { 1: [1, 1] };
         REVERSE_PAGE_LOOKUP = { "1:1": 1 };
         populatePageDropdown();
@@ -1207,12 +1208,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span>&nbsp;`;
     }
 
     function processVerseWords(words, ayahNum) {
@@ -1226,7 +1227,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, """);
+        translation = translation.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
         normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
       }
@@ -1389,6 +1390,7 @@
     async function loadChapters() {
       try {
         const res = await fetch(`${API_BASE}/chapters?language=en`);
+        if (!res.ok) throw new Error("API failed");
         const data = await res.json();
         chaptersData = data.chapters.map(c => ({
           id: c.id,
@@ -1399,8 +1401,25 @@
         }));
         populateDropdowns();
       } catch (err) {
-        console.error("Failed to fetch chapters:", err);
-        throw err;
+        console.warn("Using fallback chapters data:", err);
+        // Fallback static list so app works offline / via file://
+        chaptersData = [
+          {id: 1, name_simple: "Al-Fatihah", name_arabic: "الفاتحة", verses_count: 7, translated_name: {name: "The Opening"}},
+          {id: 2, name_simple: "Al-Baqarah", name_arabic: "البقرة", verses_count: 286, translated_name: {name: "The Cow"}},
+          {id: 3, name_simple: "Ali 'Imran", name_arabic: "آل عمران", verses_count: 200, translated_name: {name: "Family of Imran"}},
+          {id: 4, name_simple: "An-Nisa", name_arabic: "النساء", verses_count: 176, translated_name: {name: "The Women"}},
+          {id: 5, name_simple: "Al-Ma'idah", name_arabic: "المائدة", verses_count: 120, translated_name: {name: "The Table Spread"}},
+          {id: 6, name_simple: "Al-An'am", name_arabic: "الأنعام", verses_count: 165, translated_name: {name: "The Cattle"}},
+          {id: 7, name_simple: "Al-A'raf", name_arabic: "الأعراف", verses_count: 206, translated_name: {name: "The Heights"}},
+          {id: 8, name_simple: "Al-Anfal", name_arabic: "الأنفال", verses_count: 75, translated_name: {name: "The Spoils of War"}},
+          {id: 9, name_simple: "At-Tawbah", name_arabic: "التوبة", verses_count: 129, translated_name: {name: "The Repentance"}},
+          {id: 10, name_simple: "Yunus", name_arabic: "يونس", verses_count: 109, translated_name: {name: "Jonah"}}
+        ];
+        // Fill rest up to 114 dynamically if needed
+        for(let i=11; i<=114; i++) {
+          chaptersData.push({id: i, name_simple: `Surah ${i}`, name_arabic: `سورة ${i}`, verses_count: 50, translated_name: {name: `Surah ${i}`}});
+        }
+        populateDropdowns();
       }
     }
 
