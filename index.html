@@ -37,9 +37,6 @@
   <!-- Production-ready Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-  <!-- html2canvas for Generating Verse Card Images -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
   <!-- Robust Arabic & English Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -305,14 +302,12 @@
   </div>
 
   <header class="sticky top-0 z-40 theme-header border-b px-2 sm:px-6 py-2 flex flex-col gap-2 w-full max-w-full overflow-x-hidden">
-    <!-- Top Bar: Fully responsive flexbox with wrapping -->
     <div class="flex flex-wrap items-center justify-between gap-2 w-full">
       <a href="#/" onclick="navigate(''); return false;" class="flex items-center space-x-1 theme-accent-text font-bold text-sm sm:text-lg tracking-wide shrink-0">
         <span>📖</span>
         <span class="truncate">Quran Indo-Pak</span>
       </a>
 
-      <!-- Controls & Link moved out of bottom-right corner to un-crowd the screen -->
       <div class="flex flex-wrap items-center gap-1.5 shrink-0">
         <a id="quranComLink" href="https://cluster314.github.io/quran-app/" target="_blank" rel="noopener noreferrer" title="Open this location on Quran.com" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
           <span aria-hidden="true">↗</span><span>quran.com</span>
@@ -511,35 +506,6 @@
     </div>
   </div>
 
-  <!-- Share & Verse Card Modal (Fixed with min-h-0 and overflow-y-auto for long ayats) -->
-  <div id="shareModalOverlay" class="fixed inset-0 z-50 bg-black bg-opacity-60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
-    <div id="shareModalContent" class="theme-card border rounded-2xl p-4 sm:p-6 w-full max-w-md shadow-2xl flex flex-col gap-4 max-h-[85vh] min-h-0 overflow-y-auto">
-      <div class="flex items-center justify-between border-b theme-inner pb-3 sticky top-0 bg-[var(--bg-card)] z-10">
-        <div class="flex items-center space-x-2">
-          <span class="text-xl">📤</span>
-          <h3 class="font-extrabold text-sm sm:text-base">Share Verse Card</h3>
-        </div>
-        <button onclick="toggleShareModal(false)" class="theme-inner border theme-text-muted hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer">✕ Close</button>
-      </div>
-
-      <!-- Preview Card Box (Captured as Image) -->
-      <div id="shareCardPreview" class="theme-inner border rounded-xl p-4 flex flex-col space-y-3 text-center bg-white text-gray-900 shrink-0" style="background-color: var(--bg-card); color: var(--text-main);">
-        <div class="flex items-center justify-between text-3xs theme-accent-text font-bold border-b theme-card pb-2 px-1">
-          <span id="shareCardReference">Surah Al-Baqarah 2:255</span>
-          <span>Noble Quran</span>
-        </div>
-        <div id="shareCardArabic" class="font-indopak text-xl sm:text-2xl leading-relaxed py-2" dir="rtl"></div>
-        <div id="shareCardTranslation" class="text-left text-xs text-muted border-t theme-card pt-2 leading-relaxed"></div>
-        <div class="text-3xs theme-text-muted pt-1">cluster314.github.io/quran-app</div>
-      </div>
-
-      <!-- Dynamically Rendered PC vs Mobile Actions -->
-      <div id="shareModalActions" class="flex flex-col gap-2 pt-2 shrink-0">
-        <!-- Filled dynamically based on device type -->
-      </div>
-    </div>
-  </div>
-
   <style>
     .custom-btn-primary { 
       background-color: var(--accent); 
@@ -564,8 +530,6 @@
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
-
-    let activeShareData = { reference: "", arabic: "", translation: "", surahName: "" };
 
     // Total Time Tracker Logic
     let totalSecondsOnApp = parseInt(localStorage.getItem("quran_total_time_seconds") || "0", 10);
@@ -669,113 +633,6 @@
         setTimeout(() => {
           overlay.classList.add("hidden");
         }, 300);
-      }
-    }
-
-    // Device Detection Helper
-    function isMobileDevice() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
-    }
-
-    function toggleShareModal(show, verseKey = "", arabicText = "", translationText = "") {
-      const overlay = document.getElementById("shareModalOverlay");
-      if (!overlay) return;
-
-      if (show) {
-        const [sId] = verseKey.split(":").map(Number);
-        const meta = chaptersData.find(c => c.id === sId);
-        const surahName = meta ? meta.name_simple : `Surah ${sId}`;
-
-        activeShareData = {
-          reference: `${surahName} (${verseKey})`,
-          arabic: arabicText,
-          translation: translationText,
-          surahName: surahName
-        };
-
-        document.getElementById("shareCardReference").innerText = activeShareData.reference;
-        document.getElementById("shareCardArabic").innerHTML = arabicText;
-        document.getElementById("shareCardTranslation").innerText = translationText;
-
-        // Render PC vs Mobile buttons dynamically
-        const actionsContainer = document.getElementById("shareModalActions");
-        if (isMobileDevice()) {
-          actionsContainer.innerHTML = `
-            <button onclick="shareVerseImageMobile()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
-              <span>📤</span><span>Share Verse Image via Menu</span>
-            </button>
-          `;
-        } else {
-          actionsContainer.innerHTML = `
-            <button onclick="downloadVerseImagePC()" class="custom-btn-primary font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-2 transition">
-              <span>📥</span><span>Download Verse Image (PNG)</span>
-            </button>
-          `;
-        }
-
-        overlay.classList.remove("hidden");
-      } else {
-        overlay.classList.add("hidden");
-      }
-    }
-
-    async function downloadVerseImagePC() {
-      const previewCard = document.getElementById("shareCardPreview");
-      try {
-        showToast("Generating image...", "⏳");
-        const canvas = await html2canvas(previewCard, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: null
-        });
-        const imageURL = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.href = imageURL;
-        link.download = `Quran-${activeShareData.reference.replace(/[\s()]/g, '_')}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Image downloaded successfully!", "📥");
-        toggleShareModal(false);
-      } catch (err) {
-        console.error("Failed to generate image:", err);
-        showToast("Failed to download image", "❌");
-      }
-    }
-
-    async function shareVerseImageMobile() {
-      const previewCard = document.getElementById("shareCardPreview");
-      try {
-        showToast("Preparing image...", "⏳");
-        const canvas = await html2canvas(previewCard, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: null
-        });
-        
-        canvas.toBlob(async (blob) => {
-          if (!blob) {
-            showToast("Failed to create image blob", "❌");
-            return;
-          }
-          const file = new File([blob], `Quran-${activeShareData.reference.replace(/[\s()]/g, '_')}.png`, { type: "image/png" });
-          const shareData = {
-            title: `Quran - ${activeShareData.reference}`,
-            text: `Read & listen to ${activeShareData.reference} on Noble Quran Reader`,
-            files: [file]
-          };
-
-          if (navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            toggleShareModal(false);
-          } else {
-            // Fallback if file sharing isn't supported directly by browser
-            downloadVerseImagePC();
-          }
-        }, "image/png");
-      } catch (err) {
-        console.error("Failed to share image:", err);
-        showToast("Sharing cancelled or unsupported", "❌");
       }
     }
 
@@ -1208,12 +1065,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span>&nbsp;`;
     }
 
     function processVerseWords(words, ayahNum) {
@@ -1227,7 +1084,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, """);
+        translation = translation.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
         normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
       }
@@ -1324,7 +1181,6 @@
             await renderPage(pageNum);
           } else { render404(); }
         } else if (hash.includes("-")) {
-          // Parse range format like /4:1-4:10
           setNavMode('range');
           const cleanHash = hash.startsWith('/') ? hash.slice(1) : hash;
           const [startPart, endPart] = cleanHash.split("-");
@@ -1916,12 +1772,8 @@
             const [, ayahNum] = v.verse_key.split(":").map(Number);
             const processed = processVerseWords(v.words, ayahNum);
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
-
             const fullVerseToCopy = `${processed.plainText}\n\n${translatedText}`;
-            
             const escapedCopyText = JSON.stringify(fullVerseToCopy);
-            const escapedArabicForShare = JSON.stringify(processed.arabicHtml);
-            const escapedTransForShare = JSON.stringify(translatedText);
 
             return `
               ${pageMarkerHtml}
@@ -1933,7 +1785,6 @@
                     <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
                     <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
                     <button onclick='copyVerseText(${escapedCopyText})' class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
-                    <button onclick='toggleShareModal(true, "${v.verse_key}", ${escapedArabicForShare}, ${escapedTransForShare})' class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📤 Share</button>
                   </div>
                 </div>
                 <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;">
@@ -1990,7 +1841,7 @@
               <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
                 Page ${pageNum}
               </span>
-              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
+              <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
             </div>
           `);
         }
