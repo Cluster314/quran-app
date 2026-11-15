@@ -1208,12 +1208,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
+      return ` <span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum) {
@@ -1227,7 +1227,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        translation = translation.replace(/'/g, "'").replace(/"/g, """);
 
         normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
       }
@@ -1990,7 +1990,7 @@
               <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">
                 Page ${pageNum}
               </span>
-              <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
+              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
             </div>
           `);
         }
