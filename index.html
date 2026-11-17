@@ -976,7 +976,7 @@
         if (w.char_type_name === "end") continue;
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, """);
+        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
         normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
       }
       return {
