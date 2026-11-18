@@ -973,7 +973,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, """);
+        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
 
         // Comprehensive check: catch waqf, pause signs, symbols, or extended pause Unicode characters
         const isSymbolOrWaqf = 
