@@ -12,7 +12,7 @@
   <!-- Open Graph & Twitter -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations, word-by-word tooltips, and word audio." />
   <meta name="theme-color" content="#40bfff" id="metaThemeColor" />
 
   <link rel="manifest" href="manifest.json">
@@ -118,11 +118,13 @@
       position: relative;
       display: inline-block;
       cursor: pointer;
-      padding: 0 2px;
+      padding: 0 3px;
+      margin: 0 1px;
       border-radius: 4px;
       transition: background-color 0.2s ease, color 0.2s ease;
     }
     .word-tooltip:hover { color: var(--accent); background-color: var(--accent-glow); }
+    .word-tooltip:active { transform: scale(0.95); }
     .word-tooltip::after {
       content: attr(data-translation);
       position: absolute;
@@ -520,6 +522,7 @@
 
     let audioObject = new Audio();
     let nextAudioObject = new Audio();
+    let wordAudioObject = new Audio(); // Dedicated audio object for word clicks
     let currentLoadedVerses = [];
     let currentAudioIndex = 0;
     let currentAyahRepeatCount = 0;
@@ -637,6 +640,7 @@
       const speed = parseFloat(speedValue);
       audioObject.playbackRate = speed;
       nextAudioObject.playbackRate = speed;
+      wordAudioObject.playbackRate = speed;
       localStorage.setItem("quran_playback_speed", speed);
     }
 
@@ -658,6 +662,13 @@
       navigator.clipboard.writeText(text).then(() => {
         showToast("Verse copied!", "📋");
       }).catch(err => console.error("Copy failed: ", err));
+    }
+
+    function playWordAudio(audioUrl) {
+      if (!audioUrl) return;
+      const fullUrl = `https://verses.quran.com/${audioUrl}`;
+      wordAudioObject.src = fullUrl;
+      wordAudioObject.play().catch(err => console.error("Word audio playback error:", err));
     }
 
     function setAudioStartVerse(verseKey) {
@@ -960,12 +971,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="w-full h-full theme-accent-text fill-current opacity-80" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span>&nbsp;`;
     }
 
     function processVerseWords(words, ayahNum) {
@@ -976,8 +987,9 @@
         if (w.char_type_name === "end") continue;
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
-        normalWords.push(`<span class="word-tooltip" data-translation="${translation}">${text}</span>`);
+        translation = translation.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        let audioUrl = w.audio_url || "";
+        normalWords.push(`<span class="word-tooltip" data-translation="${translation}" onclick="playWordAudio('${audioUrl}')" title="Click to play word">${text}</span>`);
       }
       return {
         arabicHtml: normalWords.join(" ") + getAyahMarkerSvg(ayahNum),
@@ -1239,7 +1251,7 @@
     }
 
     async function fetchChapterVerses(surahId) {
-      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
+      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak,audio_url&per_page=300&word_translation_language=en`);
       const data = await res.json();
       return data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
     }
@@ -1256,7 +1268,7 @@
 
       const requests = [];
       for (let sId = fromS; sId <= toS; sId++) {
-        requests.push(fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`).then(r => r.json()).then(d => ({ sId, data: d })));
+        requests.push(fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak,audio_url&per_page=300&word_translation_language=en`).then(r => r.json()).then(d => ({ sId, data: d })));
       }
 
       const results = await Promise.all(requests);
