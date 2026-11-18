@@ -979,7 +979,18 @@
         </span>&nbsp;`;
     }
 
-    function processVerseWords(words, ayahNum) {
+    function processVerseWords(words, ayahNum, verseKey) {
+      // Hardcoded fix specifically for Surah 12, Verse 1
+      if (verseKey === "12:1") {
+        words = [
+          { text_indopak: "الر", translation: { text: "Alif Lam Ra" }, audio_url: "wbw/012_001_001.mp3" },
+          { text_indopak: "تِلْكَ", translation: { text: "These" }, audio_url: "wbw/012_001_002.mp3" },
+          { text_indopak: "آيَاتُ", translation: { text: "(are the) Verses" }, audio_url: "wbw/012_001_003.mp3" },
+          { text_indopak: "الْكِتَابِ", translation: { text: "(of) the Book" }, audio_url: "wbw/012_001_004.mp3" },
+          { text_indopak: "الْمُبِينِ", translation: { text: "[the] clear" }, audio_url: "wbw/012_001_005.mp3" }
+        ];
+      }
+
       if (!words || !words.length) return { arabicHtml: "", plainText: "" };
       let normalWords = [];
       for (let i = 0; i < words.length; i++) {
@@ -1531,7 +1542,7 @@
             ` : '';
 
             const [, ayahNum] = v.verse_key.split(":").map(Number);
-            const processed = processVerseWords(v.words, ayahNum);
+            const processed = processVerseWords(v.words, ayahNum, v.verse_key);
             let translatedText = (translations && translations[ayahNum]) ? String(translations[ayahNum]) : "";
             
             const fullTextToCopy = `${processed.plainText}\n\n${translatedText}`;
@@ -1572,7 +1583,7 @@
           `;
         }
         const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const processed = processVerseWords(v.words, ayahNum);
+        const processed = processVerseWords(v.words, ayahNum, v.verse_key);
         arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${processed.arabicHtml}</span> `;
       });
 
