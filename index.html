@@ -36,6 +36,7 @@
       --accent-hue-deg: 0deg;
     }
 
+    /* Mushaf image filters per theme: Pure monochrome text with high contrast background isolation */
     :root[data-theme="dark"] {
       --bg-body: #0f172a;
       --bg-header: rgba(15, 23, 42, 0.95);
@@ -46,7 +47,7 @@
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
       --scrollbar-thumb: #475569;
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) contrast(1.3);
+      --mushaf-filter: invert(1) grayscale(1) contrast(200%) brightness(1.1);
       --mushaf-blend: normal;
     }
 
@@ -60,7 +61,7 @@
       --text-muted: #64748b;
       --text-arabic: #0f172a;
       --scrollbar-thumb: #cbd5e1;
-      --mushaf-filter: grayscale(1) contrast(1.4);
+      --mushaf-filter: grayscale(1) contrast(200%) brightness(0.95);
       --mushaf-blend: multiply;
     }
 
@@ -74,7 +75,7 @@
       --text-muted: #78644c;
       --text-arabic: #2d2013;
       --scrollbar-thumb: #c4b396;
-      --mushaf-filter: sepia(0.2) grayscale(1) contrast(1.3);
+      --mushaf-filter: sepia(0.3) grayscale(1) contrast(200%) brightness(0.95);
       --mushaf-blend: multiply;
     }
 
@@ -88,7 +89,7 @@
       --text-muted: #8b949e;
       --text-arabic: #ffffff;
       --scrollbar-thumb: #222222;
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.4);
+      --mushaf-filter: invert(1) grayscale(1) contrast(250%) brightness(1.2);
       --mushaf-blend: normal;
     }
 
