@@ -46,7 +46,7 @@
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
       --scrollbar-thumb: #475569;
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.2);
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) contrast(1.3);
       --mushaf-blend: normal;
     }
 
@@ -60,7 +60,7 @@
       --text-muted: #64748b;
       --text-arabic: #0f172a;
       --scrollbar-thumb: #cbd5e1;
-      --mushaf-filter: grayscale(1) contrast(1.1);
+      --mushaf-filter: grayscale(1) contrast(1.4);
       --mushaf-blend: multiply;
     }
 
@@ -74,7 +74,7 @@
       --text-muted: #78644c;
       --text-arabic: #2d2013;
       --scrollbar-thumb: #c4b396;
-      --mushaf-filter: grayscale(1) contrast(1.1);
+      --mushaf-filter: sepia(0.2) grayscale(1) contrast(1.3);
       --mushaf-blend: multiply;
     }
 
@@ -88,7 +88,7 @@
       --text-muted: #8b949e;
       --text-arabic: #ffffff;
       --scrollbar-thumb: #222222;
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.2);
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.4);
       --mushaf-blend: normal;
     }
 
@@ -998,7 +998,6 @@
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
         translation = translation.replace(/'/g, "'").replace(/"/g, '"');
 
-        // Comprehensive check: catch waqf, pause signs, symbols, or extended pause Unicode characters
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
           w.char_type_name === "symbol" || 
@@ -1007,10 +1006,8 @@
 
         if (isSymbolOrWaqf) {
           if (normalWords.length > 0) {
-            // Attach to the previous word if available
             normalWords[normalWords.length - 1].text += text;
           } else {
-            // Fallback if a verse starts with a symbol token
             normalWords.push({ text: text, translation: "" });
           }
         } else {
