@@ -982,9 +982,14 @@
           w.word_type === "waqf" ||
           /^[ۖۗۘۙۚۛۜ۝۩۞ٱۨ]/.test(text);
 
-        if (isSymbolOrWaqf && normalWords.length > 0) {
-          let lastWord = normalWords[normalWords.length - 1];
-          lastWord.text += text; // Attach directly to the preceding word
+        if (isSymbolOrWaqf) {
+          if (normalWords.length > 0) {
+            // Attach to the previous word if available
+            normalWords[normalWords.length - 1].text += text;
+          } else {
+            // Fallback if a verse starts with a symbol token
+            normalWords.push({ text: text, translation: "" });
+          }
         } else {
           normalWords.push({
             text: text,
