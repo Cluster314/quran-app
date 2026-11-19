@@ -33,7 +33,7 @@
     }
 
     :root {
-      --accent-hue-rotate: 0deg;
+      --accent-hue-deg: 0deg;
     }
 
     :root[data-theme="dark"] {
@@ -46,7 +46,7 @@
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
       --scrollbar-thumb: #475569;
-      --mushaf-filter: invert(1) grayscale(1) brightness(0.95) contrast(1.1);
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.2);
       --mushaf-blend: normal;
     }
 
@@ -60,7 +60,7 @@
       --text-muted: #64748b;
       --text-arabic: #0f172a;
       --scrollbar-thumb: #cbd5e1;
-      --mushaf-filter: none;
+      --mushaf-filter: grayscale(1) contrast(1.1);
       --mushaf-blend: multiply;
     }
 
@@ -74,7 +74,7 @@
       --text-muted: #78644c;
       --text-arabic: #2d2013;
       --scrollbar-thumb: #c4b396;
-      --mushaf-filter: grayscale(1) sepia(0.2) contrast(1.05);
+      --mushaf-filter: grayscale(1) contrast(1.1);
       --mushaf-blend: multiply;
     }
 
@@ -88,7 +88,7 @@
       --text-muted: #8b949e;
       --text-arabic: #ffffff;
       --scrollbar-thumb: #222222;
-      --mushaf-filter: invert(1) grayscale(1) brightness(1.1) contrast(1.2);
+      --mushaf-filter: invert(1) grayscale(1) brightness(1.2) contrast(1.2);
       --mushaf-blend: normal;
     }
 
@@ -109,7 +109,7 @@
     .theme-accent-text { color: var(--accent); }
 
     .mushaf-img {
-      filter: var(--mushaf-filter) hue-rotate(var(--accent-hue-rotate));
+      filter: var(--mushaf-filter);
       mix-blend-mode: var(--mushaf-blend);
       width: 100%;
       max-width: 800px;
@@ -169,8 +169,13 @@
       direction: ltr;
       white-space: nowrap;
     }
-    .ayah-container svg {
-      filter: hue-rotate(var(--accent-hue-rotate));
+    .ayah-svg-symbol {
+      width: 100%;
+      height: 100%;
+      color: #40bfff;
+      fill: currentColor;
+      opacity: 0.9;
+      filter: hue-rotate(var(--accent-hue-deg));
     }
     .ayah-number {
       position: absolute;
@@ -431,20 +436,20 @@
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     const BISMILLAH_ARABIC = "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ";
-
-    const ACCENT_HUE_MAP = {
-      "#40bfff": "0deg",    // Diamond Blue (Default base)
-      "#fbbf24": "155deg",  // Gold / Yellow
-      "#10b981": "115deg",  // Emerald Green
-      "#f97316": "175deg",  // Sunset Orange
-      "#a855f7": "75deg"    // Amethyst Purple
-    };
     
     let chaptersData = [];
     const translationCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
+
+    const ACCENT_HUE_OFFSETS = {
+      "#40bfff": 0,    // Diamond Blue (Base)
+      "#fbbf24": 150,  // Gold
+      "#10b981": 90,   // Emerald Green
+      "#f97316": 170,  // Sunset Orange
+      "#a855f7": 270   // Amethyst Purple
+    };
 
     const EVERY_AYAH_QARIS = [
       { id: "Alafasy_128kbps", name: "Mishari Rashid al-Afasy (128kbps)" },
@@ -633,8 +638,8 @@
       document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.18)`);
       document.documentElement.style.setProperty('--accent-contrast', getContrastTextColor(hexColor));
 
-      const hueAngle = ACCENT_HUE_MAP[hexColor] || "0deg";
-      document.documentElement.style.setProperty('--accent-hue-rotate', hueAngle);
+      const hueDeg = ACCENT_HUE_OFFSETS[hexColor] !== undefined ? ACCENT_HUE_OFFSETS[hexColor] : 0;
+      document.documentElement.style.setProperty('--accent-hue-deg', `${hueDeg}deg`);
 
       localStorage.setItem("quran_accent", hexColor);
       const sel = document.getElementById("accentSelect");
@@ -972,12 +977,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
-          <svg viewBox="0 0 36 36" class="w-full h-full fill-current opacity-80" style="color: #40bfff;" xmlns="http://www.w3.org/2000/svg">
+      return ` <span class="ayah-container" contenteditable="false">
+          <svg viewBox="0 0 36 36" class="ayah-svg-symbol" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum, verseKey) {
@@ -993,6 +998,7 @@
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
         translation = translation.replace(/'/g, "'").replace(/"/g, '"');
 
+        // Comprehensive check: catch waqf, pause signs, symbols, or extended pause Unicode characters
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
           w.char_type_name === "symbol" || 
@@ -1001,8 +1007,10 @@
 
         if (isSymbolOrWaqf) {
           if (normalWords.length > 0) {
+            // Attach to the previous word if available
             normalWords[normalWords.length - 1].text += text;
           } else {
+            // Fallback if a verse starts with a symbol token
             normalWords.push({ text: text, translation: "" });
           }
         } else {
