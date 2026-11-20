@@ -466,14 +466,14 @@
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
-    // Split configuration for Light/Sepia vs Dark/OLED to fix Gold dark-red issue in light mode
+    // Split configuration for Light/Sepia vs Dark/OLED
     const ACCENT_CONFIG = {
       "#40bfff": { // Diamond Blue
         light: { hue: -40, sat: "160%" },
         dark:  { hue: -40, sat: "160%" }
       },
-      "#fbbf24": { // Gold (Fixed light-mode dark red by adding hue rotation & higher saturation)
-        light: { hue: 25,  sat: "210%" },
+      "#fbbf24": { // Gold (Fixed light-mode dark red by adjusting hue and saturation)
+        light: { hue: -15, sat: "190%" },
         dark:  { hue: 163, sat: "180%" }
       },
       "#10b981": { // Emerald Green
