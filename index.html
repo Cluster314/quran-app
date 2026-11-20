@@ -466,13 +466,28 @@
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
-    // Vibrant accent hue rotation & saturation configuration relative to baseline blue (240°)
+    // Fine-tuned configuration mapping for Light/Sepia vs. Dark/OLED
     const ACCENT_CONFIG = {
-      "#40bfff": { hue: -40, sat: "160%" },  // Diamond Blue (~200°)
-      "#fbbf24": { hue: 163, sat: "180%" },  // Gold (~43°)
-      "#10b981": { hue: -80, sat: "220%" },  // Emerald Green (~160°)
-      "#f97316": { hue: 145, sat: "200%" },  // Sunset Orange (~25°)
-      "#a855f7": { hue: 31,  sat: "250%" }   // Amethyst Purple (~271°)
+      "#40bfff": { // Diamond Blue
+        light: { hue: -30, sat: "160%" },
+        dark:  { hue: -60, sat: "160%" }
+      },
+      "#fbbf24": { // Gold
+        light: { hue: -25, sat: "200%" },
+        dark:  { hue: 145, sat: "180%" }
+      },
+      "#f97316": { // Sunset Orange
+        light: { hue: 35,  sat: "200%" },
+        dark:  { hue: 165, sat: "200%" }
+      },
+      "#10b981": { // Emerald Green
+        light: { hue: -75, sat: "200%" },
+        dark:  { hue: -110, sat: "220%" }
+      },
+      "#a855f7": { // Amethyst Purple
+        light: { hue: -45, sat: "220%" },
+        dark:  { hue: 35,  sat: "280%" }
+      }
     };
 
     const EVERY_AYAH_QARIS = [
@@ -578,12 +593,17 @@
     };
 
     function updateMushafImageFilter() {
-      const config = ACCENT_CONFIG[currentAccent] || { hue: 0, sat: "150%" };
       const isDarkOrOled = (currentTheme === "dark" || currentTheme === "oled");
-      const totalHue = config.hue + (isDarkOrOled ? 180 : 0);
+      const modeConfig = ACCENT_CONFIG[currentAccent] || { 
+        light: { hue: 0, sat: "150%" }, 
+        dark: { hue: 0, sat: "150%" } 
+      };
+      
+      const activeSetting = isDarkOrOled ? modeConfig.dark : modeConfig.light;
+      const totalHue = activeSetting.hue + (isDarkOrOled ? 180 : 0);
       
       document.documentElement.style.setProperty('--mushaf-hue', `${totalHue}deg`);
-      document.documentElement.style.setProperty('--mushaf-sat', config.sat);
+      document.documentElement.style.setProperty('--mushaf-sat', activeSetting.sat);
       document.documentElement.style.setProperty('--mushaf-invert', isDarkOrOled ? '100%' : '0%');
     }
 
