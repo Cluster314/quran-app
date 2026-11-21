@@ -42,7 +42,7 @@
       --text-muted: #94a3b8;
       --text-arabic: #f8fafc;
       --scrollbar-thumb: #475569;
-      --card-glow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --card-glow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 12px var(--accent-subtle);
     }
 
     :root[data-theme="light"] {
@@ -55,7 +55,7 @@
       --text-muted: #64748b;
       --text-arabic: #0f172a;
       --scrollbar-thumb: #cbd5e1;
-      --card-glow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --card-glow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 0 10px var(--accent-subtle);
     }
 
     :root[data-theme="sepia"] {
@@ -68,7 +68,7 @@
       --text-muted: #78644c;
       --text-arabic: #2d2013;
       --scrollbar-thumb: #c4b396;
-      --card-glow: 0 4px 6px -1px rgba(67, 52, 34, 0.08);
+      --card-glow: 0 4px 6px -1px rgba(67, 52, 34, 0.08), 0 0 10px var(--accent-subtle);
     }
 
     :root[data-theme="oled"] {
@@ -96,7 +96,8 @@
 
     .theme-header { 
       background-color: var(--bg-header); 
-      border-color: var(--border-color); 
+      border-color: var(--accent-subtle); 
+      border-bottom-width: 2px;
       backdrop-filter: blur(12px); 
     }
     
@@ -106,9 +107,13 @@
 
     .theme-card { 
       background-color: var(--bg-card); 
-      border-color: var(--border-color); 
+      border-color: var(--accent-subtle); 
       box-shadow: var(--card-glow);
       transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .theme-card:hover {
+      border-color: var(--accent);
     }
 
     :root[data-theme="oled"] .theme-card {
@@ -116,7 +121,7 @@
       box-shadow: 0 0 20px var(--accent-glow), inset 0 0 10px var(--accent-glow);
     }
 
-    .theme-inner { background-color: var(--bg-inner); border-color: var(--border-color); }
+    .theme-inner { background-color: var(--bg-inner); border-color: var(--accent-subtle); }
     .theme-text-muted { color: var(--text-muted); }
     .theme-accent-text { color: var(--accent); }
 
@@ -214,13 +219,13 @@
 
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
 
     .toggle-btn {
       padding: 3px 8px;
       border-radius: 10px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--accent-subtle);
       background-color: var(--bg-inner);
       cursor: pointer;
       font-weight: bold;
@@ -466,13 +471,12 @@
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
-    // Precise filter configuration for Light/Sepia vs Dark/OLED
     const ACCENT_CONFIG = {
       "#40bfff": { // Diamond Blue
         light: { hue: -40, sat: "160%" },
         dark:  { hue: -40, sat: "160%" }
       },
-      "#fbbf24": { // Gold (Adjusted hue to -45deg and saturation to 140% to fix violet/purple tone in light/sepia modes)
+      "#fbbf24": { // Gold
         light: { hue: -45, sat: "140%" },
         dark:  { hue: 163, sat: "180%" }
       },
@@ -687,6 +691,7 @@
       let g = parseInt(hexColor.slice(3, 5), 16) || 191;
       let b = parseInt(hexColor.slice(5, 7), 16) || 255;
       document.documentElement.style.setProperty('--accent-glow', `rgba(${r}, ${g}, ${b}, 0.38)`);
+      document.documentElement.style.setProperty('--accent-subtle', `rgba(${r}, ${g}, ${b}, 0.35)`);
       document.documentElement.style.setProperty('--accent-contrast', getContrastTextColor(hexColor));
 
       localStorage.setItem("quran_accent", hexColor);
@@ -1026,12 +1031,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="ayah-svg-symbol" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span>&nbsp;`;
     }
 
     function processVerseWords(words, ayahNum, verseKey) {
