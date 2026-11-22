@@ -583,7 +583,9 @@
 
     let audioObject = new Audio();
     let nextAudioObject = new Audio();
-    let wordAudioObject = new Audio();
+    
+    // Independent word audio management to prevent clipping and race conditions
+    let activeWordAudio = null;
     let currentlyHighlightedWord = null;
 
     let currentLoadedVerses = [];
@@ -771,17 +773,31 @@
       updatePlayerUI(false, "Audio Error", "Format or network not supported");
     };
 
+    // Preload audio on hover for instantaneous playback
+    function preloadWordAudio(element) {
+      const audioUrl = element.getAttribute("data-audio");
+      if (!audioUrl) return;
+      const preloader = new Audio();
+      preloader.src = audioUrl;
+      preloader.load();
+    }
+
+    // Isolated word audio playback preventing cutting off or overlapping bugs
     function playWordAudio(element) {
       const audioUrl = element.getAttribute("data-audio");
       if (!audioUrl) return;
+
+      if (activeWordAudio) {
+        activeWordAudio.pause();
+        activeWordAudio.currentTime = 0;
+      }
 
       if (currentlyHighlightedWord) {
         currentlyHighlightedWord.classList.remove("theme-accent-text");
       }
 
-      wordAudioObject.pause();
-      wordAudioObject.src = audioUrl;
-      wordAudioObject.currentTime = 0;
+      const wordAudio = new Audio(audioUrl);
+      activeWordAudio = wordAudio;
       
       currentlyHighlightedWord = element;
       element.classList.add("theme-accent-text");
@@ -791,12 +807,15 @@
           element.classList.remove("theme-accent-text");
           currentlyHighlightedWord = null;
         }
+        if (activeWordAudio === wordAudio) {
+          activeWordAudio = null;
+        }
       };
 
-      wordAudioObject.onended = clearGlow;
-      wordAudioObject.onerror = clearGlow;
+      wordAudio.onended = clearGlow;
+      wordAudio.onerror = clearGlow;
 
-      wordAudioObject.play().catch(err => {
+      wordAudio.play().catch(err => {
         console.log("Word audio playback error:", err);
         clearGlow();
       });
@@ -1129,16 +1148,6 @@
         arabicHtml: renderedWordsHtml.join(" ") + getAyahMarkerSvg(ayahNum),
         plainText: normalWords.filter(i => !i.isWaqf).map(item => item.text).join(" ")
       };
-    }
-
-    function preloadWordAudio(element) {
-      const audioUrl = element.getAttribute("data-audio");
-      if (!audioUrl) return;
-      // Pre-load audio ahead of time on hover so it plays instantly on click
-      if (wordAudioObject.src !== audioUrl && wordAudioObject.src !== location.origin + audioUrl) {
-        wordAudioObject.src = audioUrl;
-        wordAudioObject.load();
-      }
     }
 
     function findClosestPageForVerse(verseKey) {
