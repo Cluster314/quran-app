@@ -1060,6 +1060,10 @@
     function processVerseWords(words, ayahNum, verseKey) {
       if (!words || !words.length) return { arabicHtml: "", plainText: "" };
       
+      const [surahId, currentAyahNum] = verseKey.split(":").map(Number);
+      const sStr = String(surahId).padStart(3, '0');
+      const aStr = String(currentAyahNum).padStart(3, '0');
+
       let normalWords = [];
       
       for (let i = 0; i < words.length; i++) {
@@ -1069,7 +1073,6 @@
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
         translation = translation.replace(/'/g, "'").replace(/"/g, '"');
-        let audioUrl = w.audio_url ? `https://audio.qurancdn.com/${w.audio_url}` : "";
 
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
@@ -1081,25 +1084,33 @@
           if (normalWords.length > 0) {
             normalWords[normalWords.length - 1].text += text;
           } else {
-            normalWords.push({ text: text, translation: "", audioUrl: "" });
+            normalWords.push({ text: text, translation: "", isWaqf: true });
           }
         } else {
           normalWords.push({
             text: text,
             translation: translation,
-            audioUrl: audioUrl
+            isWaqf: false
           });
         }
       }
 
+      let wordCounter = 0;
       let renderedWordsHtml = normalWords.map(item => {
-        const audioAttr = item.audioUrl ? `data-audio="${item.audioUrl}" onclick="playWordAudio(this)"` : '';
-        return `<span class="word-tooltip" ${audioAttr} data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
+        if (item.isWaqf) {
+          return `<span class="word-tooltip" data-translation="" title="">${item.text}</span>`;
+        }
+        
+        wordCounter++;
+        const wStr = String(wordCounter).padStart(3, '0');
+        const audioUrl = `https://audio.qurancdn.com/wbw/${sStr}_${aStr}_${wStr}.mp3`;
+
+        return `<span class="word-tooltip cursor-pointer" data-audio="${audioUrl}" onclick="playWordAudio(this)" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
       });
 
       return {
         arabicHtml: renderedWordsHtml.join(" ") + getAyahMarkerSvg(ayahNum),
-        plainText: normalWords.map(item => item.text).join(" ")
+        plainText: normalWords.filter(i => !i.isWaqf).map(item => item.text).join(" ")
       };
     }
 
@@ -1357,7 +1368,7 @@
     }
 
     async function fetchChapterVerses(surahId) {
-      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak,audio_url&per_page=300&word_translation_language=en`);
+      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
       const data = await res.json();
       return data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
     }
@@ -1374,7 +1385,7 @@
 
       const requests = [];
       for (let sId = fromS; sId <= toS; sId++) {
-        requests.push(fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak,audio_url&per_page=300&word_translation_language=en`).then(r => r.json()).then(d => ({ sId, data: d })));
+        requests.push(fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`).then(r => r.json()).then(d => ({ sId, data: d })));
       }
 
       const results = await Promise.all(requests);
