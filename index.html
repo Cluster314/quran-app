@@ -12,7 +12,7 @@
   <!-- Open Graph & Twitter -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations, word-by-word tooltips, and word audio." />
+  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
   <meta name="theme-color" content="#40bfff" id="metaThemeColor" />
 
   <link rel="manifest" href="manifest.json">
@@ -129,7 +129,6 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    /* Mushaf page images with dynamic inversion, hue rotation, and saturation */
     .mushaf-img {
       width: 100%;
       max-width: 800px;
@@ -148,6 +147,7 @@
       margin: 0 1px;
       border-radius: 4px;
       transition: background-color 0.2s ease, color 0.2s ease;
+      cursor: default;
     }
     .word-tooltip:hover { color: var(--accent); background-color: var(--accent-glow); }
     .word-tooltip::after {
@@ -184,7 +184,6 @@
       text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
     }
 
-    /* Decoupled Ayah Markers */
     .ayah-container {
       display: inline-flex !important;
       align-items: center;
@@ -472,26 +471,11 @@
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
     const ACCENT_CONFIG = {
-      "#40bfff": { // Diamond Blue
-        light: { hue: -40, sat: "160%" },
-        dark:  { hue: -40, sat: "160%" }
-      },
-      "#fbbf24": { // Gold
-        light: { hue: -45, sat: "140%" },
-        dark:  { hue: 163, sat: "180%" }
-      },
-      "#10b981": { // Emerald Green
-        light: { hue: -80, sat: "220%" },
-        dark:  { hue: -80, sat: "220%" }
-      },
-      "#f97316": { // Sunset Orange
-        light: { hue: 145, sat: "200%" },
-        dark:  { hue: 145, sat: "200%" }
-      },
-      "#a855f7": { // Amethyst Purple
-        light: { hue: 31,  sat: "250%" },
-        dark:  { hue: 31,  sat: "250%" }
-      }
+      "#40bfff": { light: { hue: -40, sat: "160%" }, dark: { hue: -40, sat: "160%" } },
+      "#fbbf24": { light: { hue: -45, sat: "140%" }, dark: { hue: 163, sat: "180%" } },
+      "#10b981": { light: { hue: -80, sat: "220%" }, dark: { hue: -80, sat: "220%" } },
+      "#f97316": { light: { hue: 145, sat: "200%" }, dark: { hue: 145, sat: "200%" } },
+      "#a855f7": { light: { hue: 31, sat: "250%" }, dark: { hue: 31, sat: "250%" } }
     };
 
     const EVERY_AYAH_QARIS = [
@@ -1015,14 +999,44 @@
       }
     }
 
-    const INDOPAK_JUZ_BOUNDARIES = {
-      1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
-      6:  [4, 148, 5, 81], 7:  [5, 82, 6, 110], 8:  [6, 111, 7, 87], 9:  [7, 88, 8, 40], 10: [8, 41, 9, 93],
-      11: [9, 94, 11, 5], 12: [11, 6, 12, 52], 13: [12, 53, 15, 1], 14: [15, 2, 16, 128], 15: [17, 1, 18, 74],
-      16: [18, 75, 20, 135], 17: [21, 1, 22, 78], 18: [23, 1, 25, 20], 19: [25, 21, 27, 59], 20: [27, 60, 29, 44],
-      21: [29, 45, 33, 30], 22: [33, 31, 36, 21], 23: [36, 22, 39, 31], 24: [39, 32, 41, 46], 25: [41, 47, 45, 37],
-      26: [46, 1, 51, 30], 27: [51, 31, 57, 29], 28: [58, 1, 66, 12], 29: [67, 1, 77, 50], 30: [78, 1, 114, 6]
-    };
+    // Dynamic Juz mapping derived from the 610 page map (every Juz spans 20 pages, starting at page 2)
+    function getJuzBoundariesFromPageMap() {
+      let boundaries = {};
+      for (let j = 1; j <= 30; j++) {
+        let startPage = 2 + (j - 1) * 20;
+        let endPage = j === 30 ? MAX_PAGES : (startPage + 19);
+        
+        let startVerseKey = getVerseKeyForPage(startPage);
+        let endVerseKey = getVerseKeyForPage(endPage + 1) || "114:6"; // Next page start minus one or end of Quran
+
+        let [fromS, fromA] = startVerseKey.split(":").map(Number);
+        
+        // Find previous verse for end boundary
+        let endTargetPage = Math.min(endPage + 1, MAX_PAGES);
+        let nextStartVerseKey = getVerseKeyForPage(endTargetPage);
+        let [toS, toA] = nextStartVerseKey.split(":").map(Number);
+        
+        // Decrement by 1 ayah for the end boundary
+        if (toA > 1) {
+          toA -= 1;
+        } else {
+          toS -= 1;
+          toA = chaptersData.find(c => c.id === toS)?.verses_count || 1;
+        }
+        if (j === 30) { toS = 114; toA = 6; }
+
+        boundaries[j] = [fromS, fromA, toS, toA];
+      }
+      return boundaries;
+    }
+
+    function getVerseKeyForPage(pageNum) {
+      if (INDOPAK_15_LINE_PAGE_STARTS[pageNum]) {
+        let [s, a] = INDOPAK_15_LINE_PAGE_STARTS[pageNum];
+        return `${s}:${a}`;
+      }
+      return "1:1";
+    }
 
     function toArabicNumeral(num) {
       if (num === undefined || num === null) return "";
@@ -1041,7 +1055,7 @@
 
     function processVerseWords(words, ayahNum, verseKey) {
       if (!words || !words.length) return { arabicHtml: "", plainText: "" };
-      
+
       let normalWords = [];
       
       for (let i = 0; i < words.length; i++) {
@@ -1050,7 +1064,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
+        translation = translation.replace(/'/g, "'").replace(/"/g, '&quot;');
 
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
@@ -1062,23 +1076,27 @@
           if (normalWords.length > 0) {
             normalWords[normalWords.length - 1].text += text;
           } else {
-            normalWords.push({ text: text, translation: "" });
+            normalWords.push({ text: text, translation: "", isWaqf: true });
           }
         } else {
           normalWords.push({
             text: text,
-            translation: translation
+            translation: translation,
+            isWaqf: false
           });
         }
       }
 
       let renderedWordsHtml = normalWords.map(item => {
+        if (item.isWaqf) {
+          return `<span class="word-tooltip" data-translation="" title="">${item.text}</span>`;
+        }
         return `<span class="word-tooltip" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
       });
 
       return {
         arabicHtml: renderedWordsHtml.join(" ") + getAyahMarkerSvg(ayahNum),
-        plainText: normalWords.map(item => item.text).join(" ")
+        plainText: normalWords.filter(i => !i.isWaqf).map(item => item.text).join(" ")
       };
     }
 
@@ -1554,7 +1572,8 @@
     }
 
     async function renderJuz(juzNumber) {
-      const bounds = INDOPAK_JUZ_BOUNDARIES[juzNumber];
+      const boundariesMap = getJuzBoundariesFromPageMap();
+      const bounds = boundariesMap[juzNumber];
       if (!bounds) { render404(); return; }
       const [fromS, fromA, toS, toA] = bounds;
       await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`, true);
