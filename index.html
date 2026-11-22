@@ -584,6 +584,8 @@
     let audioObject = new Audio();
     let nextAudioObject = new Audio();
     let wordAudioObject = new Audio();
+    let currentlyHighlightedWord = null;
+
     let currentLoadedVerses = [];
     let currentAudioIndex = 0;
     let currentAyahRepeatCount = 0;
@@ -773,16 +775,31 @@
       const audioUrl = element.getAttribute("data-audio");
       if (!audioUrl) return;
 
+      if (currentlyHighlightedWord) {
+        currentlyHighlightedWord.classList.remove("theme-accent-text");
+      }
+
       wordAudioObject.pause();
       wordAudioObject.src = audioUrl;
       wordAudioObject.currentTime = 0;
       
+      currentlyHighlightedWord = element;
       element.classList.add("theme-accent-text");
-      wordAudioObject.play().catch(err => console.log("Word audio playback error:", err));
       
-      wordAudioObject.onended = () => {
-        element.classList.remove("theme-accent-text");
+      const clearGlow = () => {
+        if (currentlyHighlightedWord === element) {
+          element.classList.remove("theme-accent-text");
+          currentlyHighlightedWord = null;
+        }
       };
+
+      wordAudioObject.onended = clearGlow;
+      wordAudioObject.onerror = clearGlow;
+
+      wordAudioObject.play().catch(err => {
+        console.log("Word audio playback error:", err);
+        clearGlow();
+      });
     }
 
     function playSingleVerse(verseKey) {
@@ -1049,12 +1066,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return `&nbsp;<span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="ayah-svg-symbol" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span>&nbsp;`;
     }
 
     function processVerseWords(words, ayahNum, verseKey) {
@@ -1072,7 +1089,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
+        translation = translation.replace(/'/g, "'").replace(/"/g, '&quot;');
 
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
@@ -1105,13 +1122,23 @@
         const wStr = String(wordCounter).padStart(3, '0');
         const audioUrl = `https://audio.qurancdn.com/wbw/${sStr}_${aStr}_${wStr}.mp3`;
 
-        return `<span class="word-tooltip cursor-pointer" data-audio="${audioUrl}" onclick="playWordAudio(this)" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
+        return `<span class="word-tooltip cursor-pointer" data-audio="${audioUrl}" onmouseenter="preloadWordAudio(this)" onclick="playWordAudio(this)" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
       });
 
       return {
         arabicHtml: renderedWordsHtml.join(" ") + getAyahMarkerSvg(ayahNum),
         plainText: normalWords.filter(i => !i.isWaqf).map(item => item.text).join(" ")
       };
+    }
+
+    function preloadWordAudio(element) {
+      const audioUrl = element.getAttribute("data-audio");
+      if (!audioUrl) return;
+      // Pre-load audio ahead of time on hover so it plays instantly on click
+      if (wordAudioObject.src !== audioUrl && wordAudioObject.src !== location.origin + audioUrl) {
+        wordAudioObject.src = audioUrl;
+        wordAudioObject.load();
+      }
     }
 
     function findClosestPageForVerse(verseKey) {
