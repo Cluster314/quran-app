@@ -172,7 +172,6 @@
     }
     .word-tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-    /* Trailing waqf/rukoo symbol offset: moved 20px left, 10px up above ayah marker */
     .trailing-waqf {
       display: inline-block !important;
       position: relative;
@@ -270,6 +269,10 @@
       </a>
 
       <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+        <button onclick="clearQuranCache()" title="Clear cached data" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 hover:border-[var(--accent)] transition">
+          🧹 Clear Cache
+        </button>
+
         <a id="quranComLink" href="https://cluster314.github.io/quran-app/" target="_blank" rel="noopener noreferrer" title="Open this location on Quran.com" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
           <span>↗</span><span>quran.com</span>
         </a>
@@ -472,6 +475,72 @@
   </div>
 
   <script>
+    /* =========================================================
+       INDEXEDDB CACHING ENGINE
+       ========================================================= */
+    class QuranCacheDB {
+      constructor() {
+        this.dbName = "QuranIndoPakCache";
+        this.version = 1;
+        this.db = null;
+      }
+
+      async init() {
+        if (this.db) return this.db;
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, this.version);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains("verses")) db.createObjectStore("verses");
+            if (!db.objectStoreNames.contains("translations")) db.createObjectStore("translations");
+          };
+          req.onsuccess = (e) => {
+            this.db = e.target.result;
+            resolve(this.db);
+          };
+          req.onerror = (e) => reject(e.target.error);
+        });
+      }
+
+      async get(storeName, key) {
+        await this.init();
+        return new Promise((resolve) => {
+          const tx = this.db.transaction(storeName, "readonly");
+          const req = tx.objectStore(storeName).get(key);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      }
+
+      async set(storeName, key, value) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+          const tx = this.db.transaction(storeName, "readwrite");
+          const req = tx.objectStore(storeName).put(value, key);
+          req.onsuccess = () => resolve(true);
+          req.onerror = (e) => reject(e.target.error);
+        });
+      }
+
+      async clear() {
+        await this.init();
+        const tx = this.db.transaction(["verses", "translations"], "readwrite");
+        tx.objectStore("verses").clear();
+        tx.objectStore("translations").clear();
+      }
+    }
+
+    const quranCache = new QuranCacheDB();
+
+    async function clearQuranCache() {
+      await quranCache.clear();
+      showToast("Cache cleared! Reloading...", "🧹");
+      setTimeout(() => location.reload(), 1000);
+    }
+
+    /* =========================================================
+       APP CORE LOGIC & API
+       ========================================================= */
     const SITE_BASE_URL = "https://cluster314.github.io/quran-app/";
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
@@ -1337,8 +1406,16 @@
       navigate(`${sId}/${aNum}`);
     }
 
+    /* CACHED TRANSLATION FETCH */
     async function fetchSurahTranslation(surahId) {
       if (translationCache[surahId]) return translationCache[surahId];
+      
+      const cached = await quranCache.get("translations", surahId);
+      if (cached) {
+        translationCache[surahId] = cached;
+        return cached;
+      }
+
       try {
         const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
         if (!res.ok) throw new Error();
@@ -1356,14 +1433,22 @@
           });
         }
         translationCache[surahId] = map;
+        await quranCache.set("translations", surahId, map);
         return map;
       } catch (err) { return {}; }
     }
 
+    /* CACHED SURAH VERSES FETCH */
     async function fetchChapterVerses(surahId) {
+      const cached = await quranCache.get("verses", surahId);
+      if (cached) return cached;
+
       const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
       const data = await res.json();
-      return data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
+      const mappedVerses = data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
+      
+      await quranCache.set("verses", surahId, mappedVerses);
+      return mappedVerses;
     }
 
     async function fetchPageVerses(pageNum) {
@@ -1378,16 +1463,16 @@
 
       const requests = [];
       for (let sId = fromS; sId <= toS; sId++) {
-        requests.push(fetch(`${API_BASE}/verses/by_chapter/${sId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`).then(r => r.json()).then(d => ({ sId, data: d })));
+        requests.push(fetchChapterVerses(sId).then(verses => ({ sId, verses })));
       }
 
       const results = await Promise.all(requests);
       let pageVerses = [];
-      results.sort((a, b) => a.sId - b.sId).forEach(({ sId, data }) => {
-        if (!data || !data.verses) return;
+      results.sort((a, b) => a.sId - b.sId).forEach(({ sId, verses }) => {
+        if (!verses) return;
         let startFilter = (sId === fromS) ? fromA : 1;
-        let endFilter = (sId === toS) ? toA : data.verses.length;
-        const filtered = data.verses.filter(v => {
+        let endFilter = (sId === toS) ? toA : verses.length;
+        const filtered = verses.filter(v => {
           const num = parseInt(v.verse_key.split(":")[1]);
           return num >= startFilter && num <= endFilter;
         }).map(v => ({ verse_key: v.verse_key, surah_id: sId, ayah_num: parseInt(v.verse_key.split(":")[1]), words: v.words }));
@@ -1562,8 +1647,7 @@
           contentContainer.innerHTML += surahSectionHtml;
         }
 
-        // Allow UI to remain responsive between Surah loads
-        await new Promise(r => setTimeout(r, 10));
+        await new Promise(r => setTimeout(r, 5));
       }
 
       initScrollObserver();
