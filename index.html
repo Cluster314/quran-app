@@ -269,10 +269,6 @@
       </a>
 
       <div class="flex flex-wrap items-center gap-1.5 shrink-0">
-        <button onclick="clearQuranCache()" title="Clear cached data" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 hover:border-[var(--accent)] transition">
-          🧹 Clear Cache
-        </button>
-
         <a id="quranComLink" href="https://cluster314.github.io/quran-app/" target="_blank" rel="noopener noreferrer" title="Open this location on Quran.com" class="theme-card theme-text-muted text-3xs sm:text-xs font-bold border rounded-lg px-2 py-1 flex items-center space-x-1 hover:border-[var(--accent)] transition">
           <span>↗</span><span>quran.com</span>
         </a>
@@ -531,12 +527,6 @@
     }
 
     const quranCache = new QuranCacheDB();
-
-    async function clearQuranCache() {
-      await quranCache.clear();
-      showToast("Cache cleared! Reloading...", "🧹");
-      setTimeout(() => location.reload(), 1000);
-    }
 
     /* =========================================================
        APP CORE LOGIC & API
@@ -1438,17 +1428,31 @@
       } catch (err) { return {}; }
     }
 
-    /* CACHED SURAH VERSES FETCH */
+    /* CACHED SURAH VERSES FETCH WITH TIMEOUT & RETRY */
     async function fetchChapterVerses(surahId) {
       const cached = await quranCache.get("verses", surahId);
       if (cached) return cached;
 
-      const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`);
-      const data = await res.json();
-      const mappedVerses = data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
-      
-      await quranCache.set("verses", surahId, mappedVerses);
-      return mappedVerses;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&word_fields=text_indopak&per_page=300&word_translation_language=en`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        const mappedVerses = data.verses.map(v => ({ verse_key: v.verse_key, words: v.words }));
+        
+        await quranCache.set("verses", surahId, mappedVerses);
+        return mappedVerses;
+      } catch (err) {
+        console.error(`Error loading Surah ${surahId}:`, err);
+        return [];
+      }
     }
 
     async function fetchPageVerses(pageNum) {
