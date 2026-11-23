@@ -172,10 +172,12 @@
     }
     .word-tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-    /* Offset trailing waqf/rukoo symbols above the ayah sign */
+    /* Trailing waqf/rukoo symbol styling offset to sit cleanly over the ayah marker */
     .trailing-waqf {
-      display: inline-block;
-      transform: translate(-20px, -10px);
+      display: inline-block !important;
+      position: relative;
+      transform: translate(-22px, -12px);
+      margin-left: -15px;
     }
 
     .indopak-text {
@@ -1046,12 +1048,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return `&nbsp;<span class="ayah-container" contenteditable="false">
+      return ` <span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="ayah-svg-symbol" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span>&nbsp;`;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum, verseKey) {
@@ -1065,7 +1067,7 @@
         
         let text = w.text_indopak || w.text || "";
         let translation = (w.translation && w.translation.text) ? w.translation.text : "";
-        translation = translation.replace(/'/g, "'").replace(/"/g, '&quot;');
+        translation = translation.replace(/'/g, "'").replace(/"/g, '"');
 
         const isSymbolOrWaqf = 
           w.char_type_name === "waqf" || 
@@ -1073,27 +1075,23 @@
           w.word_type === "waqf" ||
           /^[ۖۗۘۙۚۛۜ۝۩۞ٱۨ]/.test(text);
 
-        if (isSymbolOrWaqf) {
-          if (normalWords.length > 0) {
-            normalWords[normalWords.length - 1].text += text;
-          } else {
-            normalWords.push({ text: text, translation: "", isWaqf: true });
-          }
-        } else {
-          normalWords.push({
-            text: text,
-            translation: translation,
-            isWaqf: false
-          });
-        }
+        normalWords.push({
+          text: text,
+          translation: translation,
+          isWaqf: isSymbolOrWaqf
+        });
       }
 
+      const lastIndex = normalWords.length - 1;
+
       let renderedWordsHtml = normalWords.map((item, idx) => {
+        const isTrailingWaqf = item.isWaqf && idx === lastIndex;
+        const classList = `word-tooltip ${isTrailingWaqf ? 'trailing-waqf' : ''}`;
+
         if (item.isWaqf) {
-          const isLast = (idx === normalWords.length - 1);
-          return `<span class="word-tooltip ${isLast ? 'trailing-waqf' : ''}" data-translation="" title="">${item.text}</span>`;
+          return `<span class="${classList}" data-translation="" title="">${item.text}</span>`;
         }
-        return `<span class="word-tooltip" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
+        return `<span class="${classList}" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
       });
 
       return {
