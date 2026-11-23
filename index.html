@@ -12,7 +12,7 @@
   <!-- Open Graph & Twitter -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word-by-word tooltips." />
+  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word tooltips." />
   <meta name="theme-color" content="#40bfff" id="metaThemeColor" />
 
   <link rel="manifest" href="manifest.json">
@@ -171,6 +171,12 @@
       direction: ltr;
     }
     .word-tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+    /* Offset trailing waqf/rukoo symbols above the ayah sign */
+    .trailing-waqf {
+      display: inline-block;
+      transform: translate(-20px, -10px);
+    }
 
     .indopak-text {
       font-family: 'IndoPakQuran', 'Scheherazade New', serif;
@@ -999,7 +1005,15 @@
       }
     }
 
-    // Dynamic Juz mapping derived from the 610 page map (every Juz spans 20 pages, starting at page 2)
+    function getVerseKeyForPage(pageNum) {
+      if (INDOPAK_15_LINE_PAGE_STARTS[pageNum]) {
+        let [s, a] = INDOPAK_15_LINE_PAGE_STARTS[pageNum];
+        return `${s}:${a}`;
+      }
+      return "1:1";
+    }
+
+    // Dynamic Juz mapping: Para 1 starts at page 2, each Para spans 20 pages
     function getJuzBoundariesFromPageMap() {
       let boundaries = {};
       for (let j = 1; j <= 30; j++) {
@@ -1007,16 +1021,10 @@
         let endPage = j === 30 ? MAX_PAGES : (startPage + 19);
         
         let startVerseKey = getVerseKeyForPage(startPage);
-        let endVerseKey = getVerseKeyForPage(endPage + 1) || "114:6"; // Next page start minus one or end of Quran
-
-        let [fromS, fromA] = startVerseKey.split(":").map(Number);
-        
-        // Find previous verse for end boundary
         let endTargetPage = Math.min(endPage + 1, MAX_PAGES);
         let nextStartVerseKey = getVerseKeyForPage(endTargetPage);
         let [toS, toA] = nextStartVerseKey.split(":").map(Number);
         
-        // Decrement by 1 ayah for the end boundary
         if (toA > 1) {
           toA -= 1;
         } else {
@@ -1025,17 +1033,10 @@
         }
         if (j === 30) { toS = 114; toA = 6; }
 
+        let [fromS, fromA] = startVerseKey.split(":").map(Number);
         boundaries[j] = [fromS, fromA, toS, toA];
       }
       return boundaries;
-    }
-
-    function getVerseKeyForPage(pageNum) {
-      if (INDOPAK_15_LINE_PAGE_STARTS[pageNum]) {
-        let [s, a] = INDOPAK_15_LINE_PAGE_STARTS[pageNum];
-        return `${s}:${a}`;
-      }
-      return "1:1";
     }
 
     function toArabicNumeral(num) {
@@ -1087,9 +1088,10 @@
         }
       }
 
-      let renderedWordsHtml = normalWords.map(item => {
+      let renderedWordsHtml = normalWords.map((item, idx) => {
         if (item.isWaqf) {
-          return `<span class="word-tooltip" data-translation="" title="">${item.text}</span>`;
+          const isLast = (idx === normalWords.length - 1);
+          return `<span class="word-tooltip ${isLast ? 'trailing-waqf' : ''}" data-translation="" title="">${item.text}</span>`;
         }
         return `<span class="word-tooltip" data-translation="${item.translation}" title="${item.translation}">${item.text}</span>`;
       });
