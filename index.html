@@ -12,7 +12,7 @@
   <!-- Open Graph & Twitter -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="The Noble Quran - Indo-Pak Reader" />
-  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations, word-by-word tooltips, and word audio." />
+  <meta property="og:description" content="Read and listen to the Noble Quran in 15-line Indo-Pak script with translations and word tooltips." />
   <meta name="theme-color" content="#40bfff" id="metaThemeColor" />
 
   <link rel="manifest" href="manifest.json">
@@ -129,7 +129,6 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    /* Mushaf page images with dynamic inversion, hue rotation, and saturation */
     .mushaf-img {
       width: 100%;
       max-width: 800px;
@@ -148,6 +147,7 @@
       margin: 0 1px;
       border-radius: 4px;
       transition: background-color 0.2s ease, color 0.2s ease;
+      cursor: default;
     }
     .word-tooltip:hover { color: var(--accent); background-color: var(--accent-glow); }
     .word-tooltip::after {
@@ -192,7 +192,6 @@
       text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
     }
 
-    /* Decoupled Ayah Markers */
     .ayah-container {
       display: inline-flex !important;
       align-items: center;
@@ -311,6 +310,7 @@
       <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Page</button>
       <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Range</button>
       <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Single</button>
+      <button onclick="navigate('full-quran')" id="tabFullQuran" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Full Quran</button>
     </div>
 
     <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs max-w-full">
@@ -360,6 +360,10 @@
           <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 sm:w-14 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
         <button onclick="applySingleAyahNavigate()" class="custom-btn-primary text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">Go</button>
+      </div>
+
+      <div id="controlsFullQuran" class="hidden items-center justify-center space-x-2 w-full text-3xs sm:text-2xs theme-accent-text font-semibold">
+        <span>📖 Continuous Surah-by-Surah Reader Mode</span>
       </div>
     </div>
   </header>
@@ -480,26 +484,11 @@
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
     const ACCENT_CONFIG = {
-      "#40bfff": { // Diamond Blue
-        light: { hue: -40, sat: "160%" },
-        dark:  { hue: -40, sat: "160%" }
-      },
-      "#fbbf24": { // Gold
-        light: { hue: -45, sat: "140%" },
-        dark:  { hue: 163, sat: "180%" }
-      },
-      "#10b981": { // Emerald Green
-        light: { hue: -80, sat: "220%" },
-        dark:  { hue: -80, sat: "220%" }
-      },
-      "#f97316": { // Sunset Orange
-        light: { hue: 145, sat: "200%" },
-        dark:  { hue: 145, sat: "200%" }
-      },
-      "#a855f7": { // Amethyst Purple
-        light: { hue: 31,  sat: "250%" },
-        dark:  { hue: 31,  sat: "250%" }
-      }
+      "#40bfff": { light: { hue: -40, sat: "160%" }, dark: { hue: -40, sat: "160%" } },
+      "#fbbf24": { light: { hue: -45, sat: "140%" }, dark: { hue: 163, sat: "180%" } },
+      "#10b981": { light: { hue: -80, sat: "220%" }, dark: { hue: -80, sat: "220%" } },
+      "#f97316": { light: { hue: 145, sat: "200%" }, dark: { hue: 145, sat: "200%" } },
+      "#a855f7": { light: { hue: 31, sat: "250%" }, dark: { hue: 31, sat: "250%" } }
     };
 
     const EVERY_AYAH_QARIS = [
@@ -1023,14 +1012,38 @@
       }
     }
 
-    const INDOPAK_JUZ_BOUNDARIES = {
-      1:  [1, 1, 2, 141], 2:  [2, 142, 2, 252], 3:  [2, 253, 3, 91], 4:  [3, 92, 4, 23], 5:  [4, 24, 4, 147],
-      6:  [4, 148, 5, 81], 7:  [5, 82, 6, 110], 8:  [6, 111, 7, 87], 9:  [7, 88, 8, 40], 10: [8, 41, 9, 93],
-      11: [9, 94, 11, 5], 12: [11, 6, 12, 52], 13: [12, 53, 15, 1], 14: [15, 2, 16, 128], 15: [17, 1, 18, 74],
-      16: [18, 75, 20, 135], 17: [21, 1, 22, 78], 18: [23, 1, 25, 20], 19: [25, 21, 27, 59], 20: [27, 60, 29, 44],
-      21: [29, 45, 33, 30], 22: [33, 31, 36, 21], 23: [36, 22, 39, 31], 24: [39, 32, 41, 46], 25: [41, 47, 45, 37],
-      26: [46, 1, 51, 30], 27: [51, 31, 57, 29], 28: [58, 1, 66, 12], 29: [67, 1, 77, 50], 30: [78, 1, 114, 6]
-    };
+    function getVerseKeyForPage(pageNum) {
+      if (INDOPAK_15_LINE_PAGE_STARTS[pageNum]) {
+        let [s, a] = INDOPAK_15_LINE_PAGE_STARTS[pageNum];
+        return `${s}:${a}`;
+      }
+      return "1:1";
+    }
+
+    function getJuzBoundariesFromPageMap() {
+      let boundaries = {};
+      for (let j = 1; j <= 30; j++) {
+        let startPage = 2 + (j - 1) * 20;
+        let endPage = j === 30 ? MAX_PAGES : (startPage + 19);
+        
+        let startVerseKey = getVerseKeyForPage(startPage);
+        let endTargetPage = Math.min(endPage + 1, MAX_PAGES);
+        let nextStartVerseKey = getVerseKeyForPage(endTargetPage);
+        let [toS, toA] = nextStartVerseKey.split(":").map(Number);
+        
+        if (toA > 1) {
+          toA -= 1;
+        } else {
+          toS -= 1;
+          toA = chaptersData.find(c => c.id === toS)?.verses_count || 1;
+        }
+        if (j === 30) { toS = 114; toA = 6; }
+
+        let [fromS, fromA] = startVerseKey.split(":").map(Number);
+        boundaries[j] = [fromS, fromA, toS, toA];
+      }
+      return boundaries;
+    }
 
     function toArabicNumeral(num) {
       if (num === undefined || num === null) return "";
@@ -1049,7 +1062,7 @@
 
     function processVerseWords(words, ayahNum, verseKey) {
       if (!words || !words.length) return { arabicHtml: "", plainText: "" };
-      
+
       let normalWords = [];
       
       for (let i = 0; i < words.length; i++) {
@@ -1157,6 +1170,9 @@
         if (hash === "/" || hash === "") {
           setNavMode('surah');
           renderHome();
+        } else if (hash === "/full-quran" || hash === "full-quran") {
+          setNavMode('fullQuran');
+          await renderCrossSurahRange(1, 1, 114, 6, "The Holy Quran - Full Reader Mode");
         } else if (hash.startsWith("/juz/")) {
           setNavMode('juz');
           const juzId = parseInt(hash.split("/")[2]);
@@ -1215,7 +1231,7 @@
     }
 
     function setNavMode(mode) {
-      ['surah', 'juz', 'page', 'range', 'singleAyah'].forEach(m => {
+      ['surah', 'juz', 'page', 'range', 'singleAyah', 'fullQuran'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
@@ -1498,10 +1514,18 @@
       const endMeta = chaptersData.find(c => c.id === toSurah);
 
       updateDiscordEmbed({ title: customHeaderTitle || `Range: ${startMeta.name_simple}`, description: `Reading range`, path: isJuzView ? window.location.hash.replace('#/', '') : `${fromSurah}:${fromAyah}` });
-      showLoading(`Fetching verses...`);
+      showLoading(`Loading Surah ${fromSurah} (${fromSurah}:${fromAyah} to ${toSurah}:${toAyah})...`);
 
-      let compiledSections = [];
-      let allVerses = [];
+      app.innerHTML = `
+        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
+          <h1 class="text-xl sm:text-2xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
+          <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]</p>
+        </div>
+        <div id="rangeContentContainer" class="w-full space-y-6"></div>
+      `;
+
+      const contentContainer = document.getElementById("rangeContentContainer");
+      currentLoadedVerses = [];
 
       for (let sId = fromSurah; sId <= toSurah; sId++) {
         const meta = chaptersData.find(c => c.id === sId);
@@ -1515,55 +1539,40 @@
           return num >= startFilter && num <= endFilter;
         });
 
-        allVerses.push(...filtered);
-        compiledSections.push({
-          surahMeta: meta,
-          verses: filtered,
-          translations: translations,
-          showBismillah: (sId !== 1 && sId !== 9) && (startFilter === 1)
-        });
-      }
+        currentLoadedVerses.push(...filtered);
 
-      currentLoadedVerses = allVerses;
-
-      if (displayMode === "mushaf") {
-        const pageNumbers = getPagesForVerseRange(allVerses);
-        app.innerHTML = renderMushafModeForPages(pageNumbers, null, customHeaderTitle || `Range View`);
-        initScrollObserver();
-        restoreScrollPosition();
-        return;
-      }
-
-      let html = `
-        <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
-          <h1 class="text-xl sm:text-2xl font-extrabold">${customHeaderTitle || 'Custom Ayah Range'}</h1>
-          <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">${startMeta.name_simple} [${fromAyah}] ➔ ${endMeta.name_simple} [${toAyah}]</p>
-        </div>
-      `;
-
-      compiledSections.forEach(sec => {
-        html += `
-          <div class="mb-8">
-            <div class="theme-card border rounded-xl p-3 sm:p-4 mb-4 flex items-center justify-between">
-              <div>
-                <h2 class="text-sm sm:text-base font-bold">${sec.surahMeta.id}. Surah ${sec.surahMeta.name_simple}</h2>
-                <span class="text-3xs theme-text-muted">${sec.surahMeta.translated_name.name}</span>
+        if (displayMode === "mushaf") {
+          const pageNumbers = getPagesForVerseRange(filtered);
+          contentContainer.innerHTML += renderMushafModeForPages(pageNumbers, null, `Surah ${meta.name_simple}`);
+        } else {
+          const showBismillah = (sId !== 1 && sId !== 9) && (startFilter === 1);
+          const surahSectionHtml = `
+            <div class="mb-8">
+              <div class="theme-card border rounded-xl p-3 sm:p-4 mb-4 flex items-center justify-between">
+                <div>
+                  <h2 class="text-sm sm:text-base font-bold">${meta.id}. Surah ${meta.name_simple}</h2>
+                  <span class="text-3xs theme-text-muted">${meta.translated_name.name}</span>
+                </div>
+                <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${meta.name_arabic}</div>
               </div>
-              <div class="font-indopak text-xl sm:text-2xl theme-accent-text" dir="rtl">${sec.surahMeta.name_arabic}</div>
+              ${showBismillah ? `<div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>` : ''}
+              ${renderContent(filtered, translations)}
             </div>
-            ${sec.showBismillah ? `<div class="text-center font-indopak text-xl sm:text-2xl theme-accent-text py-2 mb-4 theme-inner rounded-xl border" dir="rtl">${BISMILLAH_ARABIC}</div>` : ''}
-            ${renderContent(sec.verses, sec.translations)}
-          </div>
-        `;
-      });
+          `;
+          contentContainer.innerHTML += surahSectionHtml;
+        }
 
-      app.innerHTML = html;
+        // Allow UI to remain responsive between Surah loads
+        await new Promise(r => setTimeout(r, 10));
+      }
+
       initScrollObserver();
       restoreScrollPosition();
     }
 
     async function renderJuz(juzNumber) {
-      const bounds = INDOPAK_JUZ_BOUNDARIES[juzNumber];
+      const boundariesMap = getJuzBoundariesFromPageMap();
+      const bounds = boundariesMap[juzNumber];
       if (!bounds) { render404(); return; }
       const [fromS, fromA, toS, toA] = bounds;
       await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`, true);
