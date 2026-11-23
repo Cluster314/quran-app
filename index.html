@@ -309,7 +309,6 @@
       <button onclick="setNavMode('page')" id="tabPage" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Page</button>
       <button onclick="setNavMode('range')" id="tabRange" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Range</button>
       <button onclick="setNavMode('singleAyah')" id="tabSingleAyah" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Single</button>
-      <button onclick="navigate('full-quran')" id="tabFullQuran" class="px-2.5 py-1 rounded-md border theme-card theme-text-muted whitespace-nowrap transition shrink-0">Full Quran</button>
     </div>
 
     <div class="w-full theme-card border rounded-xl p-2 flex flex-wrap items-center justify-center gap-2 text-xs max-w-full">
@@ -359,10 +358,6 @@
           <input type="number" id="singleAyahInput" placeholder="Ayah" min="1" value="1" class="w-12 sm:w-14 theme-inner theme-text-muted text-3xs sm:text-2xs border rounded px-1 py-1 text-center" />
         </div>
         <button onclick="applySingleAyahNavigate()" class="custom-btn-primary text-3xs sm:text-2xs px-2.5 py-1 rounded font-bold transition">Go</button>
-      </div>
-
-      <div id="controlsFullQuran" class="hidden items-center justify-center space-x-2 w-full text-3xs sm:text-2xs theme-accent-text font-semibold">
-        <span>📖 Continuous Surah-by-Surah Reader Mode</span>
       </div>
     </div>
   </header>
@@ -1229,9 +1224,6 @@
         if (hash === "/" || hash === "") {
           setNavMode('surah');
           renderHome();
-        } else if (hash === "/full-quran" || hash === "full-quran") {
-          setNavMode('fullQuran');
-          await renderCrossSurahRange(1, 1, 114, 6, "The Holy Quran - Full Reader Mode");
         } else if (hash.startsWith("/juz/")) {
           setNavMode('juz');
           const juzId = parseInt(hash.split("/")[2]);
@@ -1290,7 +1282,7 @@
     }
 
     function setNavMode(mode) {
-      ['surah', 'juz', 'page', 'range', 'singleAyah', 'fullQuran'].forEach(m => {
+      ['surah', 'juz', 'page', 'range', 'singleAyah'].forEach(m => {
         const tab = document.getElementById(`tab${m.charAt(0).toUpperCase() + m.slice(1)}`);
         const ctrl = document.getElementById(`controls${m.charAt(0).toUpperCase() + m.slice(1)}`);
         if (m === mode) {
