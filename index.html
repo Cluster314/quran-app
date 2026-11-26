@@ -1406,7 +1406,7 @@
         for (let sId = fromS; sId <= toS; sId++) {
           const trans = await fetchSurahTranslation(sId);
           let sAyah = (sId === fromS) ? fromA : 1;
-          let eAyah = (sId === toS) ? toA : chaptersData.find(c => c.id === sId).verses_count;
+          let eAyah = (sId === toS) ? toA : chaptersData.find(c => c.id === sId)?.verses_count || 1;
           transHtml += renderTranslationOnlyMode(sId, sAyah, eAyah, trans);
         }
         app.innerHTML = html + transHtml;
@@ -1542,8 +1542,114 @@
     }
 
     async function renderVerseByVerseMode(fromS, fromA, toS, toA, translations) {
+      const qudratullahData = await loadQudratullahDict();
       const pageNumbers = getPagesForRange(fromS, fromA, toS, toA);
-      return await renderMushafModeForPages(pageNumbers, null, null, {fromS, fromA, toS, toA}, true, translations);
+      
+      const surahIdsInPages = new Set();
+      for (const p of pageNumbers) {
+        const pageObj = qudratullahData[p] || qudratullahData[String(p)];
+        if (!pageObj || !pageObj.lines) continue;
+        Object.values(pageObj.lines).forEach(l => {
+          if (l.surah_number) surahIdsInPages.add(l.surah_number);
+          if (l.data && Array.isArray(l.data)) {
+            l.data.forEach(w => {
+              if (w && w.verse_key) surahIdsInPages.add(parseInt(w.verse_key.split(':')[0]));
+            });
+          }
+        });
+      }
+
+      surahIdsInPages.add(fromS);
+      surahIdsInPages.add(toS);
+
+      const wordTransMaps = {};
+      await Promise.all(Array.from(surahIdsInPages).map(async sId => {
+        wordTransMaps[sId] = await fetchSurahWordTranslations(sId);
+      }));
+
+      let verseMapForCards = {};
+
+      for (const p of pageNumbers) {
+        const pageObj = qudratullahData[p] || qudratullahData[String(p)];
+        if (!pageObj || !pageObj.lines) continue;
+
+        const lines = pageObj.lines;
+        let currentVerseKey = null;
+
+        for (const lineNum of Object.keys(lines).sort((a, b) => parseInt(a) - parseInt(b))) {
+          const line = lines[lineNum];
+          if (line.data && Array.isArray(line.data)) {
+            let currentWordIdxInVerse = 0;
+            for (const wordObj of line.data) {
+              const text = typeof wordObj === 'string' ? wordObj : (wordObj.text || wordObj);
+              if (wordObj && wordObj.verse_key) {
+                if (currentVerseKey !== wordObj.verse_key) {
+                  currentVerseKey = wordObj.verse_key;
+                  currentWordIdxInVerse = 0;
+                }
+              }
+
+              if (currentVerseKey) {
+                const [s, a] = currentVerseKey.split(':').map(Number);
+                if (s < fromS || s > toS) continue;
+                if (s === fromS && a < fromA) continue;
+                if (s === toS && a > toA) continue;
+
+                let translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
+                if (!translation) {
+                  const ayahWordsTrans = wordTransMaps[s] ? wordTransMaps[s][currentVerseKey] : null;
+                  if (ayahWordsTrans && ayahWordsTrans[currentWordIdxInVerse]) {
+                    translation = ayahWordsTrans[currentWordIdxInVerse];
+                  }
+                  currentWordIdxInVerse++;
+                }
+
+                const cleanTrans = translation.replace(/"/g, '"');
+                const wordHtml = cleanTrans && cleanTrans.trim() !== "" 
+                  ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
+                  : `<span>${text}</span>`;
+
+                if (!verseMapForCards[currentVerseKey]) verseMapForCards[currentVerseKey] = { words: [], plainText: "" };
+                verseMapForCards[currentVerseKey].words.push(wordHtml);
+                verseMapForCards[currentVerseKey].plainText += text + " ";
+              }
+            }
+          }
+        }
+      }
+
+      let cardsHtml = "";
+      const verseKeys = Object.keys(verseMapForCards);
+      
+      for (const vKey of verseKeys) {
+        const [sId, aNum] = vKey.split(':').map(Number);
+        let trans = translations;
+        if (!trans || sId !== fromS) trans = await fetchSurahTranslation(sId);
+        let translatedText = trans ? trans[aNum] || "" : "";
+
+        const arabicHtml = verseMapForCards[vKey].words.join(' ');
+        const plainText = verseMapForCards[vKey].plainText.trim();
+        const fullTextToCopy = `${plainText}\n\n${translatedText}`;
+        const encodedCopyText = encodeURIComponent(fullTextToCopy);
+
+        cardsHtml += `
+          <div id="verse-${vKey}" data-verse-key="${vKey}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3 mb-4">
+            <div class="flex items-center justify-between border-b theme-inner pb-2">
+              <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">${vKey}</span>
+              <div class="flex flex-wrap items-center gap-1">
+                <button onclick="playSingleVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
+                <button onclick="setAudioStartVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
+                <button onclick="setAudioEndVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
+                <button onclick="copyVerseText('${encodedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
+              </div>
+            </div>
+            <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;" dir="rtl">${arabicHtml}</div>
+            ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+          </div>
+        `;
+      }
+
+      return `<div class="w-full space-y-4">${cardsHtml}</div>`;
     }
 
     function renderTranslationOnlyMode(surahId, startAyah, endAyah, translations) {
@@ -1581,6 +1687,10 @@
         return `${navHeader}<div class="p-8 text-center text-red-400 text-xs">Failed to load dataset.</div>`;
       }
 
+      if (asVerseList && rangeFilter) {
+        return await renderVerseByVerseMode(rangeFilter.fromS, rangeFilter.fromA, rangeFilter.toS, rangeFilter.toA, preloadedTranslations);
+      }
+
       const surahIdsInPages = new Set();
       for (const p of pageNumbers) {
         const pageObj = qudratullahData[p] || qudratullahData[String(p)];
@@ -1601,7 +1711,6 @@
       }));
 
       let pagesHtml = "";
-      let verseMapForCards = {};
 
       for (const p of pageNumbers) {
         const pageObj = qudratullahData[p] || qudratullahData[String(p)];
@@ -1661,12 +1770,6 @@
                 : `<span>${text}</span>`;
 
               filteredWords.push(wordHtml);
-
-              if (asVerseList && currentVerseKey) {
-                if (!verseMapForCards[currentVerseKey]) verseMapForCards[currentVerseKey] = { words: [], plainText: "" };
-                verseMapForCards[currentVerseKey].words.push(wordHtml);
-                verseMapForCards[currentVerseKey].plainText += text + " ";
-              }
             }
 
             if (filteredWords.length === 0) continue;
@@ -1692,41 +1795,6 @@
             </div>
           </div>
         `;
-      }
-
-      if (asVerseList) {
-        let cardsHtml = "";
-        const verseKeys = Object.keys(verseMapForCards);
-        
-        for (const vKey of verseKeys) {
-          const [sId, aNum] = vKey.split(':').map(Number);
-          let translations = preloadedTranslations;
-          if (!translations) translations = await fetchSurahTranslation(sId);
-          let translatedText = translations ? translations[aNum] || "" : "";
-
-          const arabicHtml = verseMapForCards[vKey].words.join(' ');
-          const plainText = verseMapForCards[vKey].plainText.trim();
-          const fullTextToCopy = `${plainText}\n\n${translatedText}`;
-          const encodedCopyText = encodeURIComponent(fullTextToCopy);
-
-          cardsHtml += `
-            <div id="verse-${vKey}" data-verse-key="${vKey}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3 mb-4">
-              <div class="flex items-center justify-between border-b theme-inner pb-2">
-                <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">${vKey}</span>
-                <div class="flex flex-wrap items-center gap-1">
-                  <button onclick="playSingleVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
-                  <button onclick="setAudioStartVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
-                  <button onclick="setAudioEndVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
-                  <button onclick="copyVerseText('${encodedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
-                </div>
-              </div>
-              <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;" dir="rtl">${arabicHtml}</div>
-              ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
-            </div>
-          `;
-        }
-
-        return `${navHeader}<div class="w-full space-y-4">${cardsHtml}</div>`;
       }
 
       return `${navHeader}<div class="w-full space-y-6">${pagesHtml}</div>`;
