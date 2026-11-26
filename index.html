@@ -129,7 +129,7 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    /* Mushaf Page Styling - Borderless */
+    /* Mushaf Page Styling - Borderless, Centered */
     .mushaf-page-box {
       width: 100%;
       max-width: 800px;
@@ -146,12 +146,7 @@
       justify-content: center;
       padding: 6px 12px;
       border-radius: 8px;
-      transition: background 0.2s ease;
       min-height: 52px;
-    }
-
-    .mushaf-line:hover {
-      background-color: var(--accent-glow);
     }
 
     .line-content {
@@ -182,10 +177,10 @@
       padding: 0 3px;
       margin: 0 1px;
       border-radius: 4px;
-      transition: background-color 0.2s ease, color 0.2s ease;
+      transition: color 0.2s ease;
       cursor: pointer;
     }
-    .word-tooltip:hover { color: var(--accent); background-color: var(--accent-glow); }
+    .word-tooltip:hover { color: var(--accent); }
     .word-tooltip::after {
       content: attr(data-translation);
       position: absolute;
@@ -331,7 +326,6 @@
 
         <select id="displayModeSelect" onchange="changeDisplayMode(this.value)" class="theme-card theme-text-muted text-3xs sm:text-xs font-semibold border rounded-lg px-1.5 py-1 focus:outline-none">
           <option value="verse">🔢 Verse</option>
-          <option value="reading-arabic">📜 Arabic</option>
           <option value="reading-translation">🌐 Translation</option>
           <option value="mushaf">📖 Mushaf</option>
         </select>
@@ -1626,7 +1620,7 @@
 
         if (displayMode === "mushaf") {
           const pageNumbers = getPagesForVerseRange(filtered);
-          contentContainer.innerHTML += await renderMushafModeForPages(pageNumbers, null, `Surah ${meta.name_simple}`);
+          contentContainer.innerHTML += await renderMushafModeForPages(pageNumbers, null, `Surah ${meta.name_simple}`, {fromS: fromSurah, fromA: fromAyah, toS: toSurah, toA: toAyah});
         } else {
           const showBismillah = (sId !== 1 && sId !== 9) && (startFilter === 1);
           const surahSectionHtml = `
@@ -1653,20 +1647,7 @@
     }
 
     async function renderJuz(juzNumber) {
-      let startPage = 2 + (juzNumber - 1) * 20;
-      if (juzNumber === 1) startPage = 1;
-      let endPage = juzNumber === 30 ? MAX_PAGES : (startPage + 19);
-      let pagesToRender = [];
-      for (let p = startPage; p <= endPage; p++) pagesToRender.push(p);
-
-      if (displayMode === "mushaf") {
-        const app = document.getElementById("app");
-        updateDiscordEmbed({ title: `Juz (Para) ${juzNumber}`, description: `Reading Juz ${juzNumber}`, path: `juz/${juzNumber}` });
-        app.innerHTML = await renderMushafModeForPages(pagesToRender, null, `Juz (Para) ${juzNumber}`);
-        return;
-      }
-
-      let boundariesMap = {
+      const boundariesMap = {
         1: [1, 1, 2, 141], 2: [2, 142, 3, 252], 3: [3, 253, 4, 92], 4: [4, 93, 5, 23], 5: [5, 24, 6, 110],
         6: [6, 111, 7, 87], 7: [7, 88, 8, 40], 8: [8, 41, 9, 92], 9: [9, 93, 11, 5], 10: [11, 6, 12, 52],
         11: [12, 53, 14, 52], 12: [14, 53, 16, 50], 13: [16, 51, 18, 74], 14: [18, 75, 20, 135], 15: [21, 1, 22, 78],
@@ -1676,12 +1657,26 @@
       };
       const bounds = boundariesMap[juzNumber];
       if (!bounds) { render404(); return; }
-      await renderCrossSurahRange(bounds[0], bounds[1], bounds[2], bounds[3], `Juz (Para) ${juzNumber}`, true);
+      const [fromS, fromA, toS, toA] = bounds;
+
+      if (displayMode === "mushaf") {
+        let startPage = 2 + (juzNumber - 1) * 20;
+        if (juzNumber === 1) startPage = 1;
+        let endPage = juzNumber === 30 ? MAX_PAGES : (startPage + 19);
+        let pagesToRender = [];
+        for (let p = startPage; p <= endPage; p++) pagesToRender.push(p);
+
+        const app = document.getElementById("app");
+        updateDiscordEmbed({ title: `Juz (Para) ${juzNumber}`, description: `Reading Juz ${juzNumber}`, path: `juz/${juzNumber}` });
+        app.innerHTML = await renderMushafModeForPages(pagesToRender, null, `Juz (Para) ${juzNumber}`, {fromS, fromA, toS, toA});
+        return;
+      }
+
+      await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`, true);
     }
 
     function renderContent(verses, translations) {
       if (displayMode === "mushaf") return "";
-      if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
       return renderVerseByVerse(verses, translations);
     }
@@ -1690,7 +1685,7 @@
       return await renderMushafModeForPages(getPagesForVerseRange(verses));
     }
 
-    async function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null) {
+    async function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null, rangeFilter = null) {
       const qudratullahData = await loadQudratullahDict();
 
       let navHeader = '';
@@ -1763,7 +1758,6 @@
           <div class="mushaf-page-box mb-8">
             <div class="flex items-center justify-between mb-2 px-2">
               <span class="theme-accent-text font-bold text-xs uppercase">Page ${p}</span>
-              <button onclick="navigate('page/${p}')" class="text-3xs theme-inner px-2 py-0.5 rounded border hover:border-[var(--accent)] transition">View Standard Page Mode</button>
             </div>
             <div class="mushaf-page flex flex-col gap-1.5" dir="rtl">
               ${linesHtml}
@@ -1814,27 +1808,6 @@
           }).join("")}
         </div>
       `;
-    }
-
-    function renderReadingArabicMode(verses) {
-      let arabicParagraph = "";
-      verses.forEach((v) => {
-        const pageNum = REVERSE_PAGE_LOOKUP[v.verse_key];
-        if (pageNum) {
-          arabicParagraph += `
-            <span class="w-full flex items-center my-6 block" contenteditable="false" dir="ltr">
-              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
-              <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">Page ${pageNum}</span>
-              <span class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></span>
-            </span>
-          `;
-        }
-        const [, ayahNum] = v.verse_key.split(":").map(Number);
-        const processed = processVerseWords(v.words, ayahNum, v.verse_key);
-        arabicParagraph += `<span id="verse-${v.verse_key}" data-verse-key="${v.verse_key}">${processed.arabicHtml}</span> `;
-      });
-
-      return `<div class="w-full theme-card border rounded-2xl p-4 sm:p-6 my-2"><div class="reading-wrapper indopak-text text-2xl sm:text-3xl leading-relaxed" style="display: block; unicode-bidi: isolate;">${arabicParagraph}</div></div>`;
     }
 
     function renderReadingTranslationMode(verses, translations) {
