@@ -129,22 +129,21 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    /* Mushaf Page Styling */
+    /* Mushaf Page Styling - Borderless */
     .mushaf-page-box {
       width: 100%;
       max-width: 800px;
       margin: 0 auto;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 30px 20px;
-      box-shadow: var(--card-glow);
+      background-color: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 10px 0;
     }
 
     .mushaf-line {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 6px 12px;
       border-radius: 8px;
       transition: background 0.2s ease;
@@ -153,16 +152,6 @@
 
     .mushaf-line:hover {
       background-color: var(--accent-glow);
-    }
-
-    .line-number {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 700;
-      user-select: none;
-      direction: ltr;
-      min-width: 24px;
-      text-align: center;
     }
 
     .line-content {
@@ -576,7 +565,7 @@
     const SITE_BASE_URL = "https://cluster314.github.io/quran-app/";
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
-    const BISMILLAH_ARABIC = "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ";
+    const BISMILLAH_ARABIC = "بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِیْمِ";
     
     let chaptersData = [];
     const translationCache = {};
@@ -669,7 +658,7 @@
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
     let MAX_PAGES = 610;
-    let qudratullahDictData = null; // Loaded JSON for 15-line text mode
+    let qudratullahDictData = null;
 
     let audioObject = new Audio();
     let nextAudioObject = new Audio();
@@ -1691,7 +1680,7 @@
     }
 
     function renderContent(verses, translations) {
-      if (displayMode === "mushaf") return ""; // handled asynchronously
+      if (displayMode === "mushaf") return "";
       if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
       return renderVerseByVerse(verses, translations);
@@ -1741,10 +1730,13 @@
           let contentHtml = "";
 
           if (line.type === 'surah_name') {
-            contentHtml = `<div class="line-content surah-header">سُورَةُ ${line.surah_number || ''}</div>`;
+            const sMeta = chaptersData.find(c => c.id === line.surah_number);
+            const arabicSurahName = sMeta ? sMeta.name_arabic : `سُورَةُ ${line.surah_number || ''}`;
+            contentHtml = `<div class="line-content surah-header">سُورَةُ ${arabicSurahName}</div>`;
+          } else if (line.type === 'basmallah') {
+            contentHtml = `<div class="line-content" style="color: var(--accent); font-weight: bold;">${BISMILLAH_ARABIC}</div>`;
           } else if (line.data && Array.isArray(line.data)) {
             const wordsHtml = line.data.map(wordObj => {
-              // wordObj can be string or object containing text & translation from your json
               const text = typeof wordObj === 'string' ? wordObj : (wordObj.text || wordObj);
               const translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
               const cleanTrans = translation.replace(/"/g, '"');
@@ -1762,7 +1754,6 @@
 
           linesHtml += `
             <div class="mushaf-line">
-              <span class="line-number">${lineNum}</span>
               ${contentHtml}
             </div>
           `;
@@ -1770,9 +1761,9 @@
 
         pagesHtml += `
           <div class="mushaf-page-box mb-8">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-opacity-30" style="border-color: var(--accent);">
+            <div class="flex items-center justify-between mb-2 px-2">
               <span class="theme-accent-text font-bold text-xs uppercase">Page ${p}</span>
-              <button onclick="navigate('page/${p}')" class="text-3xs theme-inner px-2 py-1 rounded border hover:border-[var(--accent)] transition">View Page Mode</button>
+              <button onclick="navigate('page/${p}')" class="text-3xs theme-inner px-2 py-0.5 rounded border hover:border-[var(--accent)] transition">View Standard Page Mode</button>
             </div>
             <div class="mushaf-page flex flex-col gap-1.5" dir="rtl">
               ${linesHtml}
