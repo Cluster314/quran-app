@@ -129,15 +129,62 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    .mushaf-img {
+    /* Mushaf Page Styling */
+    .mushaf-page-box {
       width: 100%;
       max-width: 800px;
-      height: auto;
-      display: block;
       margin: 0 auto;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px 20px;
+      box-shadow: var(--card-glow);
+    }
+
+    .mushaf-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
       border-radius: 8px;
-      filter: invert(var(--mushaf-invert, 0%)) hue-rotate(var(--mushaf-hue, 0deg)) saturate(var(--mushaf-sat, 150%));
-      transition: filter 0.3s ease;
+      transition: background 0.2s ease;
+      min-height: 52px;
+    }
+
+    .mushaf-line:hover {
+      background-color: var(--accent-glow);
+    }
+
+    .line-number {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      user-select: none;
+      direction: ltr;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .line-content {
+      font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
+      font-size: 26px;
+      line-height: 2;
+      width: 100%;
+      text-align: center;
+      word-spacing: 4px;
+      color: var(--text-arabic);
+    }
+
+    .line-content.surah-header {
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 20px;
+      padding: 6px;
+      margin: 4px 0;
+      text-align: center;
     }
 
     .word-tooltip {
@@ -147,7 +194,7 @@
       margin: 0 1px;
       border-radius: 4px;
       transition: background-color 0.2s ease, color 0.2s ease;
-      cursor: default;
+      cursor: pointer;
     }
     .word-tooltip:hover { color: var(--accent); background-color: var(--accent-glow); }
     .word-tooltip::after {
@@ -537,14 +584,6 @@
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
 
-    const ACCENT_CONFIG = {
-      "#40bfff": { light: { hue: -40, sat: "160%" }, dark: { hue: -40, sat: "160%" } },
-      "#fbbf24": { light: { hue: -45, sat: "140%" }, dark: { hue: 163, sat: "180%" } },
-      "#10b981": { light: { hue: -80, sat: "220%" }, dark: { hue: -80, sat: "220%" } },
-      "#f97316": { light: { hue: 145, sat: "200%" }, dark: { hue: 145, sat: "200%" } },
-      "#a855f7": { light: { hue: 31, sat: "250%" }, dark: { hue: 31, sat: "250%" } }
-    };
-
     const EVERY_AYAH_QARIS = [
       { id: "Alafasy_128kbps", name: "Mishari Rashid al-Afasy (128kbps)" },
       { id: "Alafasy_64kbps", name: "Mishari Rashid al-Afasy (64kbps)" },
@@ -630,6 +669,7 @@
     let INDOPAK_15_LINE_PAGE_STARTS = {};
     let REVERSE_PAGE_LOOKUP = {};
     let MAX_PAGES = 610;
+    let qudratullahDictData = null; // Loaded JSON for 15-line text mode
 
     let audioObject = new Audio();
     let nextAudioObject = new Audio();
@@ -646,17 +686,6 @@
       ayah: { isInfinite: true },
       range: { isInfinite: true }
     };
-
-    function updateMushafImageFilter() {
-      const isDarkOrOled = (currentTheme === "dark" || currentTheme === "oled");
-      const modeConfig = ACCENT_CONFIG[currentAccent] || { light: { hue: 0, sat: "150%" }, dark: { hue: 0, sat: "150%" } };
-      const activeSetting = isDarkOrOled ? modeConfig.dark : modeConfig.light;
-      const totalHue = activeSetting.hue + (isDarkOrOled ? 180 : 0);
-      
-      document.documentElement.style.setProperty('--mushaf-hue', `${totalHue}deg`);
-      document.documentElement.style.setProperty('--mushaf-sat', activeSetting.sat);
-      document.documentElement.style.setProperty('--mushaf-invert', isDarkOrOled ? '100%' : '0%');
-    }
 
     function populateEveryAyahQariDropdown() {
       const select = document.getElementById("everyAyahQariSelect");
@@ -722,7 +751,6 @@
       localStorage.setItem("quran_theme", theme);
       const sel = document.getElementById("themeSelect");
       if (sel) sel.value = theme;
-      updateMushafImageFilter();
     }
 
     function changeTheme(newTheme) { applyTheme(newTheme); }
@@ -750,7 +778,6 @@
       if (sel) sel.value = hexColor;
       const metaTheme = document.getElementById("metaThemeColor");
       if (metaTheme) metaTheme.setAttribute("content", hexColor);
-      updateMushafImageFilter();
     }
 
     function changeAccentColor(newColor) { applyAccentColor(newColor); }
@@ -1066,37 +1093,25 @@
       }
     }
 
+    async function loadQudratullahDict() {
+      if (qudratullahDictData) return qudratullahDictData;
+      try {
+        const res = await fetch("quran_15line_qudratullah_dict.json");
+        if (!res.ok) throw new Error("Failed to load qudratullah dict json");
+        qudratullahDictData = await res.json();
+        return qudratullahDictData;
+      } catch (err) {
+        console.error("Error loading qudratullah dict JSON:", err);
+        return null;
+      }
+    }
+
     function getVerseKeyForPage(pageNum) {
       if (INDOPAK_15_LINE_PAGE_STARTS[pageNum]) {
         let [s, a] = INDOPAK_15_LINE_PAGE_STARTS[pageNum];
         return `${s}:${a}`;
       }
       return "1:1";
-    }
-
-    function getJuzBoundariesFromPageMap() {
-      let boundaries = {};
-      for (let j = 1; j <= 30; j++) {
-        let startPage = 2 + (j - 1) * 20;
-        let endPage = j === 30 ? MAX_PAGES : (startPage + 19);
-        
-        let startVerseKey = getVerseKeyForPage(startPage);
-        let endTargetPage = Math.min(endPage + 1, MAX_PAGES);
-        let nextStartVerseKey = getVerseKeyForPage(endTargetPage);
-        let [toS, toA] = nextStartVerseKey.split(":").map(Number);
-        
-        if (toA > 1) {
-          toA -= 1;
-        } else {
-          toS -= 1;
-          toA = chaptersData.find(c => c.id === toS)?.verses_count || 1;
-        }
-        if (j === 30) { toS = 114; toA = 6; }
-
-        let [fromS, fromA] = startVerseKey.split(":").map(Number);
-        boundaries[j] = [fromS, fromA, toS, toA];
-      }
-      return boundaries;
     }
 
     function toArabicNumeral(num) {
@@ -1106,12 +1121,12 @@
     }
 
     function getAyahMarkerSvg(ayahNum) {
-      return ` <span class="ayah-container" contenteditable="false">
+      return ` <span class="ayah-container" contenteditable="false">
           <svg viewBox="0 0 36 36" class="ayah-svg-symbol" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C9.16 2 2 9.16 2 18s7.16 16 16 16 16-7.16 16-16S26.84 2 18 2zm0 30C10.27 32 4 25.73 4 18S10.27 4 18 4s14 6.27 14 14-6.27 14-14 14z"/>
           </svg>
           <span class="ayah-number">${toArabicNumeral(ayahNum)}</span>
-        </span> `;
+        </span> `;
     }
 
     function processVerseWords(words, ayahNum, verseKey) {
@@ -1388,7 +1403,6 @@
       navigate(`${sId}/${aNum}`);
     }
 
-    /* CACHED TRANSLATION FETCH */
     async function fetchSurahTranslation(surahId) {
       if (translationCache[surahId]) return translationCache[surahId];
       
@@ -1420,7 +1434,6 @@
       } catch (err) { return {}; }
     }
 
-    /* CACHED SURAH VERSES FETCH WITH TIMEOUT & RETRY */
     async function fetchChapterVerses(surahId) {
       const cached = await quranCache.get("verses", surahId);
       if (cached) return cached;
@@ -1512,7 +1525,7 @@
       currentLoadedVerses = verses;
 
       if (displayMode === "mushaf") {
-        app.innerHTML = renderMushafModeForVerses(verses);
+        app.innerHTML = await renderMushafModeForVerses(verses);
         initScrollObserver();
         restoreScrollPosition();
         return;
@@ -1539,7 +1552,7 @@
       currentLoadedVerses = pageVerses;
 
       if (displayMode === "mushaf") {
-        app.innerHTML = renderMushafModeForPages([pageNum], pageNum);
+        app.innerHTML = await renderMushafModeForPages([pageNum], pageNum);
         initScrollObserver();
         restoreScrollPosition();
         return;
@@ -1624,7 +1637,7 @@
 
         if (displayMode === "mushaf") {
           const pageNumbers = getPagesForVerseRange(filtered);
-          contentContainer.innerHTML += renderMushafModeForPages(pageNumbers, null, `Surah ${meta.name_simple}`);
+          contentContainer.innerHTML += await renderMushafModeForPages(pageNumbers, null, `Surah ${meta.name_simple}`);
         } else {
           const showBismillah = (sId !== 1 && sId !== 9) && (startFilter === 1);
           const surahSectionHtml = `
@@ -1651,25 +1664,46 @@
     }
 
     async function renderJuz(juzNumber) {
-      const boundariesMap = getJuzBoundariesFromPageMap();
+      let startPage = 2 + (juzNumber - 1) * 20;
+      if (juzNumber === 1) startPage = 1;
+      let endPage = juzNumber === 30 ? MAX_PAGES : (startPage + 19);
+      let pagesToRender = [];
+      for (let p = startPage; p <= endPage; p++) pagesToRender.push(p);
+
+      if (displayMode === "mushaf") {
+        const app = document.getElementById("app");
+        updateDiscordEmbed({ title: `Juz (Para) ${juzNumber}`, description: `Reading Juz ${juzNumber}`, path: `juz/${juzNumber}` });
+        app.innerHTML = await renderMushafModeForPages(pagesToRender, null, `Juz (Para) ${juzNumber}`);
+        return;
+      }
+
+      let boundariesMap = {
+        1: [1, 1, 2, 141], 2: [2, 142, 3, 252], 3: [3, 253, 4, 92], 4: [4, 93, 5, 23], 5: [5, 24, 6, 110],
+        6: [6, 111, 7, 87], 7: [7, 88, 8, 40], 8: [8, 41, 9, 92], 9: [9, 93, 11, 5], 10: [11, 6, 12, 52],
+        11: [12, 53, 14, 52], 12: [14, 53, 16, 50], 13: [16, 51, 18, 74], 14: [18, 75, 20, 135], 15: [21, 1, 22, 78],
+        16: [23, 1, 25, 20], 17: [25, 21, 27, 55], 18: [27, 56, 29, 45], 19: [29, 46, 33, 30], 20: [33, 31, 36, 27],
+        21: [36, 28, 39, 31], 22: [39, 32, 43, 30], 23: [43, 31, 45, 37], 24: [46, 1, 51, 30], 25: [51, 31, 57, 29],
+        26: [58, 1, 66, 12], 27: [67, 1, 77, 50], 28: [78, 1, 86, 17], 29: [87, 1, 114, 6], 30: [78, 1, 114, 6]
+      };
       const bounds = boundariesMap[juzNumber];
       if (!bounds) { render404(); return; }
-      const [fromS, fromA, toS, toA] = bounds;
-      await renderCrossSurahRange(fromS, fromA, toS, toA, `Juz (Para) ${juzNumber}`, true);
+      await renderCrossSurahRange(bounds[0], bounds[1], bounds[2], bounds[3], `Juz (Para) ${juzNumber}`, true);
     }
 
     function renderContent(verses, translations) {
-      if (displayMode === "mushaf") return renderMushafModeForVerses(verses);
+      if (displayMode === "mushaf") return ""; // handled asynchronously
       if (displayMode === "reading-arabic") return renderReadingArabicMode(verses);
       if (displayMode === "reading-translation") return renderReadingTranslationMode(verses, translations);
       return renderVerseByVerse(verses, translations);
     }
 
-    function renderMushafModeForVerses(verses) {
-      return renderMushafModeForPages(getPagesForVerseRange(verses));
+    async function renderMushafModeForVerses(verses) {
+      return await renderMushafModeForPages(getPagesForVerseRange(verses));
     }
 
-    function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null) {
+    async function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null) {
+      const qudratullahData = await loadQudratullahDict();
+
       let navHeader = '';
       if (currentPageNum) {
         navHeader = `
@@ -1686,18 +1720,68 @@
         navHeader = `<div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);"><h1 class="text-xl sm:text-2xl font-extrabold">${title}</h1></div>`;
       }
 
-      const imagesHtml = pageNumbers.map(p => `
-        <div class="mushaf-container mb-2 text-center" id="page-mushaf-${p}">
-          <div class="w-full flex items-center my-6">
-            <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
-            <span class="px-4 py-1 theme-card border rounded-full theme-accent-text font-bold text-xs tracking-wider uppercase mx-3 shadow-md" style="border-color: var(--accent);">Page ${p}</span>
-            <div class="flex-1 border-t opacity-40" style="border-color: var(--accent);"></div>
-          </div>
-          <img src="${p}.png" alt="Quran Page ${p}" class="mushaf-img" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-8 text-center text-red-400 text-xs\\'>Failed to load page ${p}.png</div>';" />
-        </div>
-      `).join("");
+      if (!qudratullahData) {
+        return `${navHeader}<div class="p-8 text-center text-red-400 text-xs">Failed to load <code>quran_15line_qudratullah_dict.json</code> dataset.</div>`;
+      }
 
-      return `${navHeader}<div class="w-full space-y-4 max-w-3xl mx-auto">${imagesHtml}</div>`;
+      let pagesHtml = "";
+      for (const p of pageNumbers) {
+        const pageObj = qudratullahData[p] || qudratullahData[String(p)];
+        if (!pageObj || !pageObj.lines) {
+          pagesHtml += `<div class="p-8 text-center text-red-400 text-xs">Page ${p} data unavailable in dataset.</div>`;
+          continue;
+        }
+
+        const lines = pageObj.lines;
+        const sortedLineKeys = Object.keys(lines).sort((a, b) => parseInt(a) - parseInt(b));
+
+        let linesHtml = "";
+        sortedLineKeys.forEach(lineNum => {
+          const line = lines[lineNum];
+          let contentHtml = "";
+
+          if (line.type === 'surah_name') {
+            contentHtml = `<div class="line-content surah-header">سُورَةُ ${line.surah_number || ''}</div>`;
+          } else if (line.data && Array.isArray(line.data)) {
+            const wordsHtml = line.data.map(wordObj => {
+              // wordObj can be string or object containing text & translation from your json
+              const text = typeof wordObj === 'string' ? wordObj : (wordObj.text || wordObj);
+              const translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
+              const cleanTrans = translation.replace(/"/g, '"');
+              
+              if (cleanTrans && cleanTrans.trim() !== "") {
+                return `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`;
+              } else {
+                return `<span>${text}</span>`;
+              }
+            }).join(' ');
+            contentHtml = `<div class="line-content">${wordsHtml}</div>`;
+          } else if (line.text) {
+            contentHtml = `<div class="line-content">${line.text}</div>`;
+          }
+
+          linesHtml += `
+            <div class="mushaf-line">
+              <span class="line-number">${lineNum}</span>
+              ${contentHtml}
+            </div>
+          `;
+        });
+
+        pagesHtml += `
+          <div class="mushaf-page-box mb-8">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-opacity-30" style="border-color: var(--accent);">
+              <span class="theme-accent-text font-bold text-xs uppercase">Page ${p}</span>
+              <button onclick="navigate('page/${p}')" class="text-3xs theme-inner px-2 py-1 rounded border hover:border-[var(--accent)] transition">View Page Mode</button>
+            </div>
+            <div class="mushaf-page flex flex-col gap-1.5" dir="rtl">
+              ${linesHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      return `${navHeader}<div class="w-full space-y-6">${pagesHtml}</div>`;
     }
 
     function renderVerseByVerse(verses, translations) {
