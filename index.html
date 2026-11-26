@@ -451,7 +451,7 @@
     class QuranCacheDB {
       constructor() {
         this.dbName = "QuranIndoPakCache";
-        this.version = 1;
+        this.version = 2;
         this.db = null;
       }
 
@@ -461,8 +461,12 @@
           const req = indexedDB.open(this.dbName, this.version);
           req.onupgradeneeded = (e) => {
             const db = e.target.result;
-            if (!db.objectStoreNames.contains("translations")) db.createObjectStore("translations");
-            if (!db.objectStoreNames.contains("word_translations")) db.createObjectStore("word_translations");
+            if (!db.objectStoreNames.contains("translations")) {
+              db.createObjectStore("translations");
+            }
+            if (!db.objectStoreNames.contains("word_translations")) {
+              db.createObjectStore("word_translations");
+            }
           };
           req.onsuccess = (e) => {
             this.db = e.target.result;
