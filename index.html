@@ -203,25 +203,6 @@
     }
     .word-tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-    .trailing-waqf {
-      display: inline-block !important;
-      position: relative;
-      transform: translate(-20px, -10px);
-      margin-left: -15px;
-    }
-
-    .indopak-text {
-      font-family: 'IndoPakQuran', 'Scheherazade New', serif;
-      direction: rtl;
-      unicode-bidi: isolate;
-      line-height: 3.2 !important;
-      color: var(--text-arabic);
-    }
-
-    :root[data-theme="oled"] .indopak-text {
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
-    }
-
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
     ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
@@ -481,6 +462,7 @@
           req.onupgradeneeded = (e) => {
             const db = e.target.result;
             if (!db.objectStoreNames.contains("translations")) db.createObjectStore("translations");
+            if (!db.objectStoreNames.contains("word_translations")) db.createObjectStore("word_translations");
           };
           req.onsuccess = (e) => {
             this.db = e.target.result;
@@ -516,13 +498,13 @@
     /* =========================================================
        APP CORE LOGIC & API
        ========================================================= */
-    const SITE_BASE_URL = "https://cluster314.github.io/quran-app/";
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     const BISMILLAH_ARABIC = "بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِیْمِ";
     
     let chaptersData = [];
     const translationCache = {};
+    const wordTranslationsCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
@@ -1049,6 +1031,33 @@
       }
     }
 
+    async function fetchSurahWordTranslations(surahId) {
+      if (wordTranslationsCache[surahId]) return wordTranslationsCache[surahId];
+
+      const cached = await quranCache.get("word_translations", surahId);
+      if (cached) {
+        wordTranslationsCache[surahId] = cached;
+        return cached;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&per_page=300&word_translation_language=en`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        
+        const map = {};
+        data.verses.forEach(v => {
+          map[v.verse_key] = v.words.map(w => (w.translation ? w.translation.text : "")).filter(Boolean);
+        });
+
+        wordTranslationsCache[surahId] = map;
+        await quranCache.set("word_translations", surahId, map);
+        return map;
+      } catch (err) {
+        return {};
+      }
+    }
+
     function changeDisplayMode(newMode) {
       displayMode = newMode;
       const rawHash = window.location.hash.replace('#', '') || '/';
@@ -1330,6 +1339,20 @@
         return;
       }
 
+      if (displayMode === "reading-translation") {
+        app.innerHTML = `
+          <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center relative">
+            <h1 class="text-2xl sm:text-3xl font-extrabold">${surahMeta.name_simple}</h1>
+            <p class="theme-accent-text font-medium text-2xs sm:text-xs">${surahMeta.translated_name.name} • ${surahMeta.verses_count} Verses</p>
+            <div class="text-2xl sm:text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
+          </div>
+          ${renderTranslationOnlyMode(surahId, 1, surahMeta.verses_count, translations)}
+        `;
+        initScrollObserver();
+        restoreScrollPosition();
+        return;
+      }
+
       app.innerHTML = `
         <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center relative">
           <h1 class="text-2xl sm:text-3xl font-extrabold">${surahMeta.name_simple}</h1>
@@ -1337,7 +1360,7 @@
           <div class="text-2xl sm:text-3xl font-indopak pt-1" dir="rtl">${surahMeta.name_arabic}</div>
           ${surahId !== 1 && surahId !== 9 ? `<div class="mt-4 font-indopak text-xl sm:text-2xl theme-accent-text border-t theme-inner pt-3 w-full max-w-sm mx-auto" dir="rtl">${BISMILLAH_ARABIC}</div>` : ''}
         </div>
-        ${await renderContentForRange(surahId, 1, surahId, surahMeta.verses_count, translations)}
+        ${await renderVerseByVerseMode(surahId, 1, surahId, surahMeta.verses_count, translations)}
       `;
       initScrollObserver();
       restoreScrollPosition();
@@ -1366,7 +1389,27 @@
         </div>
       `;
 
-      app.innerHTML = html + await renderMushafModeForPages([pageNum], null, null, null, true);
+      if (displayMode === "reading-translation") {
+        const start = INDOPAK_15_LINE_PAGE_STARTS[pageNum] || [1, 1];
+        const nextStart = INDOPAK_15_LINE_PAGE_STARTS[pageNum + 1];
+        let fromS = start[0], fromA = start[1], toS, toA;
+        if (nextStart) {
+          if (nextStart[1] > 1) { toS = nextStart[0]; toA = nextStart[1] - 1; }
+          else { toS = nextStart[0] - 1; toA = chaptersData.find(c => c.id === toS)?.verses_count || 1; }
+        } else { toS = 114; toA = 6; }
+
+        let transHtml = "";
+        for (let sId = fromS; sId <= toS; sId++) {
+          const trans = await fetchSurahTranslation(sId);
+          let sAyah = (sId === fromS) ? fromA : 1;
+          let eAyah = (sId === toS) ? toA : chaptersData.find(c => c.id === sId).verses_count;
+          transHtml += renderTranslationOnlyMode(sId, sAyah, eAyah, trans);
+        }
+        app.innerHTML = html + transHtml;
+      } else {
+        app.innerHTML = html + await renderMushafModeForPages([pageNum], null, null, null, true);
+      }
+
       initScrollObserver();
       restoreScrollPosition();
     }
@@ -1392,7 +1435,7 @@
       for (let sId = fromSurah; sId <= toSurah; sId++) {
         const meta = chaptersData.find(c => c.id === sId);
         let startFilter = (sId === fromSurah) ? fromAyah : 1;
-        let endFilter = (sId === toSurah) ? toAya : meta.verses_count;
+        let endFilter = (sId === toSurah) ? toAyah : meta.verses_count;
         for (let a = startFilter; a <= endFilter; a++) {
           currentLoadedVerses.push({ verse_key: `${sId}:${a}` });
         }
@@ -1400,8 +1443,18 @@
 
       if (displayMode === "mushaf") {
         contentContainer.innerHTML = await renderMushafModeForRange(fromSurah, fromAyah, toSurah, toAyah);
+      } else if (displayMode === "reading-translation") {
+        let transHtml = "";
+        for (let sId = fromSurah; sId <= toSurah; sId++) {
+          const trans = await fetchSurahTranslation(sId);
+          let sAyah = (sId === fromSurah) ? fromAyah : 1;
+          let eAyah = (sId === toSurah) ? toAyah : chaptersData.find(c => c.id === sId).verses_count;
+          transHtml += renderTranslationOnlyMode(sId, sAyah, eAyah, trans);
+        }
+        contentContainer.innerHTML = transHtml;
       } else {
-        contentContainer.innerHTML = await renderContentForRange(fromSurah, fromAyah, toSurah, toAyah);
+        const pageNumbers = getPagesForRange(fromSurah, fromAyah, toSurah, toAyah);
+        contentContainer.innerHTML = await renderMushafModeForPages(pageNumbers, null, null, {fromS: fromSurah, fromA: fromAyah, toS: toSurah, toA: toAyah}, true);
       }
 
       initScrollObserver();
@@ -1428,6 +1481,31 @@
             <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Pages ${startPage} ➔ ${endPage}</p>
           </div>
           ${await renderMushafModeForPages(pagesToRender)}
+        `;
+      } else if (displayMode === "reading-translation") {
+        let transHtml = "";
+        for (const p of pagesToRender) {
+          const start = INDOPAK_15_LINE_PAGE_STARTS[p] || [1, 1];
+          const nextStart = INDOPAK_15_LINE_PAGE_STARTS[p + 1];
+          let fromS = start[0], fromA = start[1], toS, toA;
+          if (nextStart) {
+            if (nextStart[1] > 1) { toS = nextStart[0]; toA = nextStart[1] - 1; }
+            else { toS = nextStart[0] - 1; toA = chaptersData.find(c => c.id === toS)?.verses_count || 1; }
+          } else { toS = 114; toA = 6; }
+
+          for (let sId = fromS; sId <= toS; sId++) {
+            const trans = await fetchSurahTranslation(sId);
+            let sAyah = (sId === fromS) ? fromA : 1;
+            let eAyah = (sId === toS) ? toA : chaptersData.find(c => c.id === sId).verses_count;
+            transHtml += renderTranslationOnlyMode(sId, sAyah, eAyah, trans);
+          }
+        }
+        app.innerHTML = `
+          <div class="w-full theme-card border rounded-2xl p-4 sm:p-6 mb-6 text-center" style="border-color: var(--accent);">
+            <h1 class="text-xl sm:text-2xl font-extrabold">Juz (Para) ${juzNumber}</h1>
+            <p class="theme-accent-text font-medium text-2xs sm:text-xs mt-1">Pages ${startPage} ➔ ${endPage}</p>
+          </div>
+          ${transHtml}
         `;
       } else {
         app.innerHTML = `
@@ -1459,12 +1537,24 @@
       return await renderMushafModeForPages(pageNumbers, null, null, {fromS, fromA, toS, toA});
     }
 
-    async function renderContentForRange(fromS, fromA, toS, toA, preloadedTrans = null) {
+    async function renderVerseByVerseMode(fromS, fromA, toS, toA, translations) {
       const pageNumbers = getPagesForRange(fromS, fromA, toS, toA);
-      return await renderMushafModeForPages(pageNumbers, null, null, {fromS, fromA, toS, toA}, true);
+      return await renderMushafModeForPages(pageNumbers, null, null, {fromS, fromA, toS, toA}, true, translations);
     }
 
-    async function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null, rangeFilter = null, asVerseList = false) {
+    function renderTranslationOnlyMode(surahId, startAyah, endAyah, translations) {
+      let items = [];
+      for (let a = startAyah; a <= endAyah; a++) {
+        const verseKey = `${surahId}:${a}`;
+        let translatedText = (translations && translations[a]) ? String(translations[a]) : "";
+        if (translatedText) {
+          items.push(`<p id="verse-${verseKey}" data-verse-key="${verseKey}"><strong class="theme-accent-text">[${verseKey}]</strong> ${translatedText}</p>`);
+        }
+      }
+      return `<div class="w-full theme-card border rounded-2xl p-4 sm:p-6 my-4"><div class="text-left text-xs sm:text-sm leading-relaxed space-y-2.5">${items.join("")}</div></div>`;
+    }
+
+    async function renderMushafModeForPages(pageNumbers, currentPageNum = null, title = null, rangeFilter = null, asVerseList = false, preloadedTranslations = null) {
       const qudratullahData = await loadQudratullahDict();
 
       let navHeader = '';
@@ -1487,7 +1577,28 @@
         return `${navHeader}<div class="p-8 text-center text-red-400 text-xs">Failed to load dataset.</div>`;
       }
 
+      const surahIdsInPages = new Set();
+      for (const p of pageNumbers) {
+        const pageObj = qudratullahData[p] || qudratullahData[String(p)];
+        if (!pageObj || !pageObj.lines) continue;
+        Object.values(pageObj.lines).forEach(l => {
+          if (l.surah_number) surahIdsInPages.add(l.surah_number);
+          if (l.data && Array.isArray(l.data)) {
+            l.data.forEach(w => {
+              if (w && w.verse_key) surahIdsInPages.add(parseInt(w.verse_key.split(':')[0]));
+            });
+          }
+        });
+      }
+
+      const wordTransMaps = {};
+      await Promise.all(Array.from(surahIdsInPages).map(async sId => {
+        wordTransMaps[sId] = await fetchSurahWordTranslations(sId);
+      }));
+
       let pagesHtml = "";
+      let verseMapForCards = {};
+
       for (const p of pageNumbers) {
         const pageObj = qudratullahData[p] || qudratullahData[String(p)];
         if (!pageObj || !pageObj.lines) continue;
@@ -1511,9 +1622,16 @@
             contentHtml = `<div class="line-content" style="color: var(--accent); font-weight: bold;">${BISMILLAH_ARABIC}</div>`;
           } else if (line.data && Array.isArray(line.data)) {
             let filteredWords = [];
+            let currentWordIdxInVerse = 0;
+
             for (const wordObj of line.data) {
               const text = typeof wordObj === 'string' ? wordObj : (wordObj.text || wordObj);
-              if (wordObj && wordObj.verse_key) currentVerseKey = wordObj.verse_key;
+              if (wordObj && wordObj.verse_key) {
+                if (currentVerseKey !== wordObj.verse_key) {
+                  currentVerseKey = wordObj.verse_key;
+                  currentWordIdxInVerse = 0;
+                }
+              }
 
               if (rangeFilter && currentVerseKey) {
                 const [s, a] = currentVerseKey.split(':').map(Number);
@@ -1522,13 +1640,28 @@
                 if (s === rangeFilter.toS && a > rangeFilter.toA) continue;
               }
 
-              const translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
-              const cleanTrans = translation.replace(/"/g, '"');
+              let translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
               
-              if (cleanTrans && cleanTrans.trim() !== "") {
-                filteredWords.push(`<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`);
-              } else {
-                filteredWords.push(`<span>${text}</span>`);
+              if (!translation && currentVerseKey) {
+                const [sId] = currentVerseKey.split(':').map(Number);
+                const ayahWordsTrans = wordTransMaps[sId] ? wordTransMaps[sId][currentVerseKey] : null;
+                if (ayahWordsTrans && ayahWordsTrans[currentWordIdxInVerse]) {
+                  translation = ayahWordsTrans[currentWordIdxInVerse];
+                }
+                currentWordIdxInVerse++;
+              }
+
+              const cleanTrans = translation.replace(/"/g, '"');
+              const wordHtml = cleanTrans && cleanTrans.trim() !== "" 
+                ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
+                : `<span>${text}</span>`;
+
+              filteredWords.push(wordHtml);
+
+              if (asVerseList && currentVerseKey) {
+                if (!verseMapForCards[currentVerseKey]) verseMapForCards[currentVerseKey] = { words: [], plainText: "" };
+                verseMapForCards[currentVerseKey].words.push(wordHtml);
+                verseMapForCards[currentVerseKey].plainText += text + " ";
               }
             }
 
@@ -1557,13 +1690,39 @@
         `;
       }
 
-      if (asVerseList && rangeFilter) {
-        let translationMap = await fetchSurahTranslation(rangeFilter.fromS);
-        return `
-          <div class="w-full space-y-6">
-            ${pagesHtml}
-          </div>
-        `;
+      if (asVerseList) {
+        let cardsHtml = "";
+        const verseKeys = Object.keys(verseMapForCards);
+        
+        for (const vKey of verseKeys) {
+          const [sId, aNum] = vKey.split(':').map(Number);
+          let translations = preloadedTranslations;
+          if (!translations) translations = await fetchSurahTranslation(sId);
+          let translatedText = translations ? translations[aNum] || "" : "";
+
+          const arabicHtml = verseMapForCards[vKey].words.join(' ');
+          const plainText = verseMapForCards[vKey].plainText.trim();
+          const fullTextToCopy = `${plainText}\n\n${translatedText}`;
+          const encodedCopyText = encodeURIComponent(fullTextToCopy);
+
+          cardsHtml += `
+            <div id="verse-${vKey}" data-verse-key="${vKey}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3 mb-4">
+              <div class="flex items-center justify-between border-b theme-inner pb-2">
+                <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">${vKey}</span>
+                <div class="flex flex-wrap items-center gap-1">
+                  <button onclick="playSingleVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
+                  <button onclick="setAudioStartVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
+                  <button onclick="setAudioEndVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
+                  <button onclick="copyVerseText('${encodedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
+                </div>
+              </div>
+              <div class="text-right indopak-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;" dir="rtl">${arabicHtml}</div>
+              ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
+            </div>
+          `;
+        }
+
+        return `${navHeader}<div class="w-full space-y-4">${cardsHtml}</div>`;
       }
 
       return `${navHeader}<div class="w-full space-y-6">${pagesHtml}</div>`;
