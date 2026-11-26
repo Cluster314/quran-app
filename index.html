@@ -176,38 +176,6 @@
       text-align: right;
     }
 
-    .word-tooltip {
-      position: relative;
-      display: inline-block;
-      padding: 0 2px;
-      margin: 0 1px;
-      border-radius: 4px;
-      transition: color 0.2s ease;
-      cursor: pointer;
-    }
-    .word-tooltip:hover { color: var(--accent); }
-    .word-tooltip::after {
-      content: attr(data-translation);
-      position: absolute;
-      bottom: 125%;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--accent);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-family: 'Inter', sans-serif;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 50;
-      direction: ltr;
-    }
-    .word-tooltip:hover::after { opacity: 1; transform: translateX(-50%) translateY(-4px); }
-
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--bg-body); }
     ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
@@ -469,8 +437,8 @@
             if (!db.objectStoreNames.contains("translations")) {
               db.createObjectStore("translations");
             }
-            if (!db.objectStoreNames.contains("word_translations")) {
-              db.createObjectStore("word_translations");
+            if (!db.objectStoreNames.contains("indopak_nastaleeq")) {
+              db.createObjectStore("indopak_nastaleeq");
             }
           };
           req.onsuccess = (e) => {
@@ -513,7 +481,7 @@
     
     let chaptersData = [];
     const translationCache = {};
-    const surahApiVersesCache = {};
+    const indopakApiVersesCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
@@ -1040,20 +1008,20 @@
       }
     }
 
-    async function fetchSurahVersesFromApi(surahId) {
-      if (surahApiVersesCache[surahId]) return surahApiVersesCache[surahId];
-      const cached = await quranCache.get("word_translations", `surah_verses_clean_${surahId}`);
+    async function fetchIndoPakVersesFromApi(surahId) {
+      if (indopakApiVersesCache[surahId]) return indopakApiVersesCache[surahId];
+      const cached = await quranCache.get("indopak_nastaleeq", surahId);
       if (cached) {
-        surahApiVersesCache[surahId] = cached;
+        indopakApiVersesCache[surahId] = cached;
         return cached;
       }
 
       try {
-        const res = await fetch(`${API_BASE}/verses/by_chapter/${surahId}?words=true&per_page=300&word_translation_language=en`);
+        const res = await fetch(`${API_BASE}/quran/verses/indopak_nastaleeq?chapter_number=${surahId}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
-        surahApiVersesCache[surahId] = data.verses;
-        await quranCache.set("word_translations", `surah_verses_clean_${surahId}`, data.verses);
+        indopakApiVersesCache[surahId] = data.verses;
+        await quranCache.set("indopak_nastaleeq", surahId, data.verses);
         return data.verses;
       } catch (err) {
         return [];
@@ -1556,7 +1524,7 @@
       let cardsHtml = "";
       
       for (let sId = fromS; sId <= toS; sId++) {
-        const verses = await fetchSurahVersesFromApi(sId);
+        const verses = await fetchIndoPakVersesFromApi(sId);
         let trans = preloadedTranslations;
         if (!trans || sId !== fromS) trans = await fetchSurahTranslation(sId);
 
@@ -1567,18 +1535,9 @@
           const [vSurah, vAyah] = v.verse_key.split(":").map(Number);
           if (vSurah === sId && vAyah >= startFilter && vAyah <= endFilter) {
             let translatedText = trans ? trans[vAyah] || "" : "";
+            const arabicText = v.text_indopak || v.text || "";
             
-            let wordsHtml = v.words.map(w => {
-              const text = w.text;
-              const translation = w.translation ? w.translation.text : "";
-              const cleanTrans = translation.replace(/"/g, '"');
-              return cleanTrans && cleanTrans.trim() !== ""
-                ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
-                : `<span>${text}</span>`;
-            }).join(" ");
-
-            const plainText = v.words.map(w => w.text).join(" ");
-            const fullTextToCopy = `${plainText}\n\n${translatedText}`;
+            const fullTextToCopy = `${arabicText}\n\n${translatedText}`;
             const encodedCopyText = encodeURIComponent(fullTextToCopy);
 
             cardsHtml += `
@@ -1592,7 +1551,7 @@
                     <button onclick="copyVerseText('${encodedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
                   </div>
                 </div>
-                <div class="indopak-ayah-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;">${wordsHtml}</div>
+                <div class="indopak-ayah-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;">${arabicText}</div>
                 ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
@@ -1642,20 +1601,6 @@
         return navHeader + await renderVerseByVerseMode(rangeFilter.fromS, rangeFilter.fromA, rangeFilter.toS, rangeFilter.toA, preloadedTranslations);
       }
 
-      const surahIdsInPages = new Set();
-      for (const p of pageNumbers) {
-        const pageObj = qudratullahData[p] || qudratullahData[String(p)];
-        if (!pageObj || !pageObj.lines) continue;
-        Object.values(pageObj.lines).forEach(l => {
-          if (l.surah_number) surahIdsInPages.add(l.surah_number);
-          if (l.data && Array.isArray(l.data)) {
-            l.data.forEach(w => {
-              if (w && w.verse_key) surahIdsInPages.add(parseInt(w.verse_key.split(':')[0]));
-            });
-          }
-        });
-      }
-
       let pagesHtml = "";
 
       for (const p of pageNumbers) {
@@ -1697,13 +1642,7 @@
                 if (s === rangeFilter.toS && a > rangeFilter.toA) continue;
               }
 
-              let translation = (typeof wordObj === 'object' && wordObj.translation && wordObj.translation.text) ? wordObj.translation.text : "";
-              const cleanTrans = translation.replace(/"/g, '"');
-              const wordHtml = cleanTrans && cleanTrans.trim() !== "" 
-                ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
-                : `<span>${text}</span>`;
-
-              filteredWords.push(wordHtml);
+              filteredWords.push(`<span>${text}</span>`);
             }
 
             if (filteredWords.length === 0) continue;
