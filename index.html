@@ -1655,7 +1655,7 @@
                 currentWordIdxInVerse++;
               }
 
-              const cleanTrans = translation.replace(/"/g, '&quot;');
+              const cleanTrans = translation.replace(/"/g, '"');
               const wordHtml = cleanTrans && cleanTrans.trim() !== "" 
                 ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
                 : `<span>${text}</span>`;
