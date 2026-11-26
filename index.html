@@ -129,7 +129,7 @@
       text-shadow: 0 0 12px var(--accent);
     }
 
-    /* Mushaf Page Styling - Borderless, Centered */
+    /* Mushaf Page Styling - Balanced Line Height & Compact Spacing */
     .mushaf-page-box {
       width: 100%;
       max-width: 800px;
@@ -137,44 +137,44 @@
       background-color: transparent;
       border: none;
       box-shadow: none;
-      padding: 10px 0;
+      padding: 5px 0;
     }
 
     .mushaf-line {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 6px 12px;
-      border-radius: 8px;
-      min-height: 52px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      min-height: 38px;
     }
 
     .line-content {
       font-family: 'IndoPakQuran', 'Scheherazade New', 'Amiri', serif;
-      font-size: 26px;
-      line-height: 2;
+      font-size: 24px;
+      line-height: 1.4;
       width: 100%;
       text-align: center;
-      word-spacing: 4px;
+      word-spacing: 2px;
       color: var(--text-arabic);
     }
 
     .line-content.surah-header {
       background: var(--accent-glow);
       border: 1px solid var(--accent);
-      border-radius: 8px;
+      border-radius: 6px;
       color: var(--accent);
       font-weight: bold;
-      font-size: 20px;
-      padding: 6px;
-      margin: 4px 0;
+      font-size: 18px;
+      padding: 4px;
+      margin: 2px 0;
       text-align: center;
     }
 
     .word-tooltip {
       position: relative;
       display: inline-block;
-      padding: 0 3px;
+      padding: 0 2px;
       margin: 0 1px;
       border-radius: 4px;
       transition: color 0.2s ease;
@@ -1655,7 +1655,7 @@
                 currentWordIdxInVerse++;
               }
 
-              const cleanTrans = translation.replace(/"/g, '"');
+              const cleanTrans = translation.replace(/"/g, '&quot;');
               const wordHtml = cleanTrans && cleanTrans.trim() !== "" 
                 ? `<span class="word-tooltip" data-translation="${cleanTrans}">${text}</span>`
                 : `<span>${text}</span>`;
