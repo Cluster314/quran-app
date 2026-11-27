@@ -424,7 +424,7 @@
     class QuranCacheDB {
       constructor() {
         this.dbName = "QuranIndoPakCache";
-        this.version = 2;
+        this.version = 3; // Bumped to 3 to ensure indopak_nastaleeq store exists
         this.db = null;
       }
 
@@ -1020,9 +1020,10 @@
         const res = await fetch(`${API_BASE}/quran/verses/indopak_nastaleeq?chapter_number=${surahId}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
-        indopakApiVersesCache[surahId] = data.verses;
-        await quranCache.set("indopak_nastaleeq", surahId, data.verses);
-        return data.verses;
+        const verses = data.verses || [];
+        indopakApiVersesCache[surahId] = verses;
+        await quranCache.set("indopak_nastaleeq", surahId, verses);
+        return verses;
       } catch (err) {
         return [];
       }
@@ -1532,26 +1533,27 @@
         let endFilter = (sId === toS) ? toA : verses.length;
 
         for (let v of verses) {
-          const [vSurah, vAyah] = v.verse_key.split(":").map(Number);
+          const vKey = v.verse_key || `${sId}:${v.verse_number || 1}`;
+          const [vSurah, vAyah] = vKey.split(":").map(Number);
           if (vSurah === sId && vAyah >= startFilter && vAyah <= endFilter) {
             let translatedText = trans ? trans[vAyah] || "" : "";
-            const arabicText = v.text_indopak || v.text || "";
+            const arabicText = v.text_indopak || v.text || v.text_uthmani || "";
             
             const fullTextToCopy = `${arabicText}\n\n${translatedText}`;
             const encodedCopyText = encodeURIComponent(fullTextToCopy);
 
             cardsHtml += `
-              <div id="verse-${v.verse_key}" data-verse-key="${v.verse_key}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3 mb-4">
+              <div id="verse-${vKey}" data-verse-key="${vKey}" class="w-full theme-card border rounded-xl p-3 sm:p-6 flex flex-col space-y-3 mb-4">
                 <div class="flex items-center justify-between border-b theme-inner pb-2">
-                  <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">${v.verse_key}</span>
+                  <span class="px-2 py-0.5 theme-inner border border-opacity-30 theme-accent-text text-3xs sm:text-2xs font-semibold rounded-full" style="border-color: var(--accent);">${vKey}</span>
                   <div class="flex flex-wrap items-center gap-1">
-                    <button onclick="playSingleVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
-                    <button onclick="setAudioStartVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
-                    <button onclick="setAudioEndVerse('${v.verse_key}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
+                    <button onclick="playSingleVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">▶ Play</button>
+                    <button onclick="setAudioStartVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="Start">📍</button>
+                    <button onclick="setAudioEndVerse('${vKey}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-1.5 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);" title="End">🏁</button>
                     <button onclick="copyVerseText('${encodedCopyText}')" class="text-3xs sm:text-2xs theme-card hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] px-2 py-1 rounded border border-opacity-40 theme-accent-text font-semibold transition" style="border-color: var(--accent);">📋</button>
                   </div>
                 </div>
-                <div class="indopak-ayah-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;">${arabicText}</div>
+                <div class="indopak-ayah-text text-2xl sm:text-3xl px-1 pt-1 leading-relaxed" style="display: block; unicode-bidi: isolate;" dir="rtl">${arabicText}</div>
                 ${translatedText ? `<div class="text-left text-xs sm:text-sm border-t theme-inner pt-2.5 mt-1 leading-relaxed">${translatedText}</div>` : ''}
               </div>
             `;
