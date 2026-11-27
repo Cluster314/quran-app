@@ -419,69 +419,13 @@
 
   <script>
     /* =========================================================
-       INDEXEDDB CACHING ENGINE
-       ========================================================= */
-    class QuranCacheDB {
-      constructor() {
-        this.dbName = "QuranIndoPakCache";
-        this.version = 3; // Bumped to 3 to ensure indopak_nastaleeq store exists
-        this.db = null;
-      }
-
-      async init() {
-        if (this.db) return this.db;
-        return new Promise((resolve, reject) => {
-          const req = indexedDB.open(this.dbName, this.version);
-          req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains("translations")) {
-              db.createObjectStore("translations");
-            }
-            if (!db.objectStoreNames.contains("indopak_nastaleeq")) {
-              db.createObjectStore("indopak_nastaleeq");
-            }
-          };
-          req.onsuccess = (e) => {
-            this.db = e.target.result;
-            resolve(this.db);
-          };
-          req.onerror = (e) => reject(e.target.error);
-        });
-      }
-
-      async get(storeName, key) {
-        await this.init();
-        return new Promise((resolve) => {
-          const tx = this.db.transaction(storeName, "readonly");
-          const req = tx.objectStore(storeName).get(key);
-          req.onsuccess = () => resolve(req.result || null);
-          req.onerror = () => resolve(null);
-        });
-      }
-
-      async set(storeName, key, value) {
-        await this.init();
-        return new Promise((resolve, reject) => {
-          const tx = this.db.transaction(storeName, "readwrite");
-          const req = tx.objectStore(storeName).put(value, key);
-          req.onsuccess = () => resolve(true);
-          req.onerror = (e) => reject(e.target.error);
-        });
-      }
-    }
-
-    const quranCache = new QuranCacheDB();
-
-    /* =========================================================
-       APP CORE LOGIC & API
+       APP CORE LOGIC & API (Direct Fetch, No IndexedDB)
        ========================================================= */
     const API_BASE = "https://api.quran.com/api/v4";
     const TRANSLATION_BASE = "https://raw.githubusercontent.com/ReflectsLight/quran-json/refs/heads/main/share/quran-json/TheNobleQuran/en";
     const BISMILLAH_ARABIC = "بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِیْمِ";
     
     let chaptersData = [];
-    const translationCache = {};
-    const indopakApiVersesCache = {};
     let displayMode = "verse";
     let currentTheme = localStorage.getItem("quran_theme") || "dark";
     let currentAccent = localStorage.getItem("quran_accent") || "#40bfff";
@@ -1009,21 +953,11 @@
     }
 
     async function fetchIndoPakVersesFromApi(surahId) {
-      if (indopakApiVersesCache[surahId]) return indopakApiVersesCache[surahId];
-      const cached = await quranCache.get("indopak_nastaleeq", surahId);
-      if (cached) {
-        indopakApiVersesCache[surahId] = cached;
-        return cached;
-      }
-
       try {
         const res = await fetch(`${API_BASE}/quran/verses/indopak_nastaleeq?chapter_number=${surahId}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
-        const verses = data.verses || [];
-        indopakApiVersesCache[surahId] = verses;
-        await quranCache.set("indopak_nastaleeq", surahId, verses);
-        return verses;
+        return data.verses || [];
       } catch (err) {
         return [];
       }
@@ -1235,14 +1169,6 @@
     }
 
     async function fetchSurahTranslation(surahId) {
-      if (translationCache[surahId]) return translationCache[surahId];
-      
-      const cached = await quranCache.get("translations", surahId);
-      if (cached) {
-        translationCache[surahId] = cached;
-        return cached;
-      }
-
       try {
         const res = await fetch(`${TRANSLATION_BASE}/${surahId}.json`);
         if (!res.ok) throw new Error();
@@ -1259,8 +1185,6 @@
             }
           });
         }
-        translationCache[surahId] = map;
-        await quranCache.set("translations", surahId, map);
         return map;
       } catch (err) { return {}; }
     }
